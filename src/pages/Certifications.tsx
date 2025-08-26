@@ -16,7 +16,8 @@ const Certifications = () => {
       description: "Experience the work of an investment banker at Goldman Sachs",
       status: "available",
       participants: "50,000+",
-      rating: 4.8
+      rating: 4.8,
+      link: "https://www.theforage.com/simulations/goldman-sachs/investment-banking-analyst-1yz9"
     },
     {
       id: 2,
@@ -28,7 +29,8 @@ const Certifications = () => {
       description: "Learn the fundamentals of investment banking at JPMorgan Chase",
       status: "completed",
       participants: "75,000+",
-      rating: 4.7
+      rating: 4.7,
+      link: "https://www.theforage.com/simulations/jpmorgan/investment-banking-hkyd"
     },
     {
       id: 3,
@@ -41,7 +43,8 @@ const Certifications = () => {
       status: "in-progress",
       progress: 60,
       participants: "25,000+",
-      rating: 4.9
+      rating: 4.9,
+      link: "https://www.theforage.com/simulations/blackrock/private-equity-virtual-experience-t4m9"
     },
     {
       id: 4,
@@ -53,7 +56,8 @@ const Certifications = () => {
       description: "Apply data analytics to real business problems",
       status: "available",
       participants: "40,000+",
-      rating: 4.6
+      rating: 4.6,
+      link: "https://www.theforage.com/simulations/kpmg/data-analytics-virtual-experience-6y9g"
     }
   ]
 
@@ -185,6 +189,7 @@ const Certifications = () => {
                       ? 'bg-academy-blue hover:bg-academy-blue-dark'
                       : 'bg-academy-blue hover:bg-academy-blue-dark'
                   }`}
+                  onClick={() => window.open(cert.link, '_blank')}
                 >
                   {cert.status === 'completed' ? (
                     <>
