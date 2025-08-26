@@ -10,6 +10,9 @@ import Modules from "./pages/Modules";
 import Pathways from "./pages/Pathways";
 import Certifications from "./pages/Certifications";
 import Internships from "./pages/Internships";
+import SummerInternships from "./pages/SummerInternships";
+import FullTime from "./pages/FullTime";
+import UCPartners from "./pages/UCPartners";
 import Calendar from "./pages/Calendar";
 import ResumeDropPage from "./pages/ResumeDropPage";
 import Mentorship from "./pages/Mentorship";
@@ -37,6 +40,9 @@ const App = () => (
                   <Route path="/pathways" element={<Pathways />} />
                   <Route path="/certifications" element={<Certifications />} />
                   <Route path="/internships" element={<Internships />} />
+                  <Route path="/internships/summer" element={<SummerInternships />} />
+                  <Route path="/internships/full-time" element={<FullTime />} />
+                  <Route path="/internships/uc-partners" element={<UCPartners />} />
                   <Route path="/calendar" element={<Calendar />} />
                   <Route path="/resume-drop" element={<ResumeDropPage />} />
                   <Route path="/mentorship" element={<Mentorship />} />
