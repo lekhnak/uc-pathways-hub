@@ -48,8 +48,8 @@ export default function Layout({ children }: LayoutProps) {
             <SidebarTrigger className="mr-4 text-academy-blue hover:bg-academy-grey-light" />
             <div className="flex-1 flex items-center gap-3">
               <img 
-                src="/lovable-uploads/11121176-120b-4173-8562-293c5b5a5179.png" 
-                alt="UC Logo" 
+                src="/lovable-uploads/0702558c-2214-400e-b6df-770525aa1194.png" 
+                alt="UC Investments Academy Logo" 
                 className="h-8 w-8 object-contain"
               />
               <h1 className="text-xl font-semibold text-academy-blue">UC Investments Academy</h1>
