@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
-import { BookOpen, Award, Calendar, Users, TrendingUp, Play } from "lucide-react"
+import { BookOpen, Award, Calendar, Users, TrendingUp, Play, MessageCircle } from "lucide-react"
 import { NavLink } from "react-router-dom"
 import heroImage from "@/assets/ucia-hero.jpg"
 
@@ -186,6 +186,38 @@ const Index = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Slack Integration */}
+      <Card className="bg-gradient-subtle border-academy-blue-light shadow-card">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-academy-blue">
+            <MessageCircle className="h-5 w-5" />
+            Join Our Community
+          </CardTitle>
+          <CardDescription>Connect with fellow students and stay updated</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Button 
+              className="flex-1 bg-academy-blue hover:bg-academy-blue-dark"
+              onClick={() => window.open('https://join.slack.com/t/ucinvestmentacademy/shared_invite/your-invite-link', '_blank')}
+            >
+              <MessageCircle className="mr-2 h-4 w-4" />
+              Join UC IA Slack
+            </Button>
+            <Button 
+              variant="outline" 
+              className="flex-1 border-academy-blue text-academy-blue hover:bg-academy-blue-light"
+              asChild
+            >
+              <NavLink to="/chat">
+                <Users className="mr-2 h-4 w-4" />
+                Chat with Fellows
+              </NavLink>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
