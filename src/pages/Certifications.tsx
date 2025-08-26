@@ -48,16 +48,16 @@ const Certifications = () => {
     },
     {
       id: 4,
-      title: "KPMG Data Analytics Virtual Experience",
+      title: "Bank of America Global Markets Sales and Trading Virtual Experience",
       provider: "Forage",
       duration: "3-4 hours",
       difficulty: "Intermediate",
-      skills: ["Data Analysis", "Python", "Business Intelligence"],
-      description: "Apply data analytics to real business problems",
+      skills: ["Sales & Trading", "Market Analysis", "Risk Management"],
+      description: "A risk-free way to experience work on the job with us at Bank of America. Practice your skills with example tasks and build your confidence to ace your applications.",
       status: "available",
       participants: "40,000+",
       rating: 4.6,
-      link: "https://www.theforage.com/simulations/kpmg/data-analytics-virtual-experience-6y9g"
+      link: "https://www.theforage.com/simulations/bank-of-america/sales-and-trading-analyst-i5jo"
     },
     {
       id: 5,
