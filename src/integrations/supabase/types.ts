@@ -14,6 +14,99 @@ export type Database = {
   }
   public: {
     Tables: {
+      applications: {
+        Row: {
+          consent_form_file_path: string | null
+          created_at: string
+          current_employer: string | null
+          current_position: string | null
+          currently_employed: boolean | null
+          email: string
+          first_generation_student: boolean | null
+          first_name: string
+          gpa: number
+          graduation_year: number | null
+          id: string
+          last_name: string
+          linkedin_url: string | null
+          major: string
+          pell_grant_eligible: boolean | null
+          question_1: string
+          question_2: string
+          question_3: string
+          question_4: string
+          resume_file_path: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          student_type: string
+          submitted_at: string
+          transcript_file_path: string | null
+          uc_campus: string
+          updated_at: string
+        }
+        Insert: {
+          consent_form_file_path?: string | null
+          created_at?: string
+          current_employer?: string | null
+          current_position?: string | null
+          currently_employed?: boolean | null
+          email: string
+          first_generation_student?: boolean | null
+          first_name: string
+          gpa: number
+          graduation_year?: number | null
+          id?: string
+          last_name: string
+          linkedin_url?: string | null
+          major: string
+          pell_grant_eligible?: boolean | null
+          question_1: string
+          question_2: string
+          question_3: string
+          question_4: string
+          resume_file_path?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          student_type: string
+          submitted_at?: string
+          transcript_file_path?: string | null
+          uc_campus: string
+          updated_at?: string
+        }
+        Update: {
+          consent_form_file_path?: string | null
+          created_at?: string
+          current_employer?: string | null
+          current_position?: string | null
+          currently_employed?: boolean | null
+          email?: string
+          first_generation_student?: boolean | null
+          first_name?: string
+          gpa?: number
+          graduation_year?: number | null
+          id?: string
+          last_name?: string
+          linkedin_url?: string | null
+          major?: string
+          pell_grant_eligible?: boolean | null
+          question_1?: string
+          question_2?: string
+          question_3?: string
+          question_4?: string
+          resume_file_path?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          student_type?: string
+          submitted_at?: string
+          transcript_file_path?: string | null
+          uc_campus?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           bio: string | null

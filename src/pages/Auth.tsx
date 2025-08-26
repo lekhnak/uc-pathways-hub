@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import React, { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { useForm } from "react-hook-form"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { GraduationCap, Mail, Lock, User, AlertCircle } from "lucide-react"
+import { GraduationCap, Mail, Lock, User, AlertCircle, Upload, ExternalLink } from "lucide-react"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
 import uciaLogo from "@/assets/ucia-logo.png"
@@ -27,10 +27,20 @@ interface ApplicationFormData {
   studentType: string
   major: string
   gpa: string
+  graduationYear: string
+  linkedinUrl: string
+  firstGenerationStudent: boolean
+  pellGrantEligible: boolean
+  currentlyEmployed: boolean
+  currentPosition?: string
+  currentEmployer?: string
   question1: string
   question2: string
   question3: string
   question4: string
+  resumeFile: FileList
+  transcriptFile: FileList
+  consentFormFile: FileList
 }
 
 const ucCampuses = [
@@ -51,9 +61,16 @@ for (let i = 0; i <= 4.0; i += 0.1) {
   gpaOptions.push(i.toFixed(1))
 }
 
+const currentYear = new Date().getFullYear()
+const graduationYears = []
+for (let i = currentYear; i <= currentYear + 10; i++) {
+  graduationYears.push(i.toString())
+}
+
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [currentlyEmployed, setCurrentlyEmployed] = useState(false)
   const navigate = useNavigate()
   const { toast } = useToast()
 
@@ -97,11 +114,83 @@ const Auth = () => {
     }
   }
 
+  const validateLinkedInUrl = async (url: string): Promise<boolean> => {
+    if (!url) return false
+    
+    // Basic LinkedIn URL format validation
+    const linkedinPattern = /^https?:\/\/(www\.)?linkedin\.com\/in\/[a-zA-Z0-9-]+\/?$/
+    if (!linkedinPattern.test(url)) {
+      return false
+    }
+
+    try {
+      // Simple fetch to check if URL is accessible
+      const response = await fetch(url, { method: 'HEAD', mode: 'no-cors' })
+      return true // If no error thrown, URL is likely accessible
+    } catch {
+      // For no-cors mode, we can't actually check the response
+      // so we'll assume it's valid if the format is correct
+      return true
+    }
+  }
+
+  const uploadFile = async (file: File, folder: string): Promise<string> => {
+    const fileExt = file.name.split('.').pop()
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
+    const filePath = `${folder}/${fileName}`
+
+    const { data, error } = await supabase.storage
+      .from('application-documents')
+      .upload(filePath, file)
+
+    if (error) {
+      throw new Error(`Failed to upload ${folder}: ${error.message}`)
+    }
+
+    return filePath
+  }
+
   const handleApplicationSubmit = async (data: ApplicationFormData) => {
     setIsLoading(true)
     setError(null)
 
     try {
+      // Validate required files
+      if (!data.resumeFile?.[0] || !data.transcriptFile?.[0] || !data.consentFormFile?.[0]) {
+        setError("Please upload all required documents (resume, transcript, and signed consent form)")
+        return
+      }
+
+      // Validate file types
+      const resumeFile = data.resumeFile[0]
+      const transcriptFile = data.transcriptFile[0]
+      const consentFile = data.consentFormFile[0]
+
+      if (resumeFile.type !== 'application/pdf') {
+        setError("Resume must be a PDF file")
+        return
+      }
+      if (transcriptFile.type !== 'application/pdf') {
+        setError("Transcript must be a PDF file")
+        return
+      }
+      if (consentFile.type !== 'application/pdf') {
+        setError("Consent form must be a PDF file")
+        return
+      }
+
+      // Validate LinkedIn URL
+      const linkedinValid = await validateLinkedInUrl(data.linkedinUrl)
+      if (!linkedinValid) {
+        setError("Please provide a valid LinkedIn profile URL (e.g., https://www.linkedin.com/in/yourname)")
+        return
+      }
+
+      // Upload files
+      const resumePath = await uploadFile(resumeFile, 'resumes')
+      const transcriptPath = await uploadFile(transcriptFile, 'transcripts')
+      const consentPath = await uploadFile(consentFile, 'consent-forms')
+
       const { error } = await (supabase as any)
         .from('applications')
         .insert({
@@ -112,6 +201,16 @@ const Auth = () => {
           student_type: data.studentType,
           major: data.major,
           gpa: parseFloat(data.gpa),
+          graduation_year: parseInt(data.graduationYear),
+          linkedin_url: data.linkedinUrl,
+          first_generation_student: data.firstGenerationStudent,
+          pell_grant_eligible: data.pellGrantEligible,
+          currently_employed: data.currentlyEmployed,
+          current_position: data.currentlyEmployed ? data.currentPosition : null,
+          current_employer: data.currentlyEmployed ? data.currentEmployer : null,
+          resume_file_path: resumePath,
+          transcript_file_path: transcriptPath,
+          consent_form_file_path: consentPath,
           question_1: data.question1,
           question_2: data.question2,
           question_3: data.question3,
@@ -127,9 +226,10 @@ const Auth = () => {
           duration: 5000,
         })
         applicationForm.reset()
+        setCurrentlyEmployed(false)
       }
-    } catch (err) {
-      setError("An unexpected error occurred while submitting your application")
+    } catch (err: any) {
+      setError(err.message || "An unexpected error occurred while submitting your application")
     } finally {
       setIsLoading(false)
     }
@@ -308,6 +408,167 @@ const Auth = () => {
                           </SelectContent>
                         </Select>
                       </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="graduationYear">Expected Graduation Year *</Label>
+                        <Select onValueChange={(value) => applicationForm.setValue("graduationYear", value)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select graduation year" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {graduationYears.map((year) => (
+                              <SelectItem key={year} value={year}>
+                                {year}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="linkedinUrl">LinkedIn Profile URL *</Label>
+                      <Input
+                        id="linkedinUrl"
+                        type="url"
+                        placeholder="https://www.linkedin.com/in/yourname"
+                        {...applicationForm.register("linkedinUrl", { required: true })}
+                      />
+                      <p className="text-xs text-academy-grey">Please ensure your LinkedIn profile is public and accessible.</p>
+                    </div>
+                  </div>
+
+                  {/* Document Uploads */}
+                  <div className="space-y-4">
+                    <h3 className="text-xl font-semibold text-academy-blue">Required Documents</h3>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="resumeFile">Resume (PDF only) *</Label>
+                        <div className="relative">
+                          <Input
+                            id="resumeFile"
+                            type="file"
+                            accept=".pdf"
+                            {...applicationForm.register("resumeFile", { required: true })}
+                            className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-academy-blue file:text-white hover:file:bg-academy-blue-dark"
+                          />
+                          <Upload className="absolute right-3 top-3 h-4 w-4 text-academy-grey pointer-events-none" />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="transcriptFile">Unofficial Transcript (PDF only) *</Label>
+                        <div className="relative">
+                          <Input
+                            id="transcriptFile"
+                            type="file"
+                            accept=".pdf"
+                            {...applicationForm.register("transcriptFile", { required: true })}
+                            className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-academy-blue file:text-white hover:file:bg-academy-blue-dark"
+                          />
+                          <Upload className="absolute right-3 top-3 h-4 w-4 text-academy-grey pointer-events-none" />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="consentFormFile">Signed Consent Form (PDF only) *</Label>
+                      <div className="mb-2">
+                        <a 
+                          href="#" 
+                          className="text-academy-blue hover:text-academy-blue-dark underline inline-flex items-center gap-1"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          Download Consent Form <ExternalLink className="h-3 w-3" />
+                        </a>
+                        <p className="text-xs text-academy-grey mt-1">Please download, fill out, sign, and upload the consent form.</p>
+                      </div>
+                      <div className="relative">
+                        <Input
+                          id="consentFormFile"
+                          type="file"
+                          accept=".pdf"
+                          {...applicationForm.register("consentFormFile", { required: true })}
+                          className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-academy-blue file:text-white hover:file:bg-academy-blue-dark"
+                        />
+                        <Upload className="absolute right-3 top-3 h-4 w-4 text-academy-grey pointer-events-none" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Background Information */}
+                  <div className="space-y-4">
+                    <h3 className="text-xl font-semibold text-academy-blue">Background Information</h3>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Are you a first-generation college student? *</Label>
+                        <Select onValueChange={(value) => applicationForm.setValue("firstGenerationStudent", value === "true")}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select Yes or No" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="true">Yes</SelectItem>
+                            <SelectItem value="false">No</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <p className="text-xs text-academy-grey">First-generation means neither parent completed a 4-year college degree.</p>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Are you Pell Grant eligible? *</Label>
+                        <Select onValueChange={(value) => applicationForm.setValue("pellGrantEligible", value === "true")}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select Yes or No" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="true">Yes</SelectItem>
+                            <SelectItem value="false">No</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label>Are you currently employed? *</Label>
+                        <Select onValueChange={(value) => {
+                          const employed = value === "true"
+                          setCurrentlyEmployed(employed)
+                          applicationForm.setValue("currentlyEmployed", employed)
+                        }}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select Yes or No" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="true">Yes</SelectItem>
+                            <SelectItem value="false">No</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {currentlyEmployed && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 p-4 bg-academy-blue-light/10 rounded-lg border border-academy-blue/20">
+                          <div className="space-y-2">
+                            <Label htmlFor="currentPosition">Current Position *</Label>
+                            <Input
+                              id="currentPosition"
+                              placeholder="Your job title"
+                              {...applicationForm.register("currentPosition", { required: currentlyEmployed })}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="currentEmployer">Current Employer *</Label>
+                            <Input
+                              id="currentEmployer"
+                              placeholder="Company name"
+                              {...applicationForm.register("currentEmployer", { required: currentlyEmployed })}
+                            />
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
 
