@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { GraduationCap, Mail, Lock, User, AlertCircle, Upload, ExternalLink } from "lucide-react"
+import { GraduationCap, Mail, Lock, User, AlertCircle, FileUp, ExternalLink } from "lucide-react"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
 import uciaLogo from "@/assets/ucia-logo.png"
@@ -453,7 +453,7 @@ const Auth = () => {
                             {...applicationForm.register("resumeFile", { required: true })}
                             className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-academy-blue file:text-white hover:file:bg-academy-blue-dark"
                           />
-                          <Upload className="absolute right-3 top-3 h-4 w-4 text-academy-grey pointer-events-none" />
+                          <FileUp className="absolute right-3 top-3 h-4 w-4 text-academy-grey pointer-events-none" />
                         </div>
                       </div>
 
@@ -467,7 +467,7 @@ const Auth = () => {
                             {...applicationForm.register("transcriptFile", { required: true })}
                             className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-academy-blue file:text-white hover:file:bg-academy-blue-dark"
                           />
-                          <Upload className="absolute right-3 top-3 h-4 w-4 text-academy-grey pointer-events-none" />
+                          <FileUp className="absolute right-3 top-3 h-4 w-4 text-academy-grey pointer-events-none" />
                         </div>
                       </div>
                     </div>
@@ -493,7 +493,7 @@ const Auth = () => {
                           {...applicationForm.register("consentFormFile", { required: true })}
                           className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-academy-blue file:text-white hover:file:bg-academy-blue-dark"
                         />
-                        <Upload className="absolute right-3 top-3 h-4 w-4 text-academy-grey pointer-events-none" />
+                        <FileUp className="absolute right-3 top-3 h-4 w-4 text-academy-grey pointer-events-none" />
                       </div>
                     </div>
                   </div>
