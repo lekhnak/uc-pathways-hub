@@ -55,12 +55,12 @@ export default {
 					foreground: 'hsl(var(--card-foreground))'
 				},
 				academy: {
-					navy: 'hsl(var(--academy-navy))',
-					'navy-light': 'hsl(var(--academy-navy-light))',
-					'navy-dark': 'hsl(var(--academy-navy-dark))',
-					gold: 'hsl(var(--academy-gold))',
-					'gold-light': 'hsl(var(--academy-gold-light))',
-					'gold-dark': 'hsl(var(--academy-gold-dark))',
+					blue: 'hsl(var(--academy-blue))',
+					'blue-light': 'hsl(var(--academy-blue-light))',
+					'blue-dark': 'hsl(var(--academy-blue-dark))',
+					accent: 'hsl(var(--academy-accent))',
+					'accent-light': 'hsl(var(--academy-accent-light))',
+					'accent-dark': 'hsl(var(--academy-accent-dark))',
 					grey: 'hsl(var(--academy-grey))',
 					'grey-light': 'hsl(var(--academy-grey-light))',
 					white: 'hsl(var(--academy-white))'

@@ -153,7 +153,7 @@ const Auth = () => {
 
         <Card className="bg-white/95 backdrop-blur-sm shadow-hero border-0">
           <CardHeader className="text-center pb-4">
-            <CardTitle className="text-3xl text-academy-navy">Welcome</CardTitle>
+            <CardTitle className="text-3xl text-academy-blue">Welcome</CardTitle>
             <CardDescription className="text-lg">Access your account or apply to join the Academy</CardDescription>
           </CardHeader>
           
@@ -203,7 +203,7 @@ const Auth = () => {
 
                   <Button 
                     type="submit" 
-                    className="w-full bg-academy-navy hover:bg-academy-navy-dark text-white"
+                    className="w-full bg-academy-blue hover:bg-academy-blue-dark text-white"
                     disabled={isLoading}
                   >
                     {isLoading ? "Signing in..." : "Sign In"}
@@ -215,7 +215,7 @@ const Auth = () => {
                 <form onSubmit={applicationForm.handleSubmit(handleApplicationSubmit)} className="space-y-6">
                   {/* Personal Information */}
                   <div className="space-y-4">
-                    <h3 className="text-xl font-semibold text-academy-navy">Personal Information</h3>
+                    <h3 className="text-xl font-semibold text-academy-blue">Personal Information</h3>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
@@ -250,7 +250,7 @@ const Auth = () => {
 
                   {/* Academic Information */}
                   <div className="space-y-4">
-                    <h3 className="text-xl font-semibold text-academy-navy">Academic Information</h3>
+                    <h3 className="text-xl font-semibold text-academy-blue">Academic Information</h3>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
@@ -313,7 +313,7 @@ const Auth = () => {
 
                   {/* Essay Questions */}
                   <div className="space-y-4">
-                    <h3 className="text-xl font-semibold text-academy-navy">Essay Questions</h3>
+                    <h3 className="text-xl font-semibold text-academy-blue">Essay Questions</h3>
                     <p className="text-sm text-academy-grey">Please answer the following questions thoughtfully. Each response should be 200-500 words.</p>
                     
                     <div className="space-y-2">
@@ -359,14 +359,14 @@ const Auth = () => {
 
                   <Button 
                     type="submit" 
-                    className="w-full bg-academy-gold hover:bg-academy-gold-dark text-academy-navy font-semibold py-3 text-lg"
+                    className="w-full bg-academy-accent hover:bg-academy-accent-dark text-white font-semibold py-3 text-lg"
                     disabled={isLoading}
                   >
                     {isLoading ? "Submitting Application..." : "Submit Application"}
                   </Button>
 
-                  <div className="mt-6 p-4 bg-academy-navy-light/10 rounded-lg border border-academy-navy/20">
-                    <p className="text-sm text-academy-navy text-center">
+                  <div className="mt-6 p-4 bg-academy-blue-light/10 rounded-lg border border-academy-blue/20">
+                    <p className="text-sm text-academy-blue text-center">
                       <GraduationCap className="inline h-4 w-4 mr-2" />
                       After submitting your application, our admissions team will review it and contact you within 5-7 business days regarding the next steps.
                     </p>

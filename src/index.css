@@ -18,11 +18,11 @@
     --popover: 0 0% 100%;
     --popover-foreground: 220 13% 18%;
     
-    /* Primary Brand Colors - UC Berkeley Navy */
-    --primary: 212 100% 19%;
+    /* Primary Brand Colors - Custom Blue */
+    --primary: 197 87% 45%;
     --primary-foreground: 0 0% 100%;
-    --primary-light: 212 100% 30%;
-    --primary-dark: 212 100% 15%;
+    --primary-light: 197 87% 55%;
+    --primary-dark: 197 87% 35%;
     
     /* Secondary Colors - Light Blue/Grey */
     --secondary: 210 20% 96%;
@@ -45,26 +45,26 @@
     --input: 220 13% 91%;
     --ring: 221 83% 53%;
     
-    /* Custom Academy Colors - UC Berkeley Navy & Gold */
-    --academy-navy: 212 100% 19%;
-    --academy-navy-light: 212 100% 30%;
-    --academy-navy-dark: 212 100% 15%;
-    --academy-gold: 43 98% 54%;
-    --academy-gold-light: 43 98% 65%;
-    --academy-gold-dark: 43 98% 45%;
+    /* Custom Academy Colors - New Blue Theme */
+    --academy-blue: 197 87% 45%;
+    --academy-blue-light: 197 87% 55%;
+    --academy-blue-dark: 197 87% 35%;
+    --academy-accent: 197 87% 65%;
+    --academy-accent-light: 197 87% 75%;
+    --academy-accent-dark: 197 87% 55%;
     --academy-grey: 220 9% 46%;
     --academy-grey-light: 210 20% 96%;
     --academy-white: 0 0% 100%;
     
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--academy-navy)) 0%, hsl(var(--academy-gold)) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(var(--academy-blue)) 0%, hsl(var(--academy-blue-light)) 100%);
     --gradient-subtle: linear-gradient(180deg, hsl(var(--academy-white)) 0%, hsl(var(--academy-grey-light)) 100%);
-    --gradient-hero: linear-gradient(135deg, hsl(var(--academy-navy-dark)) 0%, hsl(var(--academy-navy)) 50%, hsl(var(--academy-gold)) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(var(--academy-blue-dark)) 0%, hsl(var(--academy-blue)) 50%, hsl(var(--academy-accent)) 100%);
     
     /* Shadows */
-    --shadow-card: 0 4px 6px -1px hsl(var(--academy-navy) / 0.1), 0 2px 4px -1px hsl(var(--academy-navy) / 0.06);
-    --shadow-elevated: 0 10px 15px -3px hsl(var(--academy-navy) / 0.1), 0 4px 6px -2px hsl(var(--academy-navy) / 0.05);
-    --shadow-hero: 0 20px 25px -5px hsl(var(--academy-navy) / 0.15), 0 10px 10px -5px hsl(var(--academy-navy) / 0.1);
+    --shadow-card: 0 4px 6px -1px hsl(var(--academy-blue) / 0.1), 0 2px 4px -1px hsl(var(--academy-blue) / 0.06);
+    --shadow-elevated: 0 10px 15px -3px hsl(var(--academy-blue) / 0.1), 0 4px 6px -2px hsl(var(--academy-blue) / 0.05);
+    --shadow-hero: 0 20px 25px -5px hsl(var(--academy-blue) / 0.15), 0 10px 10px -5px hsl(var(--academy-blue) / 0.1);
 
     --radius: 0.5rem;
 
