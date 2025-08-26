@@ -82,6 +82,20 @@ const Calendar = () => {
       attendees: 45,
       capacity: 50,
       status: "filling-fast"
+    },
+    {
+      id: 7,
+      title: "Private Credit Teach-In",
+      speaker: "Industry Experts",
+      date: "September 4, 2025",
+      time: "2:00 PM - 3:30 PM PST",
+      type: "Webinar",
+      location: "Virtual",
+      description: "Virtual teach-in on private credit, aimed at students and those early in their careers. Walk through different segments of private credit, with a focus on the biggest areas, direct lending and asset-based finance. There will be plenty of time for Q&A. The teach-in should help anyone who is looking to understand this area more in detail.",
+      attendees: 0,
+      capacity: 200,
+      status: "upcoming",
+      registrationUrl: "https://www.surveymonkey.com/r/3YHHGVC"
     }
   ]
 
@@ -252,6 +266,11 @@ const Calendar = () => {
                 <Button 
                   className="flex-1 bg-academy-blue hover:bg-academy-blue-dark"
                   disabled={event.status === 'full'}
+                  onClick={() => {
+                    if (event.registrationUrl) {
+                      window.open(event.registrationUrl, '_blank');
+                    }
+                  }}
                 >
                   {event.status === 'full' ? 'Event Full' : 'Register Now'}
                 </Button>
