@@ -1,11 +1,15 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
-import { BookOpen, Award, Calendar, Users, TrendingUp, Play, MessageCircle } from "lucide-react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { BookOpen, Award, Calendar, Users, TrendingUp, Play, MessageCircle, Lightbulb, X } from "lucide-react"
 import { NavLink } from "react-router-dom"
+import { useState } from "react"
 import heroImage from "@/assets/ucia-hero.jpg"
 
 const Index = () => {
+  const [isInfoDialogOpen, setIsInfoDialogOpen] = useState(false);
+
   return (
     <div className="space-y-8">
       {/* Hero Section */}
@@ -24,10 +28,62 @@ const Index = () => {
               alt="University of California Logo" 
               className="h-20 w-20 object-contain bg-white rounded-lg p-2"
             />
-            <div>
-              <h1 className="text-4xl md:text-5xl font-bold mb-2">
-                UC Investments Academy
-              </h1>
+            <div className="flex-1">
+              <div className="flex items-center justify-between">
+                <h1 className="text-4xl md:text-5xl font-bold mb-2">
+                  UC Investments Academy
+                </h1>
+                <Dialog open={isInfoDialogOpen} onOpenChange={setIsInfoDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-white hover:bg-white/10 hover:text-white ml-4"
+                    >
+                      <Lightbulb className="h-6 w-6" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl bg-white">
+                    <DialogHeader>
+                      <DialogTitle className="text-2xl text-academy-blue mb-4">
+                        Welcome to UC Investments Academy!
+                      </DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-6">
+                      <div>
+                        <h3 className="text-lg font-semibold text-academy-blue mb-3">
+                          Learn more about us!
+                        </h3>
+                        <p className="text-academy-grey leading-relaxed mb-4">
+                          UC Investments Academy is a program by UC Investments to help students explore a possible career in finance. This program is completely free to students and includes the very same training that recent college graduates starting their careers at investment firms have undergone before embarking on successful careers managing money for others.
+                        </p>
+                        <p className="text-academy-grey leading-relaxed">
+                          UC Investments (The Office of the Chief Investment Officer of the Regents) manages a portfolio of investments totaling approximately $190 billion, which includes retirement, endowment, and cash assets.
+                        </p>
+                      </div>
+                      <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                        <Button 
+                          className="flex-1 bg-academy-blue hover:bg-academy-blue-dark"
+                          asChild
+                        >
+                          <NavLink to="/chat">
+                            <Users className="mr-2 h-4 w-4" />
+                            Chat with UCOP Professionals
+                          </NavLink>
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          className="flex-1 border-academy-grey text-academy-grey hover:bg-academy-grey-light"
+                          onClick={() => setIsInfoDialogOpen(false)}
+                        >
+                          <X className="mr-2 h-4 w-4" />
+                          Close Popup
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
               <p className="text-lg text-white/90">
                 University of California
               </p>
