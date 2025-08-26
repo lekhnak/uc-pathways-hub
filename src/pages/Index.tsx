@@ -18,11 +18,23 @@ const Index = () => {
           />
         </div>
         <div className="relative p-8 md:p-12 text-white">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Welcome to UC Investment Academy
-          </h1>
-          <p className="text-xl mb-8 text-white/90 max-w-2xl">
-            Master the world of investment banking, private equity, and finance through our comprehensive curriculum and expert mentorship.
+          <div className="flex items-center gap-6 mb-6">
+            <img 
+              src="/lovable-uploads/11121176-120b-4173-8562-293c5b5a5179.png" 
+              alt="University of California Logo" 
+              className="h-20 w-20 object-contain bg-white rounded-lg p-2"
+            />
+            <div>
+              <h1 className="text-4xl md:text-5xl font-bold mb-2">
+                UC Investments Academy
+              </h1>
+              <p className="text-lg text-white/90">
+                University of California
+              </p>
+            </div>
+          </div>
+          <p className="text-xl mb-8 text-white/90 max-w-3xl">
+            The UC Investments Academy educates, motivates and professionally trains students for careers in investing and finance, at no cost. Students gain practical, career-relevant training that mirrors what entry-level professionals would receive at a top investment firm.
           </p>
           <div className="flex flex-wrap gap-4">
             <Button size="lg" variant="secondary" asChild>

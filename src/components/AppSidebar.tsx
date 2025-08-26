@@ -54,7 +54,7 @@ export function AppSidebar() {
 
   const isActive = (path: string) => currentPath === path
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
-    isActive ? "bg-academy-blue text-white font-medium" : "hover:bg-academy-grey-light text-academy-grey hover:text-academy-blue"
+    isActive ? "bg-academy-blue text-white font-medium" : "text-academy-grey hover:bg-academy-grey-light hover:text-academy-blue"
 
   return (
     <Sidebar
@@ -64,13 +64,17 @@ export function AppSidebar() {
         {/* Academy Header */}
         <div className="p-6 border-b border-academy-grey-light">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
-              <GraduationCap className="h-6 w-6 text-white" />
+            <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center border border-academy-grey-light">
+              <img 
+                src="/lovable-uploads/11121176-120b-4173-8562-293c5b5a5179.png" 
+                alt="UC Logo" 
+                className="h-8 w-8 object-contain"
+              />
             </div>
             {!isCollapsed && (
               <div>
-                <h2 className="font-bold text-academy-blue">UC Investment</h2>
-                <p className="text-sm text-academy-grey">Academy</p>
+                <h2 className="font-bold text-academy-blue text-sm">UC Investments</h2>
+                <p className="text-xs text-academy-grey">Academy</p>
               </div>
             )}
           </div>
@@ -78,15 +82,21 @@ export function AppSidebar() {
 
         {/* Main Navigation */}
         <SidebarGroup>
-          <SidebarGroupLabel className="text-academy-grey font-semibold">
+          <SidebarGroupLabel className="text-academy-grey font-semibold px-3 py-2">
             Learning
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-1">
               {mainItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                  <NavLink to={item.url} end className={getNavCls}>
+                  <SidebarMenuButton asChild className="w-full">
+                    <NavLink to={item.url} end className={({ isActive }) => 
+                      `flex items-center gap-3 px-3 py-2 rounded-lg transition-colors w-full ${
+                        isActive 
+                          ? "bg-academy-blue text-white font-medium" 
+                          : "text-academy-grey hover:bg-academy-grey-light hover:text-academy-blue"
+                      }`
+                    }>
                       <item.icon className="h-5 w-5" />
                       {!isCollapsed && <span>{item.title}</span>}
                     </NavLink>
@@ -99,15 +109,21 @@ export function AppSidebar() {
 
         {/* Community Features */}
         <SidebarGroup>
-          <SidebarGroupLabel className="text-academy-grey font-semibold">
+          <SidebarGroupLabel className="text-academy-grey font-semibold px-3 py-2">
             Community
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-1">
               {communityItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink to={item.url} className={getNavCls}>
+                  <SidebarMenuButton asChild className="w-full">
+                    <NavLink to={item.url} className={({ isActive }) => 
+                      `flex items-center gap-3 px-3 py-2 rounded-lg transition-colors w-full ${
+                        isActive 
+                          ? "bg-academy-blue text-white font-medium" 
+                          : "text-academy-grey hover:bg-academy-grey-light hover:text-academy-blue"
+                      }`
+                    }>
                       <item.icon className="h-5 w-5" />
                       {!isCollapsed && <span>{item.title}</span>}
                     </NavLink>
@@ -120,15 +136,21 @@ export function AppSidebar() {
 
         {/* Profile */}
         <SidebarGroup>
-          <SidebarGroupLabel className="text-academy-grey font-semibold">
+          <SidebarGroupLabel className="text-academy-grey font-semibold px-3 py-2">
             Account
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-1">
               {profileItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink to={item.url} className={getNavCls}>
+                  <SidebarMenuButton asChild className="w-full">
+                    <NavLink to={item.url} className={({ isActive }) => 
+                      `flex items-center gap-3 px-3 py-2 rounded-lg transition-colors w-full ${
+                        isActive 
+                          ? "bg-academy-blue text-white font-medium" 
+                          : "text-academy-grey hover:bg-academy-grey-light hover:text-academy-blue"
+                      }`
+                    }>
                       <item.icon className="h-5 w-5" />
                       {!isCollapsed && <span>{item.title}</span>}
                     </NavLink>

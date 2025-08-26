@@ -46,8 +46,13 @@ export default function Layout({ children }: LayoutProps) {
           {/* Top Header */}
           <header className="h-16 bg-white border-b border-academy-grey-light flex items-center px-6 shadow-card">
             <SidebarTrigger className="mr-4 text-academy-blue hover:bg-academy-grey-light" />
-            <div className="flex-1">
-              <h1 className="text-xl font-semibold text-academy-blue">UC Investment Academy</h1>
+            <div className="flex-1 flex items-center gap-3">
+              <img 
+                src="/lovable-uploads/11121176-120b-4173-8562-293c5b5a5179.png" 
+                alt="UC Logo" 
+                className="h-8 w-8 object-contain"
+              />
+              <h1 className="text-xl font-semibold text-academy-blue">UC Investments Academy</h1>
             </div>
             <div className="flex items-center gap-4">
               <span className="text-sm text-academy-grey">

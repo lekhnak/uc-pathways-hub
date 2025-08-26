@@ -103,9 +103,13 @@ const Auth = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-card">
-            <GraduationCap className="h-8 w-8 text-academy-blue" />
+            <img 
+              src="/lovable-uploads/11121176-120b-4173-8562-293c5b5a5179.png" 
+              alt="UC Logo" 
+              className="h-10 w-10 object-contain"
+            />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">UC Investment Academy</h1>
+          <h1 className="text-3xl font-bold text-white mb-2">UC Investments Academy</h1>
           <p className="text-white/80">Access your learning dashboard</p>
         </div>
 
