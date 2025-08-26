@@ -27,7 +27,7 @@ const Certifications = () => {
       difficulty: "Beginner",
       skills: ["Excel Modeling", "Company Valuation", "Market Research"],
       description: "Learn the fundamentals of investment banking at JPMorgan Chase",
-      status: "completed",
+      status: "available",
       participants: "75,000+",
       rating: 4.7,
       link: "https://www.theforage.com/simulations/jpmorgan/investment-banking-hkyd"
@@ -58,6 +58,19 @@ const Certifications = () => {
       participants: "40,000+",
       rating: 4.6,
       link: "https://www.theforage.com/simulations/kpmg/data-analytics-virtual-experience-6y9g"
+    },
+    {
+      id: 5,
+      title: "Vista Equity Partners Demystifying Private Equity",
+      provider: "Forage",
+      duration: "2-3 hours",
+      difficulty: "Intermediate",
+      skills: ["Deal Evaluation", "Financial Analysis", "Investment Insights"],
+      description: "Step into the role of a PE analyst and learn how to evaluate deals, analyze financials, and communicate investment insights.",
+      status: "available",
+      participants: "400+",
+      rating: 5.0,
+      link: "https://www.theforage.com/simulations/vista-equity-partners/demystifying-private-equity-xzrs"
     }
   ]
 
