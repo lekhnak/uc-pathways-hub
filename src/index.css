@@ -2,39 +2,66 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* UC Investment Academy Design System - Professional Blue, White, Grey */
 
 @layer base {
   :root {
+    /* Core Background Colors */
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-
+    --foreground: 220 13% 18%;
+    
+    /* Card and Surface Colors */
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-
+    --card-foreground: 220 13% 18%;
+    
+    /* Popover Colors */
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --popover-foreground: 220 13% 18%;
+    
+    /* Primary Brand Colors - Professional Blue */
+    --primary: 221 83% 53%;
+    --primary-foreground: 0 0% 100%;
+    --primary-light: 221 83% 65%;
+    --primary-dark: 221 83% 45%;
+    
+    /* Secondary Colors - Light Blue/Grey */
+    --secondary: 210 20% 96%;
+    --secondary-foreground: 220 13% 18%;
+    
+    /* Muted Colors - Professional Grey */
+    --muted: 210 20% 96%;
+    --muted-foreground: 220 9% 46%;
+    
+    /* Accent Colors */
+    --accent: 210 20% 96%;
+    --accent-foreground: 220 13% 18%;
+    
+    /* Destructive Colors */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    
+    /* Border and Input Colors */
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 221 83% 53%;
+    
+    /* Custom Academy Colors */
+    --academy-blue: 221 83% 53%;
+    --academy-blue-light: 221 83% 65%;
+    --academy-blue-dark: 221 83% 45%;
+    --academy-grey: 220 9% 46%;
+    --academy-grey-light: 210 20% 96%;
+    --academy-white: 0 0% 100%;
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--academy-blue)) 0%, hsl(var(--academy-blue-light)) 100%);
+    --gradient-subtle: linear-gradient(180deg, hsl(var(--academy-white)) 0%, hsl(var(--academy-grey-light)) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(var(--academy-blue-dark)) 0%, hsl(var(--academy-blue)) 50%, hsl(var(--academy-blue-light)) 100%);
+    
+    /* Shadows */
+    --shadow-card: 0 4px 6px -1px hsl(var(--academy-blue) / 0.1), 0 2px 4px -1px hsl(var(--academy-blue) / 0.06);
+    --shadow-elevated: 0 10px 15px -3px hsl(var(--academy-blue) / 0.1), 0 4px 6px -2px hsl(var(--academy-blue) / 0.05);
+    --shadow-hero: 0 20px 25px -5px hsl(var(--academy-blue) / 0.15), 0 10px 10px -5px hsl(var(--academy-blue) / 0.1);
 
     --radius: 0.5rem;
 
