@@ -125,9 +125,9 @@ const Chat = () => {
   const selectedFellow = fellows.find(f => f.id === selectedChat)
 
   return (
-    <div className="space-y-8">
+    <div className="flex flex-col min-h-[calc(100vh-2rem)]">
       {/* Header */}
-      <div>
+      <div className="mb-6">
         <h1 className="text-3xl font-bold mb-4 text-academy-blue">Chat with UC IA Fellows</h1>
         <p className="text-academy-grey text-lg">
           Connect directly with current and former UC Investment Academy fellows for peer-to-peer learning and support.
@@ -135,7 +135,7 @@ const Chat = () => {
       </div>
 
       {/* Chat Interface */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[600px]">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-[500px]">
         {/* Contacts Sidebar */}
         <Card className="bg-white shadow-card border-academy-grey-light">
           <CardHeader className="pb-3">
