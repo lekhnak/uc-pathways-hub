@@ -34,6 +34,9 @@ interface ApplicationFormData {
   currentlyEmployed: boolean
   currentPosition?: string
   currentEmployer?: string
+  racialIdentity?: string
+  genderIdentity?: string
+  sexualOrientation?: string
   question1: string
   question2: string
   question3: string
@@ -114,6 +117,32 @@ const Auth = () => {
     }
   }
 
+  const validateUCEmail = (email: string): boolean => {
+    if (!email) return false
+    
+    // Check if email ends with .edu
+    if (!email.endsWith('.edu')) {
+      return false
+    }
+    
+    // UC campus domains
+    const ucDomains = [
+      'berkeley.edu',
+      'ucla.edu', 
+      'ucsd.edu',
+      'ucsf.edu',
+      'ucsb.edu',
+      'uci.edu',
+      'ucdavis.edu',
+      'ucsc.edu',
+      'ucr.edu',
+      'ucmerced.edu'
+    ]
+    
+    // Check if email is from a UC campus
+    return ucDomains.some(domain => email.endsWith(`@${domain}`) || email.includes(`@student.${domain}`) || email.includes(`@mail.${domain}`))
+  }
+
   const validateLinkedInUrl = async (url: string): Promise<boolean> => {
     if (!url) return false
     
@@ -161,6 +190,12 @@ const Auth = () => {
         return
       }
 
+      // Validate UC email
+      if (!validateUCEmail(data.email)) {
+        setError("Please use a valid UC campus student email address (.edu domain)")
+        return
+      }
+
       // Validate file types
       const resumeFile = data.resumeFile[0]
       const transcriptFile = data.transcriptFile[0]
@@ -191,7 +226,7 @@ const Auth = () => {
       const transcriptPath = await uploadFile(transcriptFile, 'transcripts')
       const consentPath = await uploadFile(consentFile, 'consent-forms')
 
-      const { error } = await (supabase as any)
+      const { data: insertData, error } = await (supabase as any)
         .from('applications')
         .insert({
           first_name: data.firstName,
@@ -208,6 +243,9 @@ const Auth = () => {
           currently_employed: data.currentlyEmployed,
           current_position: data.currentlyEmployed ? data.currentPosition : null,
           current_employer: data.currentlyEmployed ? data.currentEmployer : null,
+          racial_identity: data.racialIdentity || null,
+          gender_identity: data.genderIdentity || null,
+          sexual_orientation: data.sexualOrientation || null,
           resume_file_path: resumePath,
           transcript_file_path: transcriptPath,
           consent_form_file_path: consentPath,
@@ -216,18 +254,37 @@ const Auth = () => {
           question_3: data.question3,
           question_4: data.question4,
         })
+        .select()
 
       if (error) {
         setError(error.message)
-      } else {
-        toast({
-          title: "Application Submitted!",
-          description: "Your application has been submitted for review. You will receive an email once your application is processed.",
-          duration: 5000,
-        })
-        applicationForm.reset()
-        setCurrentlyEmployed(false)
+        return
       }
+
+      // Send confirmation email
+      try {
+        await supabase.functions.invoke('send-application-confirmation', {
+          body: {
+            firstName: data.firstName,
+            lastName: data.lastName,
+            email: data.email,
+            ucCampus: data.ucCampus,
+            applicationId: insertData[0].id
+          }
+        })
+        console.log('Confirmation email sent successfully')
+      } catch (emailError) {
+        console.error('Failed to send confirmation email:', emailError)
+        // Don't fail the application submission if email fails
+      }
+
+      toast({
+        title: "Application Submitted!",
+        description: "Your application has been submitted for review. You will receive a confirmation email shortly.",
+        duration: 5000,
+      })
+      applicationForm.reset()
+      setCurrentlyEmployed(false)
     } catch (err: any) {
       setError(err.message || "An unexpected error occurred while submitting your application")
     } finally {
@@ -338,13 +395,14 @@ const Auth = () => {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="email">Email *</Label>
+                      <Label htmlFor="email">UC Student Email *</Label>
                       <Input
                         id="email"
                         type="email"
-                        placeholder="Enter your email address"
+                        placeholder="Enter your UC student email (.edu)"
                         {...applicationForm.register("email", { required: true })}
                       />
+                      <p className="text-xs text-academy-grey">Must be a valid UC campus student email address ending in .edu</p>
                     </div>
                   </div>
 
@@ -569,6 +627,45 @@ const Auth = () => {
                           </div>
                         </div>
                       )}
+                    </div>
+
+                    {/* Optional Demographic Information */}
+                    <div className="space-y-4 p-4 bg-academy-blue-light/5 rounded-lg border border-academy-blue/15">
+                      <div className="mb-3">
+                        <h4 className="text-lg font-medium text-academy-blue">Optional Demographic Information</h4>
+                        <p className="text-sm text-academy-grey mt-1">
+                          The following fields are optional and help us understand our applicant diversity. You may skip any or all of these questions.
+                        </p>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="racialIdentity">Racial Identity (Optional)</Label>
+                          <Input
+                            id="racialIdentity"
+                            placeholder="e.g., Asian, Black/African American, Hispanic/Latino, White, etc."
+                            {...applicationForm.register("racialIdentity")}
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="genderIdentity">Gender Identity (Optional)</Label>
+                          <Input
+                            id="genderIdentity"
+                            placeholder="e.g., Woman, Man, Non-binary, etc."
+                            {...applicationForm.register("genderIdentity")}
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="sexualOrientation">Sexual Orientation (Optional)</Label>
+                          <Input
+                            id="sexualOrientation"
+                            placeholder="e.g., Straight, Gay, Lesbian, Bisexual, etc."
+                            {...applicationForm.register("sexualOrientation")}
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
 

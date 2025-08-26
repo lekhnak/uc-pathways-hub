@@ -24,6 +24,7 @@ export type Database = {
           email: string
           first_generation_student: boolean | null
           first_name: string
+          gender_identity: string | null
           gpa: number
           graduation_year: number | null
           id: string
@@ -35,9 +36,11 @@ export type Database = {
           question_2: string
           question_3: string
           question_4: string
+          racial_identity: string | null
           resume_file_path: string | null
           reviewed_at: string | null
           reviewed_by: string | null
+          sexual_orientation: string | null
           status: string
           student_type: string
           submitted_at: string
@@ -54,6 +57,7 @@ export type Database = {
           email: string
           first_generation_student?: boolean | null
           first_name: string
+          gender_identity?: string | null
           gpa: number
           graduation_year?: number | null
           id?: string
@@ -65,9 +69,11 @@ export type Database = {
           question_2: string
           question_3: string
           question_4: string
+          racial_identity?: string | null
           resume_file_path?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          sexual_orientation?: string | null
           status?: string
           student_type: string
           submitted_at?: string
@@ -84,6 +90,7 @@ export type Database = {
           email?: string
           first_generation_student?: boolean | null
           first_name?: string
+          gender_identity?: string | null
           gpa?: number
           graduation_year?: number | null
           id?: string
@@ -95,9 +102,11 @@ export type Database = {
           question_2?: string
           question_3?: string
           question_4?: string
+          racial_identity?: string | null
           resume_file_path?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          sexual_orientation?: string | null
           status?: string
           student_type?: string
           submitted_at?: string
