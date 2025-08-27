@@ -5,42 +5,213 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Progress } from "@/components/ui/progress"
-import { User, Mail, MapPin, GraduationCap, Briefcase, Edit, Save, Award, TrendingUp, Calendar } from "lucide-react"
-import { useState } from "react"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { User, Mail, MapPin, GraduationCap, Briefcase, Edit, Save, Award, TrendingUp, Calendar, Plus, X } from "lucide-react"
+import { useState, useEffect } from "react"
+import { useAuth } from "@/hooks/useAuth"
+import { supabase } from "@/integrations/supabase/client"
+import { useToast } from "@/hooks/use-toast"
 
 const Profile = () => {
+  const { user } = useAuth()
+  const { toast } = useToast()
   const [isEditing, setIsEditing] = useState(false)
+  const [isEditingInterests, setIsEditingInterests] = useState(false)
+  const [isManagingCompanies, setIsManagingCompanies] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  
+  // Profile data state
+  const [profileData, setProfileData] = useState<{
+    first_name: string
+    last_name: string
+    email: string
+    phone: string
+    location: string
+    major: string
+    graduation_year: number | null
+    gpa: number | null
+    uc_campus: string
+    bio: string
+    linkedin_url: string
+    github_url: string
+    career_interests: string[]
+    target_companies: Array<{
+      name: string
+      location: string
+      priority: string
+    }>
+  }>({
+    first_name: '',
+    last_name: '',
+    email: '',
+    phone: '',
+    location: '',
+    major: '',
+    graduation_year: null,
+    gpa: null,
+    uc_campus: '',
+    bio: '',
+    linkedin_url: '',
+    github_url: '',
+    career_interests: [],
+    target_companies: []
+  })
 
-  const profileData = {
-    name: "John Doe",
-    email: "john.doe@university.edu",
-    phone: "+1 (555) 123-4567",
-    location: "Berkeley, CA",
-    university: "UC Berkeley",
-    major: "Economics & Business Administration",
-    graduationYear: "2025",
-    gpa: "3.85",
-    bio: "Passionate finance student with strong analytical skills and internship experience in investment research. Seeking opportunities in investment banking and private equity.",
-    linkedin: "linkedin.com/in/johndoe",
-    github: "github.com/johndoe"
+  // Available career interests
+  const availableInterests = [
+    // Corporate Finance
+    'Corporate Finance', 'Investment Banking', 'Financial Planning & Analysis (FP&A)', 
+    'Treasury Management', 'Corporate Development', 'Mergers & Acquisitions',
+    
+    // Investment Management
+    'Portfolio Management', 'Research Analysis', 'Private Equity', 
+    'Venture Capital', 'Hedge Funds', 'Asset Management',
+    
+    // Banking
+    'Commercial Banking', 'Credit Analysis', 'Relationship Management', 'Loan Underwriting',
+    
+    // Financial Planning & Advisory
+    'Wealth Management', 'Financial Planning', 'Investment Advisory', 'Retirement Planning',
+    
+    // Risk Management
+    'Credit Risk', 'Market Risk', 'Operational Risk', 'Compliance', 'Regulatory Affairs',
+    
+    // Insurance
+    'Underwriting', 'Claims Management', 'Actuarial Science', 'Insurance Sales',
+    
+    // Real Estate Finance
+    'Commercial Real Estate', 'Mortgage Banking', 'REITs', 'Property Valuation',
+    
+    // Fintech
+    'Digital Banking', 'Payment Systems', 'Cryptocurrency', 'Financial Technology',
+    
+    // Government Finance
+    'Public Finance', 'Municipal Finance', 'Central Banking', 'Financial Regulation'
+  ]
+
+  // Fetch profile data
+  useEffect(() => {
+    if (user) {
+      fetchProfile()
+    }
+  }, [user])
+
+  const fetchProfile = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', user?.id)
+        .single()
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error fetching profile:', error)
+        return
+      }
+
+      if (data) {
+        setProfileData({
+          first_name: data.first_name || '',
+          last_name: data.last_name || '',
+          email: user?.email || '',
+          phone: data.phone || '',
+          location: data.location || '',
+          major: data.major || '',
+          graduation_year: data.graduation_year,
+          gpa: data.gpa,
+          uc_campus: data.uc_campus || '',
+          bio: data.bio || '',
+          linkedin_url: data.linkedin_url || '',
+          github_url: data.github_url || '',
+          career_interests: Array.isArray(data.career_interests) ? data.career_interests : [],
+          target_companies: Array.isArray(data.target_companies) 
+            ? (data.target_companies as Array<{name: string, location: string, priority: string}>)
+            : []
+        })
+      }
+    } catch (error) {
+      console.error('Error fetching profile:', error)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const interests = [
-    "Investment Banking",
-    "Private Equity", 
-    "Mergers & Acquisitions",
-    "Financial Modeling",
-    "Equity Research",
-    "Credit Analysis"
-  ]
+  const saveProfile = async () => {
+    if (!user) return
 
-  const targetCompanies = [
-    { name: "Goldman Sachs", interest: "Investment Banking", priority: "High" },
-    { name: "KKR & Co.", interest: "Private Equity", priority: "High" },
-    { name: "J.P. Morgan", interest: "Investment Banking", priority: "Medium" },
-    { name: "BlackRock", interest: "Asset Management", priority: "Medium" },
-    { name: "Apollo Global", interest: "Credit", priority: "Low" }
-  ]
+    setSaving(true)
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .upsert({
+          user_id: user.id,
+          first_name: profileData.first_name,
+          last_name: profileData.last_name,
+          phone: profileData.phone,
+          location: profileData.location,
+          major: profileData.major,
+          graduation_year: profileData.graduation_year,
+          gpa: profileData.gpa,
+          uc_campus: profileData.uc_campus,
+          bio: profileData.bio,
+          linkedin_url: profileData.linkedin_url,
+          github_url: profileData.github_url,
+          career_interests: profileData.career_interests,
+          target_companies: profileData.target_companies
+        })
+
+      if (error) throw error
+
+      toast({
+        title: "Profile updated",
+        description: "Your profile has been successfully updated.",
+      })
+      setIsEditing(false)
+      setIsEditingInterests(false)
+      setIsManagingCompanies(false)
+    } catch (error) {
+      console.error('Error saving profile:', error)
+      toast({
+        title: "Error",
+        description: "Failed to update profile. Please try again.",
+        variant: "destructive"
+      })
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const toggleInterest = (interest: string) => {
+    const newInterests = profileData.career_interests.includes(interest)
+      ? profileData.career_interests.filter(i => i !== interest)
+      : [...profileData.career_interests, interest]
+    
+    setProfileData(prev => ({ ...prev, career_interests: newInterests }))
+  }
+
+  const addTargetCompany = () => {
+    if (profileData.target_companies.length < 5) {
+      const newCompanies = [...profileData.target_companies, {
+        name: '',
+        location: '',
+        priority: 'Medium'
+      }]
+      setProfileData(prev => ({ ...prev, target_companies: newCompanies }))
+    }
+  }
+
+  const updateTargetCompany = (index: number, field: string, value: string) => {
+    const newCompanies = [...profileData.target_companies]
+    newCompanies[index] = { ...newCompanies[index], [field]: value }
+    setProfileData(prev => ({ ...prev, target_companies: newCompanies }))
+  }
+
+  const removeTargetCompany = (index: number) => {
+    const newCompanies = profileData.target_companies.filter((_, i) => i !== index)
+    setProfileData(prev => ({ ...prev, target_companies: newCompanies }))
+  }
 
   const achievements = [
     {
@@ -77,6 +248,10 @@ const Profile = () => {
       case 'Low': return 'bg-green-100 text-green-800'
       default: return 'bg-academy-grey-light text-academy-grey'
     }
+  }
+
+  if (loading) {
+    return <div className="flex items-center justify-center h-64">Loading...</div>
   }
 
   return (
@@ -125,40 +300,58 @@ const Profile = () => {
               <div className="flex items-start gap-6">
                 <Avatar className="h-24 w-24">
                   <AvatarImage src="/api/placeholder/100/100" />
-                  <AvatarFallback className="text-xl">JD</AvatarFallback>
+                  <AvatarFallback className="text-xl">
+                    {profileData.first_name[0]}{profileData.last_name[0]}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-academy-blue mb-1">Full Name</label>
+                      <label className="block text-sm font-medium text-academy-blue mb-1">First Name</label>
                       {isEditing ? (
-                        <Input defaultValue={profileData.name} />
+                        <Input 
+                          value={profileData.first_name}
+                          onChange={(e) => setProfileData(prev => ({ ...prev, first_name: e.target.value }))}
+                        />
                       ) : (
-                        <p className="text-academy-grey">{profileData.name}</p>
+                        <p className="text-academy-grey">{profileData.first_name}</p>
                       )}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-academy-blue mb-1">Email</label>
+                      <label className="block text-sm font-medium text-academy-blue mb-1">Last Name</label>
                       {isEditing ? (
-                        <Input defaultValue={profileData.email} />
+                        <Input 
+                          value={profileData.last_name}
+                          onChange={(e) => setProfileData(prev => ({ ...prev, last_name: e.target.value }))}
+                        />
                       ) : (
-                        <p className="text-academy-grey">{profileData.email}</p>
+                        <p className="text-academy-grey">{profileData.last_name}</p>
                       )}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-academy-blue mb-1">UC Student Email</label>
+                      <p className="text-academy-grey">{profileData.email}</p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-academy-blue mb-1">Phone</label>
                       {isEditing ? (
-                        <Input defaultValue={profileData.phone} />
+                        <Input 
+                          value={profileData.phone}
+                          onChange={(e) => setProfileData(prev => ({ ...prev, phone: e.target.value }))}
+                        />
                       ) : (
-                        <p className="text-academy-grey">{profileData.phone}</p>
+                        <p className="text-academy-grey">{profileData.phone || 'Not provided'}</p>
                       )}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-academy-blue mb-1">Location</label>
                       {isEditing ? (
-                        <Input defaultValue={profileData.location} />
+                        <Input 
+                          value={profileData.location}
+                          onChange={(e) => setProfileData(prev => ({ ...prev, location: e.target.value }))}
+                        />
                       ) : (
-                        <p className="text-academy-grey">{profileData.location}</p>
+                        <p className="text-academy-grey">{profileData.location || 'Not provided'}</p>
                       )}
                     </div>
                   </div>
@@ -170,35 +363,50 @@ const Profile = () => {
                 <h3 className="text-lg font-semibold text-academy-blue">Academic Information</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-academy-blue mb-1">University</label>
+                    <label className="block text-sm font-medium text-academy-blue mb-1">UC Campus</label>
                     {isEditing ? (
-                      <Input defaultValue={profileData.university} />
+                      <Input 
+                        value={profileData.uc_campus}
+                        onChange={(e) => setProfileData(prev => ({ ...prev, uc_campus: e.target.value }))}
+                      />
                     ) : (
-                      <p className="text-academy-grey">{profileData.university}</p>
+                      <p className="text-academy-grey">{profileData.uc_campus || 'Not provided'}</p>
                     )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-academy-blue mb-1">Major</label>
                     {isEditing ? (
-                      <Input defaultValue={profileData.major} />
+                      <Input 
+                        value={profileData.major}
+                        onChange={(e) => setProfileData(prev => ({ ...prev, major: e.target.value }))}
+                      />
                     ) : (
-                      <p className="text-academy-grey">{profileData.major}</p>
+                      <p className="text-academy-grey">{profileData.major || 'Not provided'}</p>
                     )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-academy-blue mb-1">Graduation Year</label>
                     {isEditing ? (
-                      <Input defaultValue={profileData.graduationYear} />
+                      <Input 
+                        type="number"
+                        value={profileData.graduation_year || ''}
+                        onChange={(e) => setProfileData(prev => ({ ...prev, graduation_year: parseInt(e.target.value) || null }))}
+                      />
                     ) : (
-                      <p className="text-academy-grey">{profileData.graduationYear}</p>
+                      <p className="text-academy-grey">{profileData.graduation_year || 'Not provided'}</p>
                     )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-academy-blue mb-1">GPA</label>
                     {isEditing ? (
-                      <Input defaultValue={profileData.gpa} />
+                      <Input 
+                        type="number"
+                        step="0.01"
+                        value={profileData.gpa || ''}
+                        onChange={(e) => setProfileData(prev => ({ ...prev, gpa: parseFloat(e.target.value) || null }))}
+                      />
                     ) : (
-                      <p className="text-academy-grey">{profileData.gpa}</p>
+                      <p className="text-academy-grey">{profileData.gpa || 'Not provided'}</p>
                     )}
                   </div>
                 </div>
@@ -208,9 +416,13 @@ const Profile = () => {
               <div>
                 <label className="block text-sm font-medium text-academy-blue mb-2">Professional Bio</label>
                 {isEditing ? (
-                  <Textarea defaultValue={profileData.bio} rows={4} />
+                  <Textarea 
+                    value={profileData.bio}
+                    onChange={(e) => setProfileData(prev => ({ ...prev, bio: e.target.value }))}
+                    rows={4} 
+                  />
                 ) : (
-                  <p className="text-academy-grey">{profileData.bio}</p>
+                  <p className="text-academy-grey">{profileData.bio || 'No bio provided'}</p>
                 )}
               </div>
 
@@ -221,73 +433,219 @@ const Profile = () => {
                   <div>
                     <label className="block text-sm font-medium text-academy-blue mb-1">LinkedIn</label>
                     {isEditing ? (
-                      <Input defaultValue={profileData.linkedin} />
+                      <Input 
+                        value={profileData.linkedin_url}
+                        onChange={(e) => setProfileData(prev => ({ ...prev, linkedin_url: e.target.value }))}
+                      />
                     ) : (
-                      <p className="text-academy-grey">{profileData.linkedin}</p>
+                      <p className="text-academy-grey">{profileData.linkedin_url || 'Not provided'}</p>
                     )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-academy-blue mb-1">GitHub</label>
                     {isEditing ? (
-                      <Input defaultValue={profileData.github} />
+                      <Input 
+                        value={profileData.github_url}
+                        onChange={(e) => setProfileData(prev => ({ ...prev, github_url: e.target.value }))}
+                      />
                     ) : (
-                      <p className="text-academy-grey">{profileData.github}</p>
+                      <p className="text-academy-grey">{profileData.github_url || 'Not provided'}</p>
                     )}
                   </div>
                 </div>
               </div>
+
+              {/* Save Button */}
+              {isEditing && (
+                <div className="flex gap-2">
+                  <Button onClick={saveProfile} disabled={saving}>
+                    {saving ? 'Saving...' : 'Save Changes'}
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setIsEditing(false)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
 
           {/* Career Interests */}
           <Card className="bg-white shadow-card border-academy-grey-light">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-academy-blue">
-                <TrendingUp className="h-5 w-5" />
-                Career Interests
-              </CardTitle>
-              <CardDescription>Areas of finance you're most interested in</CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2 text-academy-blue">
+                    <TrendingUp className="h-5 w-5" />
+                    Career Interests
+                  </CardTitle>
+                  <CardDescription>Areas of finance you're most interested in</CardDescription>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsEditingInterests(!isEditingInterests)}
+                  className="border-academy-blue text-academy-blue hover:bg-academy-blue-light"
+                >
+                  {isEditingInterests ? 'Done' : 'Edit'}
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-wrap gap-2 mb-4">
-                {interests.map((interest) => (
-                  <Badge key={interest} className="bg-academy-blue-light text-academy-blue border-academy-blue">
-                    {interest}
-                  </Badge>
-                ))}
-              </div>
-              <Button variant="outline" className="border-academy-blue text-academy-blue hover:bg-academy-blue-light">
-                Edit Interests
-              </Button>
+              {isEditingInterests ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-64 overflow-y-auto">
+                    {availableInterests.map((interest) => (
+                      <div key={interest} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={interest}
+                          checked={profileData.career_interests.includes(interest)}
+                          onCheckedChange={() => toggleInterest(interest)}
+                        />
+                        <label htmlFor={interest} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                          {interest}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                  <Button 
+                    onClick={saveProfile} 
+                    disabled={saving}
+                    className="w-full"
+                  >
+                    {saving ? 'Saving...' : 'Save Interests'}
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {profileData.career_interests.length > 0 ? (
+                    profileData.career_interests.map((interest) => (
+                      <Badge key={interest} className="bg-academy-blue-light text-academy-blue border-academy-blue">
+                        {interest}
+                      </Badge>
+                    ))
+                  ) : (
+                    <p className="text-academy-grey">No interests selected</p>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
 
           {/* Target Companies */}
           <Card className="bg-white shadow-card border-academy-grey-light">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-academy-blue">
-                <Briefcase className="h-5 w-5" />
-                Target Companies
-              </CardTitle>
-              <CardDescription>Companies you're interested in working for</CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2 text-academy-blue">
+                    <Briefcase className="h-5 w-5" />
+                    Target Companies
+                  </CardTitle>
+                  <CardDescription>Companies you're interested in working for (up to 5)</CardDescription>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsManagingCompanies(!isManagingCompanies)}
+                  className="border-academy-blue text-academy-blue hover:bg-academy-blue-light"
+                >
+                  {isManagingCompanies ? 'Done' : 'Manage'}
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {targetCompanies.map((company, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-academy-grey-light rounded-lg">
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-academy-blue">{company.name}</h4>
-                      <p className="text-sm text-academy-grey">{company.interest}</p>
+              {isManagingCompanies ? (
+                <div className="space-y-4">
+                  {profileData.target_companies.map((company, index) => (
+                    <div key={index} className="p-4 border rounded-lg space-y-3">
+                      <div className="flex items-center justify-between">
+                        <h4 className="font-medium text-academy-blue">Company {index + 1}</h4>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeTargetCompany(index)}
+                          className="text-red-600 hover:text-red-800"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-sm font-medium text-academy-blue mb-1">Company Name</label>
+                          <Input
+                            value={company.name}
+                            onChange={(e) => updateTargetCompany(index, 'name', e.target.value)}
+                            placeholder="e.g., Goldman Sachs"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-academy-blue mb-1">Location</label>
+                          <Input
+                            value={company.location}
+                            onChange={(e) => updateTargetCompany(index, 'location', e.target.value)}
+                            placeholder="e.g., New York, NY"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-academy-blue mb-1">Priority</label>
+                        <Select
+                          value={company.priority}
+                          onValueChange={(value) => updateTargetCompany(index, 'priority', value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="High">High</SelectItem>
+                            <SelectItem value="Medium">Medium</SelectItem>
+                            <SelectItem value="Low">Low</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
-                    <Badge className={getPriorityColor(company.priority)}>
-                      {company.priority}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-              <Button variant="outline" className="w-full mt-4 border-academy-blue text-academy-blue hover:bg-academy-blue-light">
-                Manage Companies
-              </Button>
+                  ))}
+                  
+                  {profileData.target_companies.length < 5 && (
+                    <Button
+                      variant="outline"
+                      onClick={addTargetCompany}
+                      className="w-full border-dashed border-academy-blue text-academy-blue hover:bg-academy-blue-light"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Company ({profileData.target_companies.length}/5)
+                    </Button>
+                  )}
+                  
+                  <Button 
+                    onClick={saveProfile} 
+                    disabled={saving}
+                    className="w-full"
+                  >
+                    {saving ? 'Saving...' : 'Save Companies'}
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {profileData.target_companies.length > 0 ? (
+                    profileData.target_companies.map((company, index) => (
+                      <div key={index} className="flex items-center justify-between p-3 bg-academy-grey-light rounded-lg">
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-academy-blue">{company.name}</h4>
+                          <p className="text-sm text-academy-grey">{company.location}</p>
+                        </div>
+                        <Badge className={getPriorityColor(company.priority)}>
+                          {company.priority}
+                        </Badge>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-academy-grey">No target companies added</p>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

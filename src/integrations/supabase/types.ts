@@ -119,33 +119,63 @@ export type Database = {
       profiles: {
         Row: {
           bio: string | null
+          career_interests: string[] | null
           company_interests: string[] | null
           created_at: string
           first_name: string | null
+          github_url: string | null
+          gpa: number | null
+          graduation_year: number | null
           id: string
           last_name: string | null
+          linkedin_url: string | null
+          location: string | null
+          major: string | null
+          phone: string | null
+          target_companies: Json | null
+          uc_campus: string | null
           updated_at: string
           user_id: string
           username: string | null
         }
         Insert: {
           bio?: string | null
+          career_interests?: string[] | null
           company_interests?: string[] | null
           created_at?: string
           first_name?: string | null
+          github_url?: string | null
+          gpa?: number | null
+          graduation_year?: number | null
           id?: string
           last_name?: string | null
+          linkedin_url?: string | null
+          location?: string | null
+          major?: string | null
+          phone?: string | null
+          target_companies?: Json | null
+          uc_campus?: string | null
           updated_at?: string
           user_id: string
           username?: string | null
         }
         Update: {
           bio?: string | null
+          career_interests?: string[] | null
           company_interests?: string[] | null
           created_at?: string
           first_name?: string | null
+          github_url?: string | null
+          gpa?: number | null
+          graduation_year?: number | null
           id?: string
           last_name?: string | null
+          linkedin_url?: string | null
+          location?: string | null
+          major?: string | null
+          phone?: string | null
+          target_companies?: Json | null
+          uc_campus?: string | null
           updated_at?: string
           user_id?: string
           username?: string | null
