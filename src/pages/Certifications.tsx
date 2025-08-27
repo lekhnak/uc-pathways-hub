@@ -8,16 +8,16 @@ const Certifications = () => {
   const forageCertifications = [
     {
       id: 1,
-      title: "Goldman Sachs Investment Banking Virtual Experience",
+      title: "Bank of America Investment Banking Virtual Experience",
       provider: "Forage",
       duration: "5-6 hours",
       difficulty: "Intermediate",
-      skills: ["Financial Modeling", "M&A Analysis", "Pitch Preparation"],
-      description: "Experience the work of an investment banker at Goldman Sachs",
+      skills: ["Financial Analysis", "Client Advisory", "Communication Skills"],
+      description: "Apply your analysis and communication skills to advise clients as part of our Technology, Telecom & Media Investment Banking team",
       status: "available",
-      participants: "50,000+",
-      rating: 4.8,
-      link: "https://www.theforage.com/simulations/goldman-sachs/investment-banking-analyst-1yz9"
+      participants: "14,250+",
+      rating: 5.0,
+      link: "https://www.theforage.com/simulations/bank-of-america/investment-banking-bwp7"
     },
     {
       id: 2,
