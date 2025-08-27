@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_users: {
+        Row: {
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          password_hash: string
+          updated_at: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          password_hash: string
+          updated_at?: string
+          username: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          password_hash?: string
+          updated_at?: string
+          username?: string
+        }
+        Relationships: []
+      }
       applications: {
         Row: {
           consent_form_file_path: string | null

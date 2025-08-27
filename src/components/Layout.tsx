@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react"
-import { useNavigate, NavLink } from "react-router-dom"
+import { useNavigate, NavLink, Outlet } from "react-router-dom"
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/AppSidebar"
 import { useAuth } from "@/hooks/useAuth"
@@ -7,11 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { LogOut, Lightbulb, Users, X } from "lucide-react"
 
-interface LayoutProps {
-  children: React.ReactNode
-}
-
-export default function Layout({ children }: LayoutProps) {
+export default function Layout() {
   const { user, loading, signOut } = useAuth()
   const navigate = useNavigate()
   const [isInfoDialogOpen, setIsInfoDialogOpen] = useState(false)
@@ -131,7 +127,7 @@ export default function Layout({ children }: LayoutProps) {
 
           {/* Main Content */}
           <main className="flex-1 p-6">
-            {children}
+            <Outlet />
           </main>
         </div>
       </div>

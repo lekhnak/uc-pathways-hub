@@ -5,7 +5,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./hooks/useAuth";
+import { AdminAuthProvider } from "./hooks/useAdminAuth";
 import Layout from "./components/Layout";
+import AdminLayout from "./components/AdminLayout";
 import Index from "./pages/Index";
 import Modules from "./pages/Modules";
 import Pathways from "./pages/Pathways";
@@ -20,6 +22,10 @@ import Mentorship from "./pages/Mentorship";
 import Chat from "./pages/Chat";
 import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
+import AdminAuth from "./pages/AdminAuth";
+import AdminDashboard from "./pages/AdminDashboard";
+import AdminApplications from "./pages/AdminApplications";
+import AdminProfile from "./pages/AdminProfile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,36 +33,46 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/*" element={
-              <Layout>
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/modules" element={<Modules />} />
-                  <Route path="/pathways" element={<Pathways />} />
-                  <Route path="/certifications" element={<Certifications />} />
-                  <Route path="/internships" element={<Internships />} />
-                  <Route path="/internships/summer" element={<SummerInternships />} />
-                  <Route path="/internships/full-time" element={<FullTime />} />
-                  <Route path="/internships/uc-partners" element={<UCPartners />} />
-                  <Route path="/calendar" element={<Calendar />} />
-                  <Route path="/resume-drop" element={<ResumeDropPage />} />
-                  <Route path="/mentorship" element={<Mentorship />} />
-                  <Route path="/chat" element={<Chat />} />
-                  <Route path="/profile" element={<Profile />} />
-                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Layout>
-            } />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
+      <AdminAuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/admin/auth" element={<AdminAuth />} />
+              <Route path="/admin/*" element={<AdminLayout />}>
+                <Route path="" element={<AdminDashboard />} />
+                <Route path="applications" element={<AdminApplications />} />
+                <Route path="pathways" element={<div>Admin Pathways - Coming Soon</div>} />
+                <Route path="certifications" element={<div>Admin Certifications - Coming Soon</div>} />
+                <Route path="internships" element={<div>Admin Internships - Coming Soon</div>} />
+                <Route path="calendar" element={<div>Admin Calendar - Coming Soon</div>} />
+                <Route path="resumes" element={<div>Admin Resume Review - Coming Soon</div>} />
+                <Route path="chat" element={<div>Admin Chat - Coming Soon</div>} />
+                <Route path="profile" element={<AdminProfile />} />
+              </Route>
+              <Route path="/*" element={<Layout />}>
+                <Route path="" element={<Index />} />
+                <Route path="modules" element={<Modules />} />
+                <Route path="pathways" element={<Pathways />} />
+                <Route path="certifications" element={<Certifications />} />
+                <Route path="internships" element={<Internships />} />
+                <Route path="internships/summer" element={<SummerInternships />} />
+                <Route path="internships/full-time" element={<FullTime />} />
+                <Route path="internships/uc-partners" element={<UCPartners />} />
+                <Route path="calendar" element={<Calendar />} />
+                <Route path="resume-drop" element={<ResumeDropPage />} />
+                <Route path="mentorship" element={<Mentorship />} />
+                <Route path="chat" element={<Chat />} />
+                <Route path="profile" element={<Profile />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Route>
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AdminAuthProvider>
     </AuthProvider>
   </QueryClientProvider>
 );
