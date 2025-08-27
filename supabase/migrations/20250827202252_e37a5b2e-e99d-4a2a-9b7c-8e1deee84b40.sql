@@ -1,0 +1,41 @@
+-- Create user account for learner dashboard
+-- Note: This creates a user directly in auth.users for testing purposes
+INSERT INTO auth.users (
+  id,
+  instance_id,
+  email,
+  encrypted_password,
+  email_confirmed_at,
+  raw_app_meta_data,
+  raw_user_meta_data,
+  created_at,
+  updated_at,
+  confirmation_token,
+  recovery_token,
+  email_change_token_new,
+  confirmation_sent_at,
+  recovery_sent_at,
+  email_change_sent_at,
+  last_sign_in_at,
+  role,
+  aud
+) VALUES (
+  gen_random_uuid(),
+  '00000000-0000-0000-0000-000000000000',
+  'chase.griffin@ucop.edu',
+  crypt('Chase123', gen_salt('bf')),
+  now(),
+  '{"provider": "email", "providers": ["email"]}',
+  '{"first_name": "Chase", "last_name": "Griffin"}',
+  now(),
+  now(),
+  '',
+  '',
+  '',
+  now(),
+  now(),
+  now(),
+  now(),
+  'authenticated',
+  'authenticated'
+);
