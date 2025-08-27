@@ -152,7 +152,8 @@ const Profile = () => {
 
     setSaving(true)
     try {
-      const { error } = await supabase
+      console.log('Saving profile data:', profileData)
+      const { data, error } = await supabase
         .from('profiles')
         .upsert({
           user_id: user.id,
@@ -169,7 +170,12 @@ const Profile = () => {
           github_url: profileData.github_url,
           career_interests: profileData.career_interests,
           target_companies: profileData.target_companies
+        }, {
+          onConflict: 'user_id'
         })
+        .select()
+
+      console.log('Upsert result:', { data, error })
 
       if (error) throw error
 
