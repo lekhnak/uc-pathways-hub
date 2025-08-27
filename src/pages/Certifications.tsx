@@ -34,17 +34,16 @@ const Certifications = () => {
     },
     {
       id: 3,
-      title: "BlackRock Private Equity Virtual Experience",
+      title: "Citi Wealth Management Virtual Experience",
       provider: "Forage",
-      duration: "6-7 hours",
-      difficulty: "Advanced",
-      skills: ["Due Diligence", "Portfolio Management", "ESG Analysis"],
-      description: "Dive deep into private equity at BlackRock",
-      status: "in-progress",
-      progress: 60,
-      participants: "25,000+",
-      rating: 4.9,
-      link: "https://www.theforage.com/simulations/blackrock/private-equity-virtual-experience-t4m9"
+      duration: "4-5 hours",
+      difficulty: "Intermediate",
+      skills: ["Client Advisory", "Portfolio Management", "Risk Assessment"],
+      description: "A risk-free way to experience work on the job with us at Citi. Practice your skills with example tasks and build your confidence to ace your applications.",
+      status: "available",
+      participants: "30,000+",
+      rating: 4.8,
+      link: "https://www.theforage.com/simulations/citi/wealth-za8x"
     },
     {
       id: 4,
@@ -148,13 +147,13 @@ const Certifications = () => {
               
               <CardContent className="space-y-4">
                 {/* Progress Bar for In-Progress */}
-                {cert.status === 'in-progress' && cert.progress && (
+                {cert.status === 'in-progress' && 'progress' in cert && (
                   <div>
                     <div className="flex justify-between mb-2">
                       <span className="text-sm font-medium">Progress</span>
-                      <span className="text-sm text-academy-grey">{cert.progress}%</span>
+                      <span className="text-sm text-academy-grey">{(cert as any).progress}%</span>
                     </div>
-                    <Progress value={cert.progress} className="h-2" />
+                    <Progress value={(cert as any).progress} className="h-2" />
                   </div>
                 )}
 
