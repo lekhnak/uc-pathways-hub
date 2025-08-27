@@ -69,7 +69,14 @@ const CreateLearnerProfile = () => {
       console.log('Password reset token created successfully')
 
       // Send password setup email
-      const { error: emailError } = await supabase.functions.invoke('send-password-setup', {
+      console.log('Invoking send-password-setup function with data:', {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        token
+      })
+
+      const { data: emailData, error: emailError } = await supabase.functions.invoke('send-password-setup', {
         body: {
           firstName: formData.firstName,
           lastName: formData.lastName,
@@ -78,11 +85,13 @@ const CreateLearnerProfile = () => {
         }
       })
 
+      console.log('Email function response:', { emailData, emailError })
+
       if (emailError) {
         console.error('Email sending error:', emailError)
         toast({
           title: "Profile Created",
-          description: `Learner profile created successfully, but the password setup email failed to send. Error: ${emailError.message || 'Unknown error'}`,
+          description: `Learner profile created successfully, but the password setup email failed to send. Error: ${emailError.message || 'Failed to send a request to the Edge Function'}`,
           variant: "destructive",
         })
       } else {
