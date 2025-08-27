@@ -47,16 +47,16 @@ const Certifications = () => {
     },
     {
       id: 4,
-      title: "KPMG Data Analytics Virtual Experience",
+      title: "Goldman Sachs Risk Management Virtual Experience",
       provider: "Forage",
-      duration: "3-4 hours",
+      duration: "4-5 hours",
       difficulty: "Intermediate",
-      skills: ["Data Analysis", "Python", "Business Intelligence"],
-      description: "Apply data analytics to real business problems",
+      skills: ["Risk Analysis", "Portfolio Assessment", "Risk Mitigation"],
+      description: "Understand how Risk Analysts assess key risks for investment portfolios and devise mitigation strategies",
       status: "available",
-      participants: "40,000+",
-      rating: 4.6,
-      link: "https://www.theforage.com/simulations/kpmg/data-analytics-virtual-experience-6y9g"
+      participants: "25,000+",
+      rating: 4.7,
+      link: "https://www.theforage.com/simulations/goldman-sachs/risk-ljdz"
     },
     {
       id: 5,
@@ -70,6 +70,19 @@ const Certifications = () => {
       participants: "400+",
       rating: 5.0,
       link: "https://www.theforage.com/simulations/vista-equity-partners/demystifying-private-equity-xzrs"
+    },
+    {
+      id: 6,
+      title: "PGIM Fixed Income Virtual Experience",
+      provider: "Forage",
+      duration: "3-4 hours",
+      difficulty: "Intermediate",
+      skills: ["Credit Research", "Risk Management", "Client Advisory"],
+      description: "Advise our clients on their assets using our credit research and risk-management approach",
+      status: "available",
+      participants: "5,000+",
+      rating: 4.8,
+      link: "https://www.theforage.com/simulations/pgim/fixed-income-fqv9"
     }
   ]
 
