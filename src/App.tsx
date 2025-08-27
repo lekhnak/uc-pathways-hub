@@ -25,6 +25,7 @@ import Auth from "./pages/Auth";
 import AdminAuth from "./pages/AdminAuth";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminApplications from "./pages/AdminApplications";
+import AdminCertifications from "./pages/AdminCertifications";
 import AdminProfile from "./pages/AdminProfile";
 import NotFound from "./pages/NotFound";
 
@@ -45,7 +46,7 @@ const App = () => (
                 <Route path="" element={<AdminDashboard />} />
                 <Route path="applications" element={<AdminApplications />} />
                 <Route path="pathways" element={<div>Admin Pathways - Coming Soon</div>} />
-                <Route path="certifications" element={<div>Admin Certifications - Coming Soon</div>} />
+                <Route path="certifications" element={<AdminCertifications />} />
                 <Route path="internships" element={<div>Admin Internships - Coming Soon</div>} />
                 <Route path="calendar" element={<div>Admin Calendar - Coming Soon</div>} />
                 <Route path="resumes" element={<div>Admin Resume Review - Coming Soon</div>} />

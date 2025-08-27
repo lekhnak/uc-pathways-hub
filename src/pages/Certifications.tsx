@@ -2,9 +2,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { Award, ExternalLink, Clock, Users, CheckCircle2 } from "lucide-react"
+import { Award, ExternalLink, Clock, Users, CheckCircle2, Download, FileText } from "lucide-react"
+import { CertificationUpload } from "@/components/CertificationUpload"
+import { useCertificationUploads } from "@/hooks/useCertificationUploads"
+import { useAuth } from "@/hooks/useAuth"
 
 const Certifications = () => {
+  const { user } = useAuth()
+  const { uploads, loading, fetchUploads, getProgressStats, downloadFile } = useCertificationUploads()
+  const progressStats = getProgressStats()
   const forageCertifications = [
     {
       id: 1,
@@ -124,19 +130,74 @@ const Certifications = () => {
           <CardDescription>Track your professional development journey</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             <div className="text-center">
-              <div className="text-3xl font-bold text-academy-blue mb-2">1</div>
+              <div className="text-3xl font-bold text-academy-blue mb-2">{progressStats.completed}</div>
               <div className="text-sm text-academy-grey">Completed</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-academy-blue mb-2">1</div>
+              <div className="text-3xl font-bold text-academy-blue mb-2">{progressStats.inProgress}</div>
               <div className="text-sm text-academy-grey">In Progress</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-academy-blue mb-2">12</div>
+              <div className="text-3xl font-bold text-academy-blue mb-2">{progressStats.available}</div>
               <div className="text-sm text-academy-grey">Available</div>
             </div>
+          </div>
+          
+          {/* Upload Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <CertificationUpload onUploadComplete={fetchUploads} />
+            
+            {/* Recent Uploads */}
+            <Card className="bg-white shadow-card border-academy-grey-light">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-academy-blue">
+                  <FileText className="h-5 w-5" />
+                  Your Uploaded Certifications
+                </CardTitle>
+                <CardDescription>
+                  {uploads.length > 0 ? `${uploads.length} certification${uploads.length !== 1 ? 's' : ''} uploaded` : 'No certifications uploaded yet'}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {loading ? (
+                  <div className="text-center py-4 text-academy-grey">Loading...</div>
+                ) : uploads.length > 0 ? (
+                  <div className="space-y-3 max-h-64 overflow-y-auto">
+                    {uploads.slice(0, 5).map((upload) => (
+                      <div key={upload.id} className="flex items-center justify-between p-3 bg-academy-grey-light/20 rounded-lg">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-academy-blue truncate">{upload.certification_name}</p>
+                          <p className="text-sm text-academy-grey">
+                            {new Date(upload.created_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => downloadFile(upload.file_path, upload.certification_name)}
+                          className="ml-2 flex-shrink-0"
+                        >
+                          <Download className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                    {uploads.length > 5 && (
+                      <p className="text-sm text-academy-grey text-center">
+                        +{uploads.length - 5} more certification{uploads.length - 5 !== 1 ? 's' : ''}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <FileText className="mx-auto h-12 w-12 text-academy-grey mb-4" />
+                    <p className="text-academy-grey mb-2">No certifications uploaded yet</p>
+                    <p className="text-sm text-academy-grey">Upload your first certification to get started!</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </CardContent>
       </Card>

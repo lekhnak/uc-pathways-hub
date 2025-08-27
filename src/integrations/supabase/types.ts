@@ -146,6 +146,39 @@ export type Database = {
         }
         Relationships: []
       }
+      certification_uploads: {
+        Row: {
+          certification_name: string
+          created_at: string
+          file_path: string
+          file_size: number
+          id: string
+          mime_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          certification_name: string
+          created_at?: string
+          file_path: string
+          file_size: number
+          id?: string
+          mime_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          certification_name?: string
+          created_at?: string
+          file_path?: string
+          file_size?: number
+          id?: string
+          mime_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           bio: string | null
