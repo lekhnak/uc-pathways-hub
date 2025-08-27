@@ -16,6 +16,7 @@ const Index = () => {
             src={heroImage} 
             alt="UC Investment Academy - Professional Finance Education" 
             className="w-full h-full object-cover opacity-20"
+            fetchPriority="high"
           />
         </div>
         <div className="relative p-8 md:p-12 text-white">
