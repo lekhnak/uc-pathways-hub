@@ -1,10 +1,11 @@
-import React, { useEffect } from "react"
-import { useNavigate } from "react-router-dom"
+import React, { useEffect, useState } from "react"
+import { useNavigate, NavLink } from "react-router-dom"
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/AppSidebar"
 import { useAuth } from "@/hooks/useAuth"
 import { Button } from "@/components/ui/button"
-import { LogOut } from "lucide-react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { LogOut, Lightbulb, Users, X } from "lucide-react"
 
 interface LayoutProps {
   children: React.ReactNode
@@ -13,6 +14,7 @@ interface LayoutProps {
 export default function Layout({ children }: LayoutProps) {
   const { user, loading, signOut } = useAuth()
   const navigate = useNavigate()
+  const [isInfoDialogOpen, setIsInfoDialogOpen] = useState(false)
 
   useEffect(() => {
     if (!loading && !user) {
@@ -52,12 +54,69 @@ export default function Layout({ children }: LayoutProps) {
                 alt="UC Investments Academy Logo" 
                 className="h-8 w-8 object-contain"
               />
-              <h1 className="text-xl font-semibold text-academy-blue">UC Investments Academy</h1>
+              <h1 
+                className="text-xl font-semibold text-academy-blue cursor-pointer hover:text-academy-blue-dark transition-colors"
+                onClick={() => setIsInfoDialogOpen(true)}
+              >
+                UC Investments Academy
+              </h1>
             </div>
             <div className="flex items-center gap-4">
-              <span className="text-sm text-academy-grey">
-                Welcome, {user.user_metadata?.first_name || user.email}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-academy-grey">
+                  Welcome, {user.user_metadata?.first_name || user.email}
+                </span>
+                <Dialog open={isInfoDialogOpen} onOpenChange={setIsInfoDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-academy-grey hover:bg-academy-grey-light hover:text-academy-blue"
+                    >
+                      <Lightbulb className="h-4 w-4" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl bg-white">
+                    <DialogHeader>
+                      <DialogTitle className="text-2xl text-academy-blue mb-4">
+                        Welcome to UC Investments Academy!
+                      </DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-6">
+                      <div>
+                        <h3 className="text-lg font-semibold text-academy-blue mb-3">
+                          Learn more about us!
+                        </h3>
+                        <p className="text-academy-grey leading-relaxed mb-4">
+                          UC Investments Academy is a program by UC Investments to help students explore a possible career in finance. This program is completely free to students and includes the very same training that recent college graduates starting their careers at investment firms have undergone before embarking on successful careers managing money for others.
+                        </p>
+                        <p className="text-academy-grey leading-relaxed">
+                          UC Investments (The Office of the Chief Investment Officer of the Regents) manages a portfolio of investments totaling approximately $190 billion, which includes retirement, endowment, and cash assets.
+                        </p>
+                      </div>
+                      <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                        <Button 
+                          className="flex-1 bg-academy-blue hover:bg-academy-blue-dark"
+                          asChild
+                        >
+                          <NavLink to="/chat">
+                            <Users className="mr-2 h-4 w-4" />
+                            Chat with UCOP Professionals
+                          </NavLink>
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          className="flex-1 border-academy-grey text-academy-grey hover:bg-academy-grey-light"
+                          onClick={() => setIsInfoDialogOpen(false)}
+                        >
+                          <X className="mr-2 h-4 w-4" />
+                          Close Popup
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
               <Button
                 variant="outline"
                 size="sm"
