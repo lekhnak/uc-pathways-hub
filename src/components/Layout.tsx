@@ -128,6 +128,17 @@ export default function Layout() {
           {/* Main Content */}
           <main className="flex-1 p-6">
             <Outlet />
+            
+            {/* Footer with Admin Access */}
+            <div className="text-center text-sm text-muted-foreground border-t pt-4 mt-8">
+              <p>&copy; 2024 UC Investment Academy. All rights reserved.</p>
+              <a 
+                href="/admin/auth" 
+                className="inline-block mt-2 text-xs hover:text-primary transition-colors"
+              >
+                Admin Access
+              </a>
+            </div>
           </main>
         </div>
       </div>

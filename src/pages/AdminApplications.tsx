@@ -80,7 +80,7 @@ const AdminApplications = () => {
     setFilteredApplications(filtered)
   }
 
-  const handleStatusUpdate = async (applicationId: string, newStatus: 'approved' | 'rejected', applicantName: string) => {
+  const handleStatusUpdate = async (applicationId: string, newStatus: 'approved' | 'rejected', applicantName: string, email?: string) => {
     try {
       const { error } = await supabase
         .from('applications')
@@ -92,9 +92,32 @@ const AdminApplications = () => {
 
       if (error) throw error
 
+      // Send approval email if status is approved and email is provided
+      if (newStatus === 'approved' && email) {
+        const [firstName, lastName] = applicantName.split(' ')
+        const tempUsername = `${firstName.toLowerCase()}.${lastName.toLowerCase()}${Math.floor(Math.random() * 1000)}`
+        const tempPassword = `UCIA${Math.floor(Math.random() * 10000)}`
+
+        const { error: emailError } = await supabase.functions.invoke('send-application-approval', {
+          body: { 
+            firstName,
+            lastName,
+            email,
+            tempUsername,
+            tempPassword
+          }
+        })
+
+        if (emailError) {
+          console.error('Email sending error:', emailError)
+        }
+      }
+
       toast({
         title: `Application ${newStatus}`,
-        description: `${applicantName}'s application has been ${newStatus}`,
+        description: newStatus === 'approved' && email 
+          ? `${applicantName}'s application has been approved and login credentials have been sent to ${email}`
+          : `${applicantName}'s application has been ${newStatus}`,
       })
 
       fetchApplications()
@@ -236,7 +259,7 @@ const AdminApplications = () => {
                         <Button 
                           size="sm" 
                           variant="default"
-                          onClick={() => handleStatusUpdate(app.id, 'approved', `${app.first_name} ${app.last_name}`)}
+                          onClick={() => handleStatusUpdate(app.id, 'approved', `${app.first_name} ${app.last_name}`, app.email)}
                         >
                           <Check className="w-4 h-4 mr-1" />
                           Approve

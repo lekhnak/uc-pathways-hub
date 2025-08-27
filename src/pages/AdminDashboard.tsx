@@ -90,8 +90,12 @@ const AdminDashboard = () => {
     }
   }
 
-  const handleApproveApplication = async (applicationId: string, email: string, firstName: string) => {
+  const handleApproveApplication = async (applicationId: string, email: string, firstName: string, lastName: string) => {
     try {
+      // Generate temporary credentials
+      const tempUsername = `${firstName.toLowerCase()}.${lastName.toLowerCase()}${Math.floor(Math.random() * 1000)}`
+      const tempPassword = `UCIA${Math.floor(Math.random() * 10000)}`
+
       const { error } = await supabase
         .from('applications')
         .update({ 
@@ -102,12 +106,31 @@ const AdminDashboard = () => {
 
       if (error) throw error
 
-      // TODO: Send approval email with login credentials
-      toast({
-        title: "Application Approved",
-        description: `${firstName}'s application has been approved. Login credentials will be sent to ${email}`,
-        duration: 5000,
+      // Send approval email with credentials
+      const { data: emailResult, error: emailError } = await supabase.functions.invoke('send-application-approval', {
+        body: { 
+          firstName,
+          lastName,
+          email,
+          tempUsername,
+          tempPassword
+        }
       })
+
+      if (emailError) {
+        console.error('Email sending error:', emailError)
+        toast({
+          title: "Application Approved",
+          description: `${firstName}'s application has been approved, but email notification failed to send.`,
+          variant: "destructive",
+        })
+      } else {
+        toast({
+          title: "Application Approved",
+          description: `${firstName}'s application has been approved and login credentials have been sent to ${email}`,
+          duration: 5000,
+        })
+      }
 
       // Refresh data
       fetchApplications()
@@ -243,7 +266,7 @@ const AdminDashboard = () => {
                     <Badge variant="outline">{app.status}</Badge>
                     <Button 
                       size="sm"
-                      onClick={() => handleApproveApplication(app.id, app.email, app.first_name)}
+                      onClick={() => handleApproveApplication(app.id, app.email, app.first_name, app.last_name)}
                     >
                       Approve
                     </Button>
