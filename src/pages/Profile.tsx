@@ -94,17 +94,23 @@ const Profile = () => {
   // Fetch profile data
   useEffect(() => {
     if (user) {
+      console.log('User found, fetching profile for:', user.id)
       fetchProfile()
+    } else {
+      console.log('No user found')
     }
   }, [user])
 
   const fetchProfile = async () => {
     try {
+      console.log('Fetching profile for user:', user?.id)
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('user_id', user?.id)
         .single()
+
+      console.log('Profile query result:', { data, error })
 
       if (error && error.code !== 'PGRST116') {
         console.error('Error fetching profile:', error)
@@ -112,6 +118,7 @@ const Profile = () => {
       }
 
       if (data) {
+        console.log('Profile data found:', data)
         setProfileData({
           first_name: data.first_name || '',
           last_name: data.last_name || '',
@@ -130,6 +137,8 @@ const Profile = () => {
             ? (data.target_companies as Array<{name: string, location: string, priority: string}>)
             : []
         })
+      } else {
+        console.log('No profile data found, will create empty profile on first edit')
       }
     } catch (error) {
       console.error('Error fetching profile:', error)
@@ -301,7 +310,7 @@ const Profile = () => {
                 <Avatar className="h-24 w-24">
                   <AvatarImage src="/api/placeholder/100/100" />
                   <AvatarFallback className="text-xl">
-                    {profileData.first_name[0]}{profileData.last_name[0]}
+                    {(profileData.first_name[0] || '?')}{(profileData.last_name[0] || '?')}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 space-y-4">
