@@ -5,8 +5,9 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { useToast } from '@/components/ui/use-toast'
+import { useToast } from '@/hooks/use-toast'
 import { Search, Filter, Download, Eye, Check, X } from 'lucide-react'
+import ApplicationModal from '@/components/ApplicationModal'
 
 interface Application {
   id: string
@@ -19,9 +20,23 @@ interface Application {
   submitted_at: string
   gpa: number
   student_type: string
+  graduation_year?: number
   linkedin_url?: string
   current_position?: string
+  current_employer?: string
   resume_file_path?: string
+  transcript_file_path?: string
+  consent_form_file_path?: string
+  racial_identity?: string
+  gender_identity?: string
+  sexual_orientation?: string
+  first_generation_student?: boolean
+  pell_grant_eligible?: boolean
+  currently_employed?: boolean
+  question_1?: string
+  question_2?: string
+  question_3?: string
+  question_4?: string
 }
 
 const AdminApplications = () => {
@@ -30,6 +45,8 @@ const AdminApplications = () => {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
+  const [selectedApplication, setSelectedApplication] = useState<Application | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
   const { toast } = useToast()
 
   useEffect(() => {
@@ -92,34 +109,53 @@ const AdminApplications = () => {
 
       if (error) throw error
 
-      // Send approval email if status is approved and email is provided
+      // Enhanced approval process - create learner profile and send password setup email
       if (newStatus === 'approved' && email) {
         const [firstName, lastName] = applicantName.split(' ')
-        const tempUsername = `${firstName.toLowerCase()}.${lastName.toLowerCase()}${Math.floor(Math.random() * 1000)}`
-        const tempPassword = `UCIA${Math.floor(Math.random() * 10000)}`
+        
+        // Generate secure token for password setup
+        const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+        const expiresAt = new Date()
+        expiresAt.setHours(expiresAt.getHours() + 24) // Token expires in 24 hours
 
-        const { error: emailError } = await supabase.functions.invoke('send-application-approval', {
-          body: { 
-            firstName,
-            lastName,
+        // Store password reset token
+        const { error: tokenError } = await supabase
+          .from('password_reset_tokens')
+          .insert({
             email,
-            tempUsername,
-            tempPassword
-          }
-        })
+            token,
+            expires_at: expiresAt.toISOString()
+          })
 
-        if (emailError) {
-          console.error('Email sending error:', emailError)
+        if (tokenError) {
+          console.error('Token creation error:', tokenError)
+        } else {
+          // Send password setup email
+          const { error: emailError } = await supabase.functions.invoke('send-password-setup', {
+            body: { 
+              firstName,
+              lastName,
+              email,
+              token
+            }
+          })
+
+          if (emailError) {
+            console.error('Email sending error:', emailError)
+          }
         }
       }
 
       toast({
         title: `Application ${newStatus}`,
         description: newStatus === 'approved' && email 
-          ? `${applicantName}'s application has been approved and login credentials have been sent to ${email}`
+          ? `${applicantName}'s application has been approved and a password setup email has been sent to ${email}`
           : `${applicantName}'s application has been ${newStatus}`,
       })
 
+      // Close modal and refresh applications
+      setIsModalOpen(false)
+      setSelectedApplication(null)
       fetchApplications()
     } catch (error) {
       console.error('Error updating application:', error)
@@ -129,6 +165,11 @@ const AdminApplications = () => {
         variant: "destructive",
       })
     }
+  }
+
+  const handleViewDetails = (application: Application) => {
+    setSelectedApplication(application)
+    setIsModalOpen(true)
   }
 
   const getStatusColor = (status: string) => {
@@ -144,19 +185,19 @@ const AdminApplications = () => {
     return (
       <div className="space-y-6">
         <div className="h-8 bg-muted rounded w-48 animate-pulse"></div>
-        <div className="space-y-4">
-          {[...Array(5)].map((_, i) => (
-            <Card key={i}>
-              <CardContent className="p-6">
-                <div className="space-y-3">
-                  <div className="h-5 bg-muted rounded w-32 animate-pulse"></div>
-                  <div className="h-4 bg-muted rounded w-48 animate-pulse"></div>
-                  <div className="h-4 bg-muted rounded w-24 animate-pulse"></div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+          <div className="space-y-4">
+            {[...Array(5)].map((_, i) => (
+              <Card key={i}>
+                <CardContent className="p-6">
+                  <div className="space-y-3">
+                    <div className="h-5 bg-muted rounded w-32 animate-pulse"></div>
+                    <div className="h-4 bg-muted rounded w-48 animate-pulse"></div>
+                    <div className="h-4 bg-muted rounded w-24 animate-pulse"></div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
       </div>
     )
   }
@@ -243,16 +284,14 @@ const AdminApplications = () => {
                   </div>
                   <div className="flex flex-col gap-2 min-w-[200px]">
                     <div className="flex gap-2">
-                      <Button size="sm" variant="outline">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => handleViewDetails(app)}
+                      >
                         <Eye className="w-4 h-4 mr-1" />
                         View Details
                       </Button>
-                      {app.resume_file_path && (
-                        <Button size="sm" variant="outline">
-                          <Download className="w-4 h-4 mr-1" />
-                          Resume
-                        </Button>
-                      )}
                     </div>
                     {app.status === 'pending' && (
                       <div className="flex gap-2">
@@ -281,6 +320,18 @@ const AdminApplications = () => {
           ))
         )}
       </div>
+
+      {/* Application Details Modal */}
+      <ApplicationModal
+        application={selectedApplication}
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false)
+          setSelectedApplication(null)
+        }}
+        onApprove={(applicationId, newStatus, applicantName, email) => handleStatusUpdate(applicationId, newStatus, applicantName, email)}
+        onReject={(applicationId, newStatus, applicantName) => handleStatusUpdate(applicationId, newStatus, applicantName)}
+      />
     </div>
   )
 }

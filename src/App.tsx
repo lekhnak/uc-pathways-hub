@@ -27,6 +27,8 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AdminApplications from "./pages/AdminApplications";
 import AdminCertifications from "./pages/AdminCertifications";
 import AdminProfile from "./pages/AdminProfile";
+import CreateLearnerProfile from "./pages/CreateLearnerProfile";
+import SetPassword from "./pages/SetPassword";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -41,18 +43,20 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               <Route path="/auth" element={<Auth />} />
+              <Route path="/set-password" element={<SetPassword />} />
               <Route path="/admin/auth" element={<AdminAuth />} />
-              <Route path="/admin/*" element={<AdminLayout />}>
-                <Route path="" element={<AdminDashboard />} />
-                <Route path="applications" element={<AdminApplications />} />
-                <Route path="pathways" element={<div>Admin Pathways - Coming Soon</div>} />
-                <Route path="certifications" element={<AdminCertifications />} />
-                <Route path="internships" element={<div>Admin Internships - Coming Soon</div>} />
-                <Route path="calendar" element={<div>Admin Calendar - Coming Soon</div>} />
-                <Route path="resumes" element={<div>Admin Resume Review - Coming Soon</div>} />
-                <Route path="chat" element={<div>Admin Chat - Coming Soon</div>} />
-                <Route path="profile" element={<AdminProfile />} />
-              </Route>
+          <Route path="/admin/*" element={<AdminLayout />}>
+            <Route path="" element={<AdminDashboard />} />
+            <Route path="applications" element={<AdminApplications />} />
+            <Route path="create-learner" element={<CreateLearnerProfile />} />
+            <Route path="pathways" element={<div>Admin Pathways - Coming Soon</div>} />
+            <Route path="certifications" element={<AdminCertifications />} />
+            <Route path="internships" element={<div>Admin Internships - Coming Soon</div>} />
+            <Route path="calendar" element={<div>Admin Calendar - Coming Soon</div>} />
+            <Route path="resumes" element={<div>Admin Resume Review - Coming Soon</div>} />
+            <Route path="chat" element={<div>Admin Chat - Coming Soon</div>} />
+            <Route path="profile" element={<AdminProfile />} />
+          </Route>
               <Route path="/*" element={<Layout />}>
                 <Route path="" element={<Index />} />
                 <Route path="modules" element={<Modules />} />

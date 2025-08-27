@@ -13,6 +13,7 @@ import {
 import {
   LayoutDashboard,
   Users,
+  UserPlus,
   GraduationCap,
   Award,
   Briefcase,
@@ -32,6 +33,11 @@ const navigationItems = [
     title: 'Applications',
     url: '/admin/applications',
     icon: Users,
+  },
+  {
+    title: 'Create Learner',
+    url: '/admin/create-learner',
+    icon: UserPlus,
   },
   {
     title: 'Career Pathways',

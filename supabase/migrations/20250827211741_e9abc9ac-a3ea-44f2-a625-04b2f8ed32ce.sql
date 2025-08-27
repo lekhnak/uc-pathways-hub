@@ -1,0 +1,2 @@
+-- Create edge function for sending password setup emails
+-- This will be handled in the edge function creation

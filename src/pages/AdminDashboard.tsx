@@ -41,6 +41,28 @@ const AdminDashboard = () => {
   useEffect(() => {
     fetchApplications()
     fetchStats()
+    
+    // Set up real-time subscription for applications table
+    const channel = supabase
+      .channel('applications-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'applications'
+        },
+        () => {
+          console.log('Applications table changed, refreshing data...')
+          fetchApplications()
+          fetchStats()
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
   }, [])
 
   const fetchApplications = async () => {
@@ -92,9 +114,10 @@ const AdminDashboard = () => {
 
   const handleApproveApplication = async (applicationId: string, email: string, firstName: string, lastName: string) => {
     try {
-      // Generate temporary credentials
-      const tempUsername = `${firstName.toLowerCase()}.${lastName.toLowerCase()}${Math.floor(Math.random() * 1000)}`
-      const tempPassword = `UCIA${Math.floor(Math.random() * 10000)}`
+      // Generate secure token for password setup
+      const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+      const expiresAt = new Date()
+      expiresAt.setHours(expiresAt.getHours() + 24) // Token expires in 24 hours
 
       const { error } = await supabase
         .from('applications')
@@ -106,35 +129,45 @@ const AdminDashboard = () => {
 
       if (error) throw error
 
-      // Send approval email with credentials
-      const { data: emailResult, error: emailError } = await supabase.functions.invoke('send-application-approval', {
-        body: { 
-          firstName,
-          lastName,
+      // Store password reset token
+      const { error: tokenError } = await supabase
+        .from('password_reset_tokens')
+        .insert({
           email,
-          tempUsername,
-          tempPassword
-        }
-      })
+          token,
+          expires_at: expiresAt.toISOString()
+        })
 
-      if (emailError) {
-        console.error('Email sending error:', emailError)
-        toast({
-          title: "Application Approved",
-          description: `${firstName}'s application has been approved, but email notification failed to send.`,
-          variant: "destructive",
-        })
+      if (tokenError) {
+        console.error('Token creation error:', tokenError)
       } else {
-        toast({
-          title: "Application Approved",
-          description: `${firstName}'s application has been approved and login credentials have been sent to ${email}`,
-          duration: 5000,
+        // Send password setup email
+        const { error: emailError } = await supabase.functions.invoke('send-password-setup', {
+          body: { 
+            firstName,
+            lastName,
+            email,
+            token
+          }
         })
+
+        if (emailError) {
+          console.error('Email sending error:', emailError)
+          toast({
+            title: "Application Approved",
+            description: `${firstName}'s application has been approved, but password setup email failed to send.`,
+            variant: "destructive",
+          })
+        } else {
+          toast({
+            title: "Application Approved",
+            description: `${firstName}'s application has been approved and a password setup email has been sent to ${email}`,
+            duration: 5000,
+          })
+        }
       }
 
-      // Refresh data
-      fetchApplications()
-      fetchStats()
+      // Data will be refreshed automatically by the real-time subscription
     } catch (error) {
       console.error('Error approving application:', error)
       toast({

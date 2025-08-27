@@ -40,8 +40,8 @@ interface ApplicationModalProps {
   application: Application | null
   isOpen: boolean
   onClose: () => void
-  onApprove: (applicationId: string, applicantName: string, email: string) => void
-  onReject: (applicationId: string, applicantName: string) => void
+  onApprove: (applicationId: string, newStatus: 'approved', applicantName: string, email: string) => void
+  onReject: (applicationId: string, newStatus: 'rejected', applicantName: string) => void
 }
 
 const ApplicationModal: React.FC<ApplicationModalProps> = ({
@@ -319,13 +319,13 @@ const ApplicationModal: React.FC<ApplicationModalProps> = ({
           <div className="flex justify-end gap-3 pt-4 border-t">
             <Button
               variant="destructive"
-              onClick={() => onReject(application.id, `${application.first_name} ${application.last_name}`)}
+              onClick={() => onReject(application.id, 'rejected', `${application.first_name} ${application.last_name}`)}
             >
               <X className="h-4 w-4 mr-2" />
               Reject
             </Button>
             <Button
-              onClick={() => onApprove(application.id, `${application.first_name} ${application.last_name}`, application.email)}
+              onClick={() => onApprove(application.id, 'approved', `${application.first_name} ${application.last_name}`, application.email)}
             >
               <Check className="h-4 w-4 mr-2" />
               Approve & Create Profile
