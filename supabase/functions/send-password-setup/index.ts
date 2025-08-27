@@ -17,9 +17,22 @@ interface PasswordSetupRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
+  console.log(`Received ${req.method} request to send-password-setup`);
+  
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    console.log("Handling OPTIONS preflight request");
+    return new Response(null, { 
+      status: 200,
+      headers: corsHeaders 
+    });
+  }
+
+  if (req.method !== "POST") {
+    return new Response(JSON.stringify({ error: "Method not allowed" }), { 
+      status: 405,
+      headers: { "Content-Type": "application/json", ...corsHeaders }
+    });
   }
 
   try {
