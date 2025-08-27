@@ -108,11 +108,11 @@ const Profile = () => {
         .from('profiles')
         .select('*')
         .eq('user_id', user?.id)
-        .single()
+        .maybeSingle()
 
       console.log('Profile query result:', { data, error })
 
-      if (error && error.code !== 'PGRST116') {
+      if (error) {
         console.error('Error fetching profile:', error)
         return
       }
