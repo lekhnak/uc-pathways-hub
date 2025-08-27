@@ -307,8 +307,13 @@ const Certifications = () => {
               <CardDescription>Chartered Financial Analyst certification pathway</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button variant="outline" className="w-full border-academy-blue text-academy-blue hover:bg-academy-blue-light">
+              <Button 
+                variant="outline" 
+                className="w-full border-academy-blue text-academy-blue hover:bg-academy-blue-light"
+                onClick={() => window.open('https://www.cfainstitute.org/', '_blank')}
+              >
                 Learn More
+                <ExternalLink className="ml-2 h-4 w-4" />
               </Button>
             </CardContent>
           </Card>
@@ -319,8 +324,13 @@ const Certifications = () => {
               <CardDescription>Financial Risk Manager certification</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button variant="outline" className="w-full border-academy-blue text-academy-blue hover:bg-academy-blue-light">
+              <Button 
+                variant="outline" 
+                className="w-full border-academy-blue text-academy-blue hover:bg-academy-blue-light"
+                onClick={() => window.open('https://www.garp.org/frm?utm_term=frm%20certification&utm_campaign=FRM+-+Search+-+Brand+-+FRM&utm_source=adwords&utm_medium=ppc&hsa_acc=5835942607&hsa_cam=20836947288&hsa_grp=156015802306&hsa_ad=762776013496&hsa_src=g&hsa_tgt=kwd-95440580&hsa_kw=frm%20certification&hsa_mt=b&hsa_net=adwords&hsa_ver=3&gad_source=1&gad_campaignid=20836947288&gclid=CjwKCAjw2brFBhBOEiwAVJX5GPhlzHxm18bDMbQL2uSdbAvhBkRlVdCV9qGSVSPBwhv-yMeMByCr7xoCBh4QAvD_BwE', '_blank')}
+              >
                 Learn More
+                <ExternalLink className="ml-2 h-4 w-4" />
               </Button>
             </CardContent>
           </Card>
@@ -331,8 +341,13 @@ const Certifications = () => {
               <CardDescription>Securities industry licensing exams</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button variant="outline" className="w-full border-academy-blue text-academy-blue hover:bg-academy-blue-light">
+              <Button 
+                variant="outline" 
+                className="w-full border-academy-blue text-academy-blue hover:bg-academy-blue-light"
+                onClick={() => window.open('https://www.kaplanfinancial.com/securities/series-7-66/exam-details', '_blank')}
+              >
                 Learn More
+                <ExternalLink className="ml-2 h-4 w-4" />
               </Button>
             </CardContent>
           </Card>
