@@ -27,7 +27,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Sending password setup email to: ${email}`);
 
-    const setupUrl = `${Deno.env.get('SUPABASE_URL')?.replace('supabase.co', 'supabase.app')}/set-password?token=${token}`;
+    const setupUrl = `https://preview--uc-pathways-hub.lovable.app/set-password?token=${token}`;
 
     const emailResponse = await resend.emails.send({
       from: "UC Investment Academy <onboarding@resend.dev>",
