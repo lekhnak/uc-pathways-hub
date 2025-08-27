@@ -98,6 +98,8 @@ const AdminApplications = () => {
   }
 
   const handleStatusUpdate = async (applicationId: string, newStatus: 'approved' | 'rejected', applicantName: string, email?: string) => {
+    console.log(`Starting status update: ${applicationId} to ${newStatus}`)
+    
     try {
       const { error } = await supabase
         .from('applications')
@@ -107,16 +109,25 @@ const AdminApplications = () => {
         })
         .eq('id', applicationId)
 
-      if (error) throw error
+      if (error) {
+        console.error('Error updating application status:', error)
+        throw error
+      }
+
+      console.log(`Application ${applicationId} status updated to ${newStatus}`)
 
       // Enhanced approval process - create learner profile and send password setup email
       if (newStatus === 'approved' && email) {
         const [firstName, lastName] = applicantName.split(' ')
         
+        console.log(`Processing approval for ${firstName} ${lastName} (${email})`)
+        
         // Generate secure token for password setup
         const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
         const expiresAt = new Date()
         expiresAt.setHours(expiresAt.getHours() + 24) // Token expires in 24 hours
+
+        console.log('Generated token for approval:', token)
 
         // Store password reset token
         const { error: tokenError } = await supabase
@@ -128,8 +139,10 @@ const AdminApplications = () => {
           })
 
         if (tokenError) {
-          console.error('Token creation error:', tokenError)
+          console.error('Token creation error during approval:', tokenError)
         } else {
+          console.log('Password reset token created for approval')
+          
           // Send password setup email
           const { error: emailError } = await supabase.functions.invoke('send-password-setup', {
             body: { 
@@ -141,7 +154,9 @@ const AdminApplications = () => {
           })
 
           if (emailError) {
-            console.error('Email sending error:', emailError)
+            console.error('Email sending error during approval:', emailError)
+          } else {
+            console.log('Password setup email sent for approval')
           }
         }
       }
@@ -157,11 +172,11 @@ const AdminApplications = () => {
       setIsModalOpen(false)
       setSelectedApplication(null)
       fetchApplications()
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating application:', error)
       toast({
         title: "Error",
-        description: "Failed to update application",
+        description: `Failed to update application: ${error.message || 'Unknown error'}`,
         variant: "destructive",
       })
     }

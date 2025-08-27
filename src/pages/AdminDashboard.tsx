@@ -92,21 +92,36 @@ const AdminDashboard = () => {
         .from('applications')
         .select('status')
 
-      if (error) throw error
+      if (error) {
+        console.error('Error fetching application stats:', error)
+        throw error
+      }
+
+      console.log('Raw application data for stats:', data)
 
       const statusCounts = data.reduce((acc: any, app) => {
         acc[app.status] = (acc[app.status] || 0) + 1
         return acc
       }, {})
 
-      setStats({
+      console.log('Status counts:', statusCounts)
+
+      const newStats = {
         totalApplications: data.length,
         pendingApplications: statusCounts.pending || 0,
         approvedApplications: statusCounts.approved || 0,
         rejectedApplications: statusCounts.rejected || 0,
-      })
+      }
+
+      console.log('Setting new stats:', newStats)
+      setStats(newStats)
     } catch (error) {
       console.error('Error fetching stats:', error)
+      toast({
+        title: "Error",
+        description: "Failed to fetch dashboard statistics",
+        variant: "destructive",
+      })
     } finally {
       setLoading(false)
     }
@@ -114,12 +129,18 @@ const AdminDashboard = () => {
 
   const handleApproveApplication = async (applicationId: string, email: string, firstName: string, lastName: string) => {
     try {
+      console.log(`Starting approval process for ${firstName} ${lastName} (${email})`)
+      
       // Generate secure token for password setup
       const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
       const expiresAt = new Date()
       expiresAt.setHours(expiresAt.getHours() + 24) // Token expires in 24 hours
 
-      const { error } = await supabase
+      console.log('Generated token:', token)
+      console.log('Token expires at:', expiresAt.toISOString())
+
+      // First, update application status
+      const { error: updateError } = await supabase
         .from('applications')
         .update({ 
           status: 'approved',
@@ -127,7 +148,12 @@ const AdminDashboard = () => {
         })
         .eq('id', applicationId)
 
-      if (error) throw error
+      if (updateError) {
+        console.error('Error updating application status:', updateError)
+        throw updateError
+      }
+
+      console.log('Application status updated to approved')
 
       // Store password reset token
       const { error: tokenError } = await supabase
@@ -140,39 +166,43 @@ const AdminDashboard = () => {
 
       if (tokenError) {
         console.error('Token creation error:', tokenError)
-      } else {
-        // Send password setup email
-        const { error: emailError } = await supabase.functions.invoke('send-password-setup', {
-          body: { 
-            firstName,
-            lastName,
-            email,
-            token
-          }
-        })
+        throw tokenError
+      }
 
-        if (emailError) {
-          console.error('Email sending error:', emailError)
-          toast({
-            title: "Application Approved",
-            description: `${firstName}'s application has been approved, but password setup email failed to send.`,
-            variant: "destructive",
-          })
-        } else {
-          toast({
-            title: "Application Approved",
-            description: `${firstName}'s application has been approved and a password setup email has been sent to ${email}`,
-            duration: 5000,
-          })
+      console.log('Password reset token created successfully')
+
+      // Send password setup email
+      const { error: emailError } = await supabase.functions.invoke('send-password-setup', {
+        body: { 
+          firstName,
+          lastName,
+          email,
+          token
         }
+      })
+
+      if (emailError) {
+        console.error('Email sending error:', emailError)
+        toast({
+          title: "Application Approved",
+          description: `${firstName}'s application has been approved, but password setup email failed to send. Please check email service configuration.`,
+          variant: "destructive",
+        })
+      } else {
+        console.log('Password setup email sent successfully')
+        toast({
+          title: "Application Approved",
+          description: `${firstName}'s application has been approved and a password setup email has been sent to ${email}`,
+          duration: 5000,
+        })
       }
 
       // Data will be refreshed automatically by the real-time subscription
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error approving application:', error)
       toast({
         title: "Error",
-        description: "Failed to approve application",
+        description: `Failed to approve application: ${error.message || 'Unknown error'}`,
         variant: "destructive",
       })
     }

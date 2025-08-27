@@ -40,6 +40,7 @@ const CreateLearnerProfile = () => {
       return
     }
 
+    console.log('Starting direct profile creation for:', formData)
     setLoading(true)
 
     try {
@@ -47,6 +48,9 @@ const CreateLearnerProfile = () => {
       const token = generateToken()
       const expiresAt = new Date()
       expiresAt.setHours(expiresAt.getHours() + 24) // Token expires in 24 hours
+
+      console.log('Generated token:', token)
+      console.log('Token expires at:', expiresAt.toISOString())
 
       // Store password reset token
       const { error: tokenError } = await supabase
@@ -58,8 +62,11 @@ const CreateLearnerProfile = () => {
         })
 
       if (tokenError) {
+        console.error('Token creation error:', tokenError)
         throw tokenError
       }
+
+      console.log('Password reset token created successfully')
 
       // Send password setup email
       const { error: emailError } = await supabase.functions.invoke('send-password-setup', {
@@ -75,10 +82,11 @@ const CreateLearnerProfile = () => {
         console.error('Email sending error:', emailError)
         toast({
           title: "Profile Created",
-          description: `Learner profile created successfully, but the password setup email failed to send. Please manually provide the setup link.`,
+          description: `Learner profile created successfully, but the password setup email failed to send. Error: ${emailError.message || 'Unknown error'}`,
           variant: "destructive",
         })
       } else {
+        console.log('Password setup email sent successfully')
         toast({
           title: "Profile Created Successfully",
           description: `${formData.firstName} ${formData.lastName} has been added as a learner. A password setup email has been sent to ${formData.email}.`,
@@ -97,7 +105,7 @@ const CreateLearnerProfile = () => {
       console.error('Error creating profile:', error)
       toast({
         title: "Error",
-        description: error.message || "Failed to create learner profile. Please try again.",
+        description: `Failed to create learner profile: ${error.message || 'Unknown error'}. Please try again.`,
         variant: "destructive",
       })
     } finally {
