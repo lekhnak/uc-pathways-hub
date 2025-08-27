@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Progress } from "@/components/ui/progress"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { User, Mail, MapPin, GraduationCap, Briefcase, Edit, Save, Award, TrendingUp, Calendar, Plus, X } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useAuth } from "@/hooks/useAuth"
@@ -17,10 +18,9 @@ const Profile = () => {
   const { user } = useAuth()
   const { toast } = useToast()
   const [isEditing, setIsEditing] = useState(false)
-  const [isEditingInterests, setIsEditingInterests] = useState(false)
-  const [isManagingCompanies, setIsManagingCompanies] = useState(false)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [showEditConfirmation, setShowEditConfirmation] = useState(false)
   
   // Profile data state
   const [profileData, setProfileData] = useState<{
@@ -177,6 +177,7 @@ const Profile = () => {
         title: "Profile updated",
         description: "Your profile has been successfully updated.",
       })
+      setIsEditing(false)
     } catch (error) {
       console.error('Error saving profile:', error)
       toast({
@@ -187,6 +188,25 @@ const Profile = () => {
     } finally {
       setSaving(false)
     }
+  }
+
+  const handleEditClick = () => {
+    if (isEditing) {
+      // Save when clicking Done
+      saveProfile()
+    } else {
+      // Show confirmation when clicking Edit
+      setShowEditConfirmation(true)
+    }
+  }
+
+  const confirmEdit = () => {
+    setIsEditing(true)
+    setShowEditConfirmation(false)
+  }
+
+  const cancelEdit = () => {
+    setShowEditConfirmation(false)
   }
 
   const toggleInterest = (interest: string) => {
@@ -262,12 +282,61 @@ const Profile = () => {
 
   return (
     <div className="space-y-8">
+      {/* Confirmation Dialog */}
+      <Dialog open={showEditConfirmation} onOpenChange={setShowEditConfirmation}>
+        <DialogContent className="bg-white">
+          <DialogHeader>
+            <DialogTitle className="text-academy-blue">Edit Profile</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-academy-grey">
+              Are you sure you want to make changes to your profile?
+            </p>
+          </div>
+          <div className="flex gap-2 justify-end">
+            <Button
+              variant="outline"
+              onClick={cancelEdit}
+              className="border-academy-grey text-academy-grey hover:bg-academy-grey-light"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={confirmEdit}
+              className="bg-academy-blue hover:bg-academy-blue-dark"
+            >
+              Yes, Edit Profile
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold mb-4 text-academy-blue">My Profile</h1>
-        <p className="text-academy-grey text-lg">
-          Manage your personal information, career interests, and track your learning progress.
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold mb-4 text-academy-blue">My Profile</h1>
+          <p className="text-academy-grey text-lg">
+            Manage your personal information, career interests, and track your learning progress.
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          size="lg"
+          onClick={handleEditClick}
+          disabled={saving}
+          className="border-academy-blue text-academy-blue hover:bg-academy-blue-light"
+        >
+          {isEditing ? (
+            <>
+              <Save className="h-5 w-5 mr-2" />
+              {saving ? 'Saving...' : 'Done'}
+            </>
+          ) : (
+            <>
+              <Edit className="h-5 w-5 mr-2" />
+              Edit Profile
+            </>
+          )}
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -276,36 +345,10 @@ const Profile = () => {
           {/* Basic Information */}
           <Card className="bg-white shadow-card border-academy-grey-light">
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2 text-academy-blue">
-                  <User className="h-5 w-5" />
-                  Personal Information
-                </CardTitle>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={async () => {
-                    if (isEditing) {
-                      await saveProfile()
-                    }
-                    setIsEditing(!isEditing)
-                  }}
-                  disabled={saving}
-                  className="border-academy-blue text-academy-blue hover:bg-academy-blue-light"
-                >
-                  {isEditing ? (
-                    <>
-                      <Save className="h-4 w-4 mr-2" />
-                      {saving ? 'Saving...' : 'Done'}
-                    </>
-                  ) : (
-                    <>
-                      <Edit className="h-4 w-4 mr-2" />
-                      Edit
-                    </>
-                  )}
-                </Button>
-              </div>
+              <CardTitle className="flex items-center gap-2 text-academy-blue">
+                <User className="h-5 w-5" />
+                Personal Information
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Profile Picture and Basic Info */}
@@ -474,51 +517,30 @@ const Profile = () => {
           {/* Career Interests */}
           <Card className="bg-white shadow-card border-academy-grey-light">
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="flex items-center gap-2 text-academy-blue">
-                    <TrendingUp className="h-5 w-5" />
-                    Career Interests
-                  </CardTitle>
-                  <CardDescription>Areas of finance you're most interested in</CardDescription>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={async () => {
-                    if (isEditingInterests) {
-                      await saveProfile()
-                    }
-                    setIsEditingInterests(!isEditingInterests)
-                  }}
-                  disabled={saving}
-                  className="border-academy-blue text-academy-blue hover:bg-academy-blue-light"
-                >
-                  {isEditingInterests ? (saving ? 'Saving...' : 'Done') : 'Edit'}
-                </Button>
-              </div>
+              <CardTitle className="flex items-center gap-2 text-academy-blue">
+                <TrendingUp className="h-5 w-5" />
+                Career Interests
+              </CardTitle>
+              <CardDescription>Areas of finance you're most interested in</CardDescription>
             </CardHeader>
             <CardContent>
-              {isEditingInterests ? (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-64 overflow-y-auto">
-                    {availableInterests.map((interest) => (
-                      <div key={interest} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={interest}
-                          checked={profileData.career_interests.includes(interest)}
-                          onCheckedChange={() => toggleInterest(interest)}
-                        />
-                        <label htmlFor={interest} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                          {interest}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-                  {/* Remove the redundant save button */}
+              {isEditing ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-64 overflow-y-auto">
+                  {availableInterests.map((interest) => (
+                    <div key={interest} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={interest}
+                        checked={profileData.career_interests.includes(interest)}
+                        onCheckedChange={() => toggleInterest(interest)}
+                      />
+                      <label htmlFor={interest} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                        {interest}
+                      </label>
+                    </div>
+                  ))}
                 </div>
               ) : (
-                <div className="flex flex-wrap gap-2 mb-4">
+                <div className="flex flex-wrap gap-2">
                   {profileData.career_interests.length > 0 ? (
                     profileData.career_interests.map((interest) => (
                       <Badge key={interest} className="bg-academy-blue-light text-academy-blue border-academy-blue">
@@ -536,32 +558,14 @@ const Profile = () => {
           {/* Target Companies */}
           <Card className="bg-white shadow-card border-academy-grey-light">
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="flex items-center gap-2 text-academy-blue">
-                    <Briefcase className="h-5 w-5" />
-                    Target Companies
-                  </CardTitle>
-                  <CardDescription>Companies you're interested in working for (up to 5)</CardDescription>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={async () => {
-                    if (isManagingCompanies) {
-                      await saveProfile()
-                    }
-                    setIsManagingCompanies(!isManagingCompanies)
-                  }}
-                  disabled={saving}
-                  className="border-academy-blue text-academy-blue hover:bg-academy-blue-light"
-                >
-                  {isManagingCompanies ? (saving ? 'Saving...' : 'Done') : 'Manage'}
-                </Button>
-              </div>
+              <CardTitle className="flex items-center gap-2 text-academy-blue">
+                <Briefcase className="h-5 w-5" />
+                Target Companies
+              </CardTitle>
+              <CardDescription>Companies you're interested in working for (up to 5)</CardDescription>
             </CardHeader>
             <CardContent>
-              {isManagingCompanies ? (
+              {isEditing ? (
                 <div className="space-y-4">
                   {profileData.target_companies.map((company, index) => (
                     <div key={index} className="p-4 border rounded-lg space-y-3">
@@ -623,8 +627,6 @@ const Profile = () => {
                       Add Company ({profileData.target_companies.length}/5)
                     </Button>
                   )}
-                  
-                  {/* Remove the redundant save button */}
                 </div>
               ) : (
                 <div className="space-y-3">
