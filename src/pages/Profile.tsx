@@ -8,7 +8,7 @@ import { Progress } from "@/components/ui/progress"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { User, Mail, MapPin, GraduationCap, Briefcase, Edit, Save, Award, TrendingUp, Calendar, Plus, X } from "lucide-react"
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect } from "react"
 import { useAuth } from "@/hooks/useAuth"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
@@ -21,7 +21,6 @@ const Profile = () => {
   const [isManagingCompanies, setIsManagingCompanies] = useState(false)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [autoSaveTimeout, setAutoSaveTimeout] = useState<NodeJS.Timeout | null>(null)
   
   // Profile data state
   const [profileData, setProfileData] = useState<{
@@ -148,81 +147,54 @@ const Profile = () => {
     }
   }
 
-  // Auto-save function with debouncing
-  const autoSave = useCallback(() => {
-    if (autoSaveTimeout) {
-      clearTimeout(autoSaveTimeout)
-    }
-    
-    const timeout = setTimeout(async () => {
-      if (!user) return
-      
-      setSaving(true)
-      try {
-        const { error } = await supabase
-          .from('profiles')
-          .upsert({
-            user_id: user.id,
-            first_name: profileData.first_name,
-            last_name: profileData.last_name,
-            phone: profileData.phone,
-            location: profileData.location,
-            major: profileData.major,
-            graduation_year: profileData.graduation_year,
-            gpa: profileData.gpa,
-            uc_campus: profileData.uc_campus,
-            bio: profileData.bio,
-            linkedin_url: profileData.linkedin_url,
-            github_url: profileData.github_url,
-            career_interests: profileData.career_interests,
-            target_companies: profileData.target_companies
-          })
+  const saveProfile = async () => {
+    if (!user) return
 
-        if (error) throw error
-        
-        console.log('Auto-saved profile data')
-      } catch (error) {
-        console.error('Error auto-saving profile:', error)
-        toast({
-          title: "Auto-save failed",
-          description: "Your changes couldn't be saved automatically. Please try again.",
-          variant: "destructive"
+    setSaving(true)
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .upsert({
+          user_id: user.id,
+          first_name: profileData.first_name,
+          last_name: profileData.last_name,
+          phone: profileData.phone,
+          location: profileData.location,
+          major: profileData.major,
+          graduation_year: profileData.graduation_year,
+          gpa: profileData.gpa,
+          uc_campus: profileData.uc_campus,
+          bio: profileData.bio,
+          linkedin_url: profileData.linkedin_url,
+          github_url: profileData.github_url,
+          career_interests: profileData.career_interests,
+          target_companies: profileData.target_companies
         })
-      } finally {
-        setSaving(false)
-      }
-    }, 1000) // Wait 1 second after user stops typing
-    
-    setAutoSaveTimeout(timeout)
-  }, [profileData, user, autoSaveTimeout, toast])
 
-  // Update profile data and trigger auto-save
-  const updateProfileData = useCallback((updates: Partial<typeof profileData>) => {
-    setProfileData(prev => ({ ...prev, ...updates }))
-  }, [])
+      if (error) throw error
 
-  // Trigger auto-save when profile data changes
-  useEffect(() => {
-    if (user && !loading) {
-      autoSave()
+      toast({
+        title: "Profile updated",
+        description: "Your profile has been successfully updated.",
+      })
+    } catch (error) {
+      console.error('Error saving profile:', error)
+      toast({
+        title: "Error",
+        description: "Failed to update profile. Please try again.",
+        variant: "destructive"
+      })
+    } finally {
+      setSaving(false)
     }
-  }, [profileData, user, loading, autoSave])
-
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (autoSaveTimeout) {
-        clearTimeout(autoSaveTimeout)
-      }
-    }
-  }, [autoSaveTimeout])
+  }
 
   const toggleInterest = (interest: string) => {
     const newInterests = profileData.career_interests.includes(interest)
       ? profileData.career_interests.filter(i => i !== interest)
       : [...profileData.career_interests, interest]
     
-    updateProfileData({ career_interests: newInterests })
+    setProfileData(prev => ({ ...prev, career_interests: newInterests }))
   }
 
   const addTargetCompany = () => {
@@ -232,19 +204,19 @@ const Profile = () => {
         location: '',
         priority: 'Medium'
       }]
-      updateProfileData({ target_companies: newCompanies })
+      setProfileData(prev => ({ ...prev, target_companies: newCompanies }))
     }
   }
 
   const updateTargetCompany = (index: number, field: string, value: string) => {
     const newCompanies = [...profileData.target_companies]
     newCompanies[index] = { ...newCompanies[index], [field]: value }
-    updateProfileData({ target_companies: newCompanies })
+    setProfileData(prev => ({ ...prev, target_companies: newCompanies }))
   }
 
   const removeTargetCompany = (index: number) => {
     const newCompanies = profileData.target_companies.filter((_, i) => i !== index)
-    updateProfileData({ target_companies: newCompanies })
+    setProfileData(prev => ({ ...prev, target_companies: newCompanies }))
   }
 
   const achievements = [
@@ -308,18 +280,23 @@ const Profile = () => {
                 <CardTitle className="flex items-center gap-2 text-academy-blue">
                   <User className="h-5 w-5" />
                   Personal Information
-                  {saving && <span className="text-sm text-green-600 ml-2">Saving...</span>}
                 </CardTitle>
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setIsEditing(!isEditing)}
+                  onClick={async () => {
+                    if (isEditing) {
+                      await saveProfile()
+                    }
+                    setIsEditing(!isEditing)
+                  }}
+                  disabled={saving}
                   className="border-academy-blue text-academy-blue hover:bg-academy-blue-light"
                 >
                   {isEditing ? (
                     <>
                       <Save className="h-4 w-4 mr-2" />
-                      Done
+                      {saving ? 'Saving...' : 'Done'}
                     </>
                   ) : (
                     <>
@@ -346,7 +323,7 @@ const Profile = () => {
                       {isEditing ? (
                         <Input 
                           value={profileData.first_name}
-                          onChange={(e) => updateProfileData({ first_name: e.target.value })}
+                          onChange={(e) => setProfileData(prev => ({ ...prev, first_name: e.target.value }))}
                         />
                       ) : (
                         <p className="text-academy-grey">{profileData.first_name}</p>
@@ -357,7 +334,7 @@ const Profile = () => {
                       {isEditing ? (
                         <Input 
                           value={profileData.last_name}
-                          onChange={(e) => updateProfileData({ last_name: e.target.value })}
+                          onChange={(e) => setProfileData(prev => ({ ...prev, last_name: e.target.value }))}
                         />
                       ) : (
                         <p className="text-academy-grey">{profileData.last_name}</p>
@@ -372,7 +349,7 @@ const Profile = () => {
                       {isEditing ? (
                         <Input 
                           value={profileData.phone}
-                          onChange={(e) => updateProfileData({ phone: e.target.value })}
+                          onChange={(e) => setProfileData(prev => ({ ...prev, phone: e.target.value }))}
                         />
                       ) : (
                         <p className="text-academy-grey">{profileData.phone || 'Not provided'}</p>
@@ -383,7 +360,7 @@ const Profile = () => {
                       {isEditing ? (
                         <Input 
                           value={profileData.location}
-                          onChange={(e) => updateProfileData({ location: e.target.value })}
+                          onChange={(e) => setProfileData(prev => ({ ...prev, location: e.target.value }))}
                         />
                       ) : (
                         <p className="text-academy-grey">{profileData.location || 'Not provided'}</p>
@@ -402,7 +379,7 @@ const Profile = () => {
                     {isEditing ? (
                       <Input 
                         value={profileData.uc_campus}
-                        onChange={(e) => updateProfileData({ uc_campus: e.target.value })}
+                        onChange={(e) => setProfileData(prev => ({ ...prev, uc_campus: e.target.value }))}
                       />
                     ) : (
                       <p className="text-academy-grey">{profileData.uc_campus || 'Not provided'}</p>
@@ -413,7 +390,7 @@ const Profile = () => {
                     {isEditing ? (
                       <Input 
                         value={profileData.major}
-                        onChange={(e) => updateProfileData({ major: e.target.value })}
+                        onChange={(e) => setProfileData(prev => ({ ...prev, major: e.target.value }))}
                       />
                     ) : (
                       <p className="text-academy-grey">{profileData.major || 'Not provided'}</p>
@@ -425,7 +402,7 @@ const Profile = () => {
                       <Input 
                         type="number"
                         value={profileData.graduation_year || ''}
-                        onChange={(e) => updateProfileData({ graduation_year: parseInt(e.target.value) || null })}
+                        onChange={(e) => setProfileData(prev => ({ ...prev, graduation_year: parseInt(e.target.value) || null }))}
                       />
                     ) : (
                       <p className="text-academy-grey">{profileData.graduation_year || 'Not provided'}</p>
@@ -438,7 +415,7 @@ const Profile = () => {
                         type="number"
                         step="0.01"
                         value={profileData.gpa || ''}
-                        onChange={(e) => updateProfileData({ gpa: parseFloat(e.target.value) || null })}
+                        onChange={(e) => setProfileData(prev => ({ ...prev, gpa: parseFloat(e.target.value) || null }))}
                       />
                     ) : (
                       <p className="text-academy-grey">{profileData.gpa || 'Not provided'}</p>
@@ -453,7 +430,7 @@ const Profile = () => {
                 {isEditing ? (
                   <Textarea 
                     value={profileData.bio}
-                    onChange={(e) => updateProfileData({ bio: e.target.value })}
+                    onChange={(e) => setProfileData(prev => ({ ...prev, bio: e.target.value }))}
                     rows={4} 
                   />
                 ) : (
@@ -470,7 +447,7 @@ const Profile = () => {
                     {isEditing ? (
                       <Input 
                         value={profileData.linkedin_url}
-                        onChange={(e) => updateProfileData({ linkedin_url: e.target.value })}
+                        onChange={(e) => setProfileData(prev => ({ ...prev, linkedin_url: e.target.value }))}
                       />
                     ) : (
                       <p className="text-academy-grey">{profileData.linkedin_url || 'Not provided'}</p>
@@ -481,7 +458,7 @@ const Profile = () => {
                     {isEditing ? (
                       <Input 
                         value={profileData.github_url}
-                        onChange={(e) => updateProfileData({ github_url: e.target.value })}
+                        onChange={(e) => setProfileData(prev => ({ ...prev, github_url: e.target.value }))}
                       />
                     ) : (
                       <p className="text-academy-grey">{profileData.github_url || 'Not provided'}</p>
@@ -502,18 +479,23 @@ const Profile = () => {
                   <CardTitle className="flex items-center gap-2 text-academy-blue">
                     <TrendingUp className="h-5 w-5" />
                     Career Interests
-                    {saving && <span className="text-sm text-green-600 ml-2">Saving...</span>}
                   </CardTitle>
                   <CardDescription>Areas of finance you're most interested in</CardDescription>
                 </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsEditingInterests(!isEditingInterests)}
-                    className="border-academy-blue text-academy-blue hover:bg-academy-blue-light"
-                  >
-                    {isEditingInterests ? 'Done' : 'Edit'}
-                  </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={async () => {
+                    if (isEditingInterests) {
+                      await saveProfile()
+                    }
+                    setIsEditingInterests(!isEditingInterests)
+                  }}
+                  disabled={saving}
+                  className="border-academy-blue text-academy-blue hover:bg-academy-blue-light"
+                >
+                  {isEditingInterests ? (saving ? 'Saving...' : 'Done') : 'Edit'}
+                </Button>
               </div>
             </CardHeader>
             <CardContent>
@@ -559,17 +541,22 @@ const Profile = () => {
                   <CardTitle className="flex items-center gap-2 text-academy-blue">
                     <Briefcase className="h-5 w-5" />
                     Target Companies
-                    {saving && <span className="text-sm text-green-600 ml-2">Saving...</span>}
                   </CardTitle>
                   <CardDescription>Companies you're interested in working for (up to 5)</CardDescription>
                 </div>
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setIsManagingCompanies(!isManagingCompanies)}
+                  onClick={async () => {
+                    if (isManagingCompanies) {
+                      await saveProfile()
+                    }
+                    setIsManagingCompanies(!isManagingCompanies)
+                  }}
+                  disabled={saving}
                   className="border-academy-blue text-academy-blue hover:bg-academy-blue-light"
                 >
-                  {isManagingCompanies ? 'Done' : 'Manage'}
+                  {isManagingCompanies ? (saving ? 'Saving...' : 'Done') : 'Manage'}
                 </Button>
               </div>
             </CardHeader>
