@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.56.0";
-import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
+import { compare } from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -70,7 +70,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Verify password using bcrypt
-    const isValidPassword = await bcrypt.compare(password, adminUser.password_hash);
+    const isValidPassword = await compare(password, adminUser.password_hash);
 
     if (!isValidPassword) {
       console.log('Invalid password for admin user:', username);
