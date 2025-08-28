@@ -5,6 +5,3 @@ verify_jwt = false
 
 [functions.send-application-approval]
 verify_jwt = false
-
-[functions.send-password-setup]
-verify_jwt = false

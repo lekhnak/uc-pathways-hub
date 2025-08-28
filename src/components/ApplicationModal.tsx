@@ -63,17 +63,8 @@ const ApplicationModal: React.FC<ApplicationModalProps> = ({
   }
 
   const handleDownload = (filePath: string, fileName: string) => {
-    const link = document.createElement('a');
-    link.href = `https://wotqxwqlmjcnrckfjgno.supabase.co/storage/v1/object/public/application-documents/${filePath}`;
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }
-
-  const handleViewDocument = (filePath: string) => {
-    const url = `https://wotqxwqlmjcnrckfjgno.supabase.co/storage/v1/object/public/application-documents/${filePath}`;
-    window.open(url, '_blank', 'width=800,height=600');
+    // In a real application, you would implement file download from Supabase storage
+    console.log(`Downloading ${fileName} from ${filePath}`)
   }
 
   return (
@@ -285,75 +276,36 @@ const ApplicationModal: React.FC<ApplicationModalProps> = ({
                 <Separator />
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold">Documents</h3>
-                  <div className="space-y-3">
+                  <div className="flex flex-wrap gap-2">
                     {application.resume_file_path && (
-                      <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                        <span className="font-medium">Resume</span>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleViewDocument(application.resume_file_path!)}
-                          >
-                            <ExternalLink className="h-4 w-4 mr-2" />
-                            View
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDownload(application.resume_file_path!, 'Resume.pdf')}
-                          >
-                            <Download className="h-4 w-4 mr-2" />
-                            Download
-                          </Button>
-                        </div>
-                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDownload(application.resume_file_path!, 'Resume')}
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Resume
+                      </Button>
                     )}
                     {application.transcript_file_path && (
-                      <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                        <span className="font-medium">Transcript</span>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleViewDocument(application.transcript_file_path!)}
-                          >
-                            <ExternalLink className="h-4 w-4 mr-2" />
-                            View
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDownload(application.transcript_file_path!, 'Transcript.pdf')}
-                          >
-                            <Download className="h-4 w-4 mr-2" />
-                            Download
-                          </Button>
-                        </div>
-                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDownload(application.transcript_file_path!, 'Transcript')}
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Transcript
+                      </Button>
                     )}
                     {application.consent_form_file_path && (
-                      <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                        <span className="font-medium">Consent Form</span>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleViewDocument(application.consent_form_file_path!)}
-                          >
-                            <ExternalLink className="h-4 w-4 mr-2" />
-                            View
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDownload(application.consent_form_file_path!, 'Consent_Form.pdf')}
-                          >
-                            <Download className="h-4 w-4 mr-2" />
-                            Download
-                          </Button>
-                        </div>
-                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDownload(application.consent_form_file_path!, 'Consent Form')}
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Consent Form
+                      </Button>
                     )}
                   </div>
                 </div>
