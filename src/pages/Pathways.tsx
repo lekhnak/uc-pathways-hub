@@ -138,9 +138,18 @@ const Pathways = () => {
                 </div>
 
                 {/* Action Button */}
-                <Button className="w-full bg-academy-blue hover:bg-academy-blue-dark">
-                  Explore {pathway.title} Path
-                </Button>
+                {pathway.title === "Private Equity" ? (
+                  <Button 
+                    className="w-full bg-academy-blue hover:bg-academy-blue-dark"
+                    onClick={() => window.open("https://mergersandinquisitions.com/private-equity/", "_blank")}
+                  >
+                    Explore Career Path
+                  </Button>
+                ) : (
+                  <Button className="w-full bg-academy-blue hover:bg-academy-blue-dark">
+                    Explore {pathway.title} Path
+                  </Button>
+                )}
               </CardContent>
             </Card>
           )
