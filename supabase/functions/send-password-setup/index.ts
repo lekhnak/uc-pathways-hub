@@ -1,16 +1,9 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { Resend } from "npm:resend@2.0.0";
+
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 console.log("Edge function starting up...");
-
-// Temporary email simulation for debugging
-const sendEmail = async (to: string, subject: string, html: string) => {
-  console.log(`Sending email to: ${to}`);
-  console.log(`Subject: ${subject}`);
-  console.log("Email content preview:", html.substring(0, 100) + "...");
-  
-  // Simulate successful email sending
-  return { success: true, messageId: "test-" + Date.now() };
-};
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -139,15 +132,16 @@ const handler = async (req: Request): Promise<Response> => {
       </html>
     `;
 
-    console.log("Attempting to send email...");
+    console.log("Attempting to send email via Resend...");
     
-    const emailResult = await sendEmail(
-      email,
-      "Set Your Password - UC Investment Academy",
-      htmlContent
-    );
+    const emailResponse = await resend.emails.send({
+      from: "UC Investment Academy <onboarding@resend.dev>",
+      to: [email],
+      subject: "Set Your Password - UC Investment Academy",
+      html: htmlContent,
+    });
 
-    console.log("Email sent successfully:", emailResult);
+    console.log("Email sent successfully via Resend:", emailResponse);
 
     return new Response(JSON.stringify({ 
       success: true, 
