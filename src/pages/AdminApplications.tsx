@@ -141,11 +141,11 @@ const AdminApplications = () => {
           .from('applications')
           .select('*')
           .eq('id', applicationId)
-          .single()
+          .maybeSingle()
 
         if (fetchError) {
           console.error('Error fetching application data:', fetchError)
-        } else {
+        } else if (applicationData) {
           // Send rejection email
           const { error: emailError } = await supabase.functions.invoke('gmail-send-application-denial', {
             body: {
@@ -158,13 +158,25 @@ const AdminApplications = () => {
 
           if (emailError) {
             console.error('Email sending error:', emailError)
+            toast({
+              title: "Warning", 
+              description: "Application status updated but rejection email failed to send",
+              variant: "destructive"
+            })
+          } else {
+            toast({
+              title: "Email Sent",
+              description: "Rejection email sent successfully"
+            })
           }
+        } else {
+          toast({
+            title: "Warning",
+            description: "Application status updated but could not retrieve application data for email"
+          })
         }
         
-        toast({
-          title: "Application Rejected",
-          description: `${applicantName}'s application has been rejected and moved to rejected status.`,
-        })
+        // Main success message will be shown after email handling above
       } else {
         // For approved applications, update status and create profile
         const { error: updateError } = await supabase
@@ -187,11 +199,15 @@ const AdminApplications = () => {
           .from('applications')
           .select('*')
           .eq('id', applicationId)
-          .single()
+          .maybeSingle()
 
         if (fetchError) {
           console.error('Error fetching application data:', fetchError)
           throw fetchError
+        }
+
+        if (!applicationData) {
+          throw new Error('Application not found')
         }
 
         // Generate temporary password
@@ -257,6 +273,11 @@ const AdminApplications = () => {
 
         if (emailError) {
           console.error('Email sending error:', emailError)
+          toast({
+            title: "Warning",
+            description: "Profile created but approval email failed to send",
+            variant: "destructive"
+          })
         }
 
         toast({
