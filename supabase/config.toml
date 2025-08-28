@@ -12,6 +12,9 @@ verify_jwt = false
 [functions.admin-login]
 verify_jwt = false
 
+[functions.get-admin-applications]
+verify_jwt = false
+
 [functions.gmail-send-application-confirmation]
 verify_jwt = false
 

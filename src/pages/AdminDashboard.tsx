@@ -423,20 +423,19 @@ const AdminDashboard = () => {
   const fetchApplications = async () => {
     try {
       console.log('Fetching pending applications...')
-      const { data, error } = await supabase
-        .from('applications')
-        .select('*')
-        .eq('status', 'pending') // Only show pending applications
-        .order('submitted_at', { ascending: false })
-        .limit(10)
+      
+      // Use admin edge function to bypass RLS
+      const { data, error } = await supabase.functions.invoke('get-admin-applications', {
+        body: { status: 'pending' }
+      })
 
       if (error) {
         console.error('Error fetching applications:', error)
         throw error
       }
       
-      console.log('Fetched pending applications:', data)
-      setApplications(data || [])
+      console.log('Fetched pending applications:', data?.applications)
+      setApplications(data?.applications || [])
     } catch (error) {
       console.error('Error fetching applications:', error)
       toast({
@@ -449,18 +448,20 @@ const AdminDashboard = () => {
 
   const fetchStats = async () => {
     try {
-      const { data, error } = await supabase
-        .from('applications')
-        .select('status')
+      // Use admin edge function to get all applications for stats
+      const { data, error } = await supabase.functions.invoke('get-admin-applications', {
+        body: {} // No status filter to get all applications
+      })
 
       if (error) {
         console.error('Error fetching application stats:', error)
         throw error
       }
 
-      console.log('Raw application data for stats:', data)
+      const applications = data?.applications || []
+      console.log('Raw application data for stats:', applications)
 
-      const statusCounts = data.reduce((acc: any, app) => {
+      const statusCounts = applications.reduce((acc: any, app: any) => {
         acc[app.status] = (acc[app.status] || 0) + 1
         return acc
       }, {})
@@ -468,7 +469,7 @@ const AdminDashboard = () => {
       console.log('Status counts:', statusCounts)
 
       const newStats = {
-        totalApplications: data.length,
+        totalApplications: applications.length,
         pendingApplications: statusCounts.pending || 0,
         approvedApplications: statusCounts.approved || 0,
         rejectedApplications: statusCounts.rejected || 0,
