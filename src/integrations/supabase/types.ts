@@ -149,6 +149,54 @@ export type Database = {
         }
         Relationships: []
       }
+      calendar_events: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          event_date: string
+          event_time: string | null
+          event_type: string | null
+          id: string
+          location: string | null
+          signup_url: string | null
+          speakers: string[] | null
+          status: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          event_date: string
+          event_time?: string | null
+          event_type?: string | null
+          id?: string
+          location?: string | null
+          signup_url?: string | null
+          speakers?: string[] | null
+          status?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          event_date?: string
+          event_time?: string | null
+          event_type?: string | null
+          id?: string
+          location?: string | null
+          signup_url?: string | null
+          speakers?: string[] | null
+          status?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       certification_uploads: {
         Row: {
           certification_name: string

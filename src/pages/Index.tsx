@@ -1,13 +1,133 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Progress } from "@/components/ui/progress"
-import { BookOpen, Award, Calendar, Users, TrendingUp, Play, MessageCircle } from "lucide-react"
+import { BookOpen, Award, Calendar, Users, TrendingUp, MessageCircle, Clock, MapPin } from "lucide-react"
 import { NavLink } from "react-router-dom"
 import heroImage from "@/assets/ucia-hero.jpg"
 import ActionItemsChecklist from "@/components/ActionItemsChecklist"
+import { useCalendarEvents } from "@/hooks/useCalendarEvents"
+import { format } from 'date-fns'
+
+const UpcomingEventsSection = () => {
+  const { events, loading } = useCalendarEvents()
+  
+  const upcomingEvents = events
+    .filter(event => new Date(event.event_date) >= new Date())
+    .slice(0, 4)
+
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        {[...Array(3)].map((_, i) => (
+          <div key={i} className="flex items-start gap-3 p-3 bg-academy-grey-light rounded-lg animate-pulse">
+            <div className="w-12 h-12 bg-academy-grey rounded-lg"></div>
+            <div className="flex-1 space-y-2">
+              <div className="h-4 bg-academy-grey rounded w-3/4"></div>
+              <div className="h-3 bg-academy-grey rounded w-1/2"></div>
+              <div className="h-3 bg-academy-grey rounded w-1/4"></div>
+            </div>
+          </div>
+        ))}
+      </div>
+    )
+  }
+
+  if (upcomingEvents.length === 0) {
+    return (
+      <div className="text-center py-8 text-academy-grey">
+        <Calendar className="h-8 w-8 mx-auto mb-2 opacity-50" />
+        <p>No upcoming events scheduled</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Events List */}
+      <div className="lg:col-span-2 space-y-4">
+        {upcomingEvents.map((event) => {
+          const eventDate = new Date(event.event_date)
+          const monthDay = format(eventDate, 'MMM dd')
+          
+          return (
+            <div key={event.id} className="flex items-start gap-3 p-4 bg-academy-grey-light rounded-lg hover:shadow-card transition-shadow">
+              <div className="w-16 h-16 bg-gradient-primary rounded-lg flex flex-col items-center justify-center text-white font-bold text-xs">
+                <span>{format(eventDate, 'MMM')}</span>
+                <span>{format(eventDate, 'dd')}</span>
+              </div>
+              <div className="flex-1">
+                <h4 className="font-semibold text-academy-blue mb-1">{event.title}</h4>
+                {event.speakers && event.speakers.length > 0 && (
+                  <p className="text-sm text-academy-grey mb-1">
+                    {event.speakers[0]}
+                  </p>
+                )}
+                <div className="flex items-center gap-4 text-xs text-academy-grey">
+                  {event.event_time && (
+                    <span className="flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      {format(new Date(`2000-01-01T${event.event_time}`), 'h:mm a')}
+                    </span>
+                  )}
+                  {event.location && (
+                    <span className="flex items-center gap-1">
+                      <MapPin className="h-3 w-3" />
+                      {event.location}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="border-academy-blue text-academy-blue hover:bg-academy-blue-light"
+                onClick={() => {
+                  if (event.signup_url) {
+                    window.open(event.signup_url, '_blank')
+                  }
+                }}
+              >
+                Register
+              </Button>
+            </div>
+          )
+        })}
+        
+        <Button variant="outline" className="w-full border-academy-blue text-academy-blue hover:bg-academy-blue-light" asChild>
+          <NavLink to="/calendar">View All Events</NavLink>
+        </Button>
+      </div>
+
+      {/* Mini Calendar */}
+      <div className="bg-gradient-subtle border border-academy-blue-light rounded-lg p-4">
+        <h3 className="font-semibold text-academy-blue mb-4 text-center">
+          {format(new Date(), 'MMMM yyyy')}
+        </h3>
+        <div className="text-center space-y-2">
+          <div className="text-3xl font-bold text-academy-blue">
+            {format(new Date(), 'dd')}
+          </div>
+          <div className="text-sm text-academy-grey">
+            {format(new Date(), 'EEEE')}
+          </div>
+          <div className="pt-4">
+            <p className="text-xs text-academy-grey mb-2">Upcoming this month:</p>
+            <p className="font-medium text-academy-blue">
+              {events.filter(event => {
+                const eventDate = new Date(event.event_date)
+                const now = new Date()
+                return eventDate.getMonth() === now.getMonth() && 
+                       eventDate.getFullYear() === now.getFullYear() &&
+                       eventDate >= now
+              }).length} events
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 const Index = () => {
-
   return (
     <div className="space-y-8">
       {/* Hero Section */}
@@ -87,75 +207,19 @@ const Index = () => {
         </Card>
       </div>
 
-      {/* Learning Progress */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <Card className="bg-white shadow-card border-academy-grey-light">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-academy-blue">
-              <BookOpen className="h-5 w-5" />
-              Your Learning Progress
-            </CardTitle>
-            <CardDescription>Continue where you left off</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <div className="flex justify-between mb-2">
-                <span className="text-sm font-medium">Orientations & Foundations</span>
-                <span className="text-sm text-academy-grey">75%</span>
-              </div>
-              <Progress value={75} className="h-2" />
-            </div>
-            <div>
-              <div className="flex justify-between mb-2">
-                <span className="text-sm font-medium">TTS Basic Finance</span>
-                <span className="text-sm text-academy-grey">30%</span>
-              </div>
-              <Progress value={30} className="h-2" />
-            </div>
-            <Button className="w-full bg-academy-blue hover:bg-academy-blue-dark" asChild>
-              <NavLink to="/modules">
-                <Play className="mr-2 h-4 w-4" />
-                Continue Learning
-              </NavLink>
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-white shadow-card border-academy-grey-light">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-academy-blue">
-              <Calendar className="h-5 w-5" />
-              Upcoming Events
-            </CardTitle>
-            <CardDescription>Don't miss these sessions</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-start gap-3 p-3 bg-academy-grey-light rounded-lg">
-              <div className="w-12 h-12 bg-gradient-primary rounded-lg flex items-center justify-center text-white font-bold text-sm">
-                Dec<br/>15
-              </div>
-              <div className="flex-1">
-                <h4 className="font-semibold text-academy-blue">Private Equity Deep Dive</h4>
-                <p className="text-sm text-academy-grey">Speaker: John Smith, KKR</p>
-                <p className="text-xs text-academy-grey">2:00 PM - 3:30 PM</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3 p-3 bg-academy-grey-light rounded-lg">
-              <div className="w-12 h-12 bg-gradient-primary rounded-lg flex items-center justify-center text-white font-bold text-sm">
-                Dec<br/>18
-              </div>
-              <div className="flex-1">
-                <h4 className="font-semibold text-academy-blue">Resume Workshop</h4>
-                <p className="text-sm text-academy-grey">Career Services Team</p>
-                <p className="text-xs text-academy-grey">6:00 PM - 7:00 PM</p>
-              </div>
-            </div>
-            <Button variant="outline" className="w-full border-academy-blue text-academy-blue hover:bg-academy-blue-light" asChild>
-              <NavLink to="/calendar">View All Events</NavLink>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Upcoming Events - Expanded */}
+      <Card className="bg-white shadow-card border-academy-grey-light">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-academy-blue">
+            <Calendar className="h-5 w-5" />
+            Upcoming Events
+          </CardTitle>
+          <CardDescription>Join expert-led sessions and workshops</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <UpcomingEventsSection />
+        </CardContent>
+      </Card>
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
