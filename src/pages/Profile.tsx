@@ -97,25 +97,7 @@ const Profile = () => {
       console.log('User found, fetching profile for:', user.id)
       fetchProfile()
     } else {
-      console.log('No user found, loading demo data')
-      // Load demo data for Lekhna
-      setProfileData({
-        first_name: 'Lekhna',
-        last_name: 'Kumaraswamy',
-        email: 'lekhna.kumaraswamy@ucop.edu',
-        phone: '',
-        location: '',
-        major: 'Investment Management',
-        graduation_year: null,
-        gpa: null,
-        uc_campus: 'UC Office of the President',
-        bio: '',
-        linkedin_url: '',
-        github_url: '',
-        career_interests: [],
-        target_companies: []
-      })
-      setLoading(false)
+      console.log('No user found')
     }
   }, [user])
 
