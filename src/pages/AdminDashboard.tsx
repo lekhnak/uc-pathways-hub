@@ -23,6 +23,7 @@ import {
   Trash2,
 } from 'lucide-react'
 import { useCalendarEvents } from '@/hooks/useCalendarEvents'
+import { NavLink } from "react-router-dom"
 import { format } from 'date-fns'
 
 interface Application {
@@ -725,19 +726,21 @@ const AdminDashboard = () => {
           </CardContent>
         </Card>
         
-        <Card className="cursor-pointer hover:shadow-md transition-shadow">
-          <CardHeader className="pb-2">
-            <div className="flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-primary" />
-              <CardTitle className="text-sm">Manage Events</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <p className="text-xs text-muted-foreground">
-              Create and manage calendar events
-            </p>
-          </CardContent>
-        </Card>
+        <NavLink to="/admin/calendar" className="block">
+          <Card className="cursor-pointer hover:shadow-md transition-shadow">
+            <CardHeader className="pb-2">
+              <div className="flex items-center gap-2">
+                <Calendar className="h-5 w-5 text-primary" />
+                <CardTitle className="text-sm">Manage Events</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-xs text-muted-foreground">
+                Create and manage calendar events
+              </p>
+            </CardContent>
+          </Card>
+        </NavLink>
       </div>
 
       {/* Calendar Events Management */}

@@ -45,11 +45,10 @@ export const useCalendarEvents = () => {
         .from('calendar_events')
         .insert([eventData])
         .select()
-        .single()
 
       if (error) throw error
       await fetchEvents() // Refresh the list
-      return data
+      return data?.[0] || null
     } catch (err: any) {
       setError(err.message)
       throw err
@@ -63,11 +62,10 @@ export const useCalendarEvents = () => {
         .update(eventData)
         .eq('id', id)
         .select()
-        .single()
 
       if (error) throw error
       await fetchEvents() // Refresh the list
-      return data
+      return data?.[0] || null
     } catch (err: any) {
       setError(err.message)
       throw err
