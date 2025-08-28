@@ -21,6 +21,7 @@ export type Database = {
           full_name: string | null
           id: string
           password_hash: string
+          password_salt: string | null
           updated_at: string
           username: string
         }
@@ -30,6 +31,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           password_hash: string
+          password_salt?: string | null
           updated_at?: string
           username: string
         }
@@ -39,6 +41,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           password_hash?: string
+          password_salt?: string | null
           updated_at?: string
           username?: string
         }
@@ -277,7 +280,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_admin_user: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
