@@ -1,9 +1,16 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
-
 console.log("Edge function starting up...");
+console.log("RESEND_API_KEY available:", Deno.env.get("RESEND_API_KEY") ? "Yes" : "No");
+
+let resend: Resend;
+try {
+  resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+  console.log("Resend client initialized successfully");
+} catch (error) {
+  console.error("Failed to initialize Resend:", error);
+}
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
