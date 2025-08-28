@@ -23,8 +23,9 @@ import {
   Trash2,
 } from 'lucide-react'
 import { useCalendarEvents } from '@/hooks/useCalendarEvents'
-import { NavLink } from "react-router-dom"
+import { NavLink, useNavigate } from "react-router-dom"
 import { format } from 'date-fns'
+import { useAdminAuth } from '@/hooks/useAdminAuth'
 
 interface Application {
   id: string
@@ -378,33 +379,46 @@ const AdminDashboard = () => {
   })
   const [loading, setLoading] = useState(true)
   const { toast } = useToast()
+  const { adminUser, loading: authLoading } = useAdminAuth()
+  const navigate = useNavigate()
+
+  // Redirect to admin auth if not logged in
+  useEffect(() => {
+    if (!authLoading && !adminUser) {
+      navigate('/admin-auth')
+      return
+    }
+  }, [adminUser, authLoading, navigate])
 
   useEffect(() => {
-    fetchApplications()
-    fetchStats()
-    
-    // Set up real-time subscription for applications table
-    const channel = supabase
-      .channel('applications-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'applications'
-        },
-        () => {
-          console.log('Applications table changed, refreshing data...')
-          fetchApplications()
-          fetchStats()
-        }
-      )
-      .subscribe()
+    // Only fetch data if admin is authenticated
+    if (adminUser) {
+      fetchApplications()
+      fetchStats()
+      
+      // Set up real-time subscription for applications table
+      const channel = supabase
+        .channel('applications-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'applications'
+          },
+          () => {
+            console.log('Applications table changed, refreshing data...')
+            fetchApplications()
+            fetchStats()
+          }
+        )
+        .subscribe()
 
-    return () => {
-      supabase.removeChannel(channel)
+      return () => {
+        supabase.removeChannel(channel)
+      }
     }
-  }, [])
+  }, [adminUser])
 
   const fetchApplications = async () => {
     try {
@@ -587,6 +601,33 @@ const AdminDashboard = () => {
         variant: "destructive",
       })
     }
+  }
+
+  // Show loading while checking authentication
+  if (authLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <div className="h-4 bg-muted rounded w-20 animate-pulse"></div>
+                <div className="h-4 w-4 bg-muted rounded animate-pulse"></div>
+              </CardHeader>
+              <CardContent>
+                <div className="h-8 bg-muted rounded w-16 animate-pulse mb-2"></div>
+                <div className="h-3 bg-muted rounded w-24 animate-pulse"></div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  // Don't render anything if not authenticated (will redirect)
+  if (!adminUser) {
+    return null
   }
 
   if (loading) {
