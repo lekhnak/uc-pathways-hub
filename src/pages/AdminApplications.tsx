@@ -64,21 +64,24 @@ const AdminApplications = () => {
 
   const fetchApplications = async () => {
     try {
-      // Only fetch applications if we're showing all, otherwise filter server-side
-      let query = supabase
-        .from('applications')
-        .select('*')
-        .order('submitted_at', { ascending: false })
+      console.log('Fetching applications with status filter:', statusFilter)
+      
+      // Use admin edge function to get applications
+      const { data, error } = await supabase.functions.invoke('get-admin-applications', {
+        body: { 
+          status: statusFilter !== 'all' ? statusFilter : undefined,
+          adminToken: 'admin-access-token'
+        }
+      })
 
-      // If we have a specific status filter, apply it server-side for better performance
-      if (statusFilter && statusFilter !== 'all') {
-        query = query.eq('status', statusFilter)
+      if (error) {
+        console.error('Error fetching applications:', error)
+        throw error
       }
 
-      const { data, error } = await query
-
-      if (error) throw error
-      setApplications(data || [])
+      const applications = data?.applications || []
+      console.log(`Fetched ${applications.length} applications`)
+      setApplications(applications)
     } catch (error) {
       console.error('Error fetching applications:', error)
       toast({

@@ -804,7 +804,7 @@ const AdminDashboard = () => {
         </Card>
       </div>
 
-      {/* Applications Management */}
+      {/* Quick Application Management */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -822,22 +822,6 @@ const AdminDashboard = () => {
             </NavLink>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="text-center p-4 border rounded-lg">
-              <div className="text-2xl font-bold text-orange-600">{stats.pendingApplications}</div>
-              <p className="text-sm text-muted-foreground">Pending Review</p>
-            </div>
-            <div className="text-center p-4 border rounded-lg">
-              <div className="text-2xl font-bold text-green-600">{stats.approvedApplications}</div>
-              <p className="text-sm text-muted-foreground">Approved</p>
-            </div>
-            <div className="text-center p-4 border rounded-lg">
-              <div className="text-2xl font-bold text-red-600">{stats.rejectedApplications}</div>
-              <p className="text-sm text-muted-foreground">Rejected</p>
-            </div>
-          </div>
-        </CardContent>
       </Card>
 
       {/* Quick Actions */}
