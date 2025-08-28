@@ -80,7 +80,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("Sending application approval email:", { email, program });
 
     const accessToken = await getGmailAccessToken();
-    const loginUrl = `${Deno.env.get("SITE_URL") || "https://wotqxwqlmjcnrckfjgno.supabase.co"}/auth`;
+    const loginUrl = `${Deno.env.get("SITE_URL") || "https://wotqxwqlmjcnrckfjgno.lovableproject.com"}/auth`;
 
     const htmlContent = `
       <!DOCTYPE html>
