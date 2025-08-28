@@ -24,21 +24,14 @@ export const useCalendarEvents = () => {
   const fetchEvents = async () => {
     try {
       setLoading(true)
-      console.log('🔍 Fetching calendar events...')
       const { data, error } = await supabase
         .from('calendar_events')
         .select('*')
         .order('event_date', { ascending: true })
 
-      if (error) {
-        console.error('❌ Supabase error:', error)
-        throw error
-      }
-      console.log('✅ Raw events data:', data)
-      console.log('📊 Number of events:', data?.length || 0)
+      if (error) throw error
       setEvents(data || [])
     } catch (err: any) {
-      console.error('🚨 Error in fetchEvents:', err)
       setError(err.message)
       console.error('Error fetching calendar events:', err)
     } finally {

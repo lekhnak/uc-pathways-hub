@@ -10,22 +10,9 @@ import { format } from 'date-fns'
 const UpcomingEventsSection = () => {
   const { events, loading, error } = useCalendarEvents()
   
-  console.log('🏠 Dashboard - Events data:', events)
-  console.log('🏠 Dashboard - Loading:', loading)
-  console.log('🏠 Dashboard - Error:', error)
-  
   const upcomingEvents = events
-    .filter(event => {
-      const eventDate = new Date(event.event_date)
-      const now = new Date()
-      const isUpcoming = eventDate >= now
-      console.log(`📅 Event: ${event.title}, Date: ${event.event_date}, Is upcoming: ${isUpcoming}`)
-      return isUpcoming
-    })
+    .filter(event => new Date(event.event_date) >= new Date())
     .slice(0, 4)
-
-  console.log('🔮 Filtered upcoming events:', upcomingEvents)
-  console.log('📊 Number of upcoming events:', upcomingEvents.length)
 
   if (loading) {
     return (
@@ -45,12 +32,10 @@ const UpcomingEventsSection = () => {
   }
 
   if (upcomingEvents.length === 0) {
-    console.log('⚠️ No upcoming events to display')
     return (
       <div className="text-center py-8 text-academy-grey">
         <Calendar className="h-8 w-8 mx-auto mb-2 opacity-50" />
         <p>No upcoming events scheduled</p>
-        {error && <p className="text-red-500 text-sm mt-2">Error: {error}</p>}
       </div>
     )
   }
