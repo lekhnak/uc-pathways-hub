@@ -57,12 +57,25 @@ const AdminApplications = () => {
     filterApplications()
   }, [applications, searchTerm, statusFilter])
 
+  useEffect(() => {
+    // Refetch applications when status filter changes to apply server-side filtering
+    fetchApplications()
+  }, [statusFilter])
+
   const fetchApplications = async () => {
     try {
-      const { data, error } = await supabase
+      // Only fetch applications if we're showing all, otherwise filter server-side
+      let query = supabase
         .from('applications')
         .select('*')
         .order('submitted_at', { ascending: false })
+
+      // If we have a specific status filter, apply it server-side for better performance
+      if (statusFilter && statusFilter !== 'all') {
+        query = query.eq('status', statusFilter)
+      }
+
+      const { data, error } = await query
 
       if (error) throw error
       setApplications(data || [])

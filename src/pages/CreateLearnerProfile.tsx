@@ -67,6 +67,10 @@ const CreateLearnerProfile = () => {
       const { data: adminCheck, error: adminError } = await supabase.rpc('is_admin_user')
       console.log('Admin check result:', adminCheck, 'Error:', adminError)
 
+      if (!adminCheck) {
+        throw new Error('You must be logged in as an admin to create learner profiles')
+      }
+
       // Check if profile already exists for this email
       const { data: existingProfile, error: profileCheckError } = await supabase
         .from('profiles')

@@ -21,6 +21,7 @@ import {
   FileText,
   MessageSquare,
   UserCog,
+  Settings,
 } from 'lucide-react'
 
 const navigationItems = [
@@ -33,6 +34,11 @@ const navigationItems = [
     title: 'Applications',
     url: '/admin/applications',
     icon: Users,
+  },
+  {
+    title: 'User Management',
+    url: '/admin/user-management',
+    icon: UserCog,
   },
   {
     title: 'Create Learner',
@@ -72,7 +78,7 @@ const navigationItems = [
   {
     title: 'Profile',
     url: '/admin/profile',
-    icon: UserCog,
+    icon: Settings,
   },
 ]
 
