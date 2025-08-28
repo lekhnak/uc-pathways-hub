@@ -27,62 +27,234 @@ const handler = async (req: Request): Promise<Response> => {
     const { firstName, lastName, email, tempUsername, tempPassword }: ApprovalEmailRequest = await req.json();
 
     const emailResponse = await resend.emails.send({
-      from: "UC Investment Academy <onboarding@resend.dev>",
+      from: "UC Investments Academy <onboarding@resend.dev>",
       to: [email],
-      subject: "Welcome to UC Investment Academy - Application Approved!",
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #1a365d; margin-bottom: 10px;">UC Investment Academy</h1>
-            <p style="color: #666; font-size: 16px;">Professional Finance Education</p>
-          </div>
-          
-          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 10px; text-align: center; margin-bottom: 30px;">
-            <h2 style="margin: 0 0 10px 0; font-size: 28px;">Congratulations, ${firstName}!</h2>
-            <p style="margin: 0; font-size: 18px; opacity: 0.9;">Your application has been approved!</p>
-          </div>
-          
-          <div style="background: #f8f9fa; padding: 25px; border-radius: 8px; margin-bottom: 30px;">
-            <h3 style="color: #1a365d; margin-top: 0;">Your Login Credentials</h3>
-            <p style="color: #666; margin-bottom: 20px;">Use these credentials to access your student dashboard:</p>
-            
-            <div style="background: white; padding: 15px; border-radius: 5px; border-left: 4px solid #667eea;">
-              <p style="margin: 5px 0;"><strong>Username:</strong> <code style="background: #f1f3f4; padding: 2px 6px; border-radius: 3px;">${tempUsername}</code></p>
-              <p style="margin: 5px 0;"><strong>Password:</strong> <code style="background: #f1f3f4; padding: 2px 6px; border-radius: 3px;">${tempPassword}</code></p>
+      subject: "UC Investments Academy - Congratulations!",
+      html: `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UC Investments Academy - Congratulations!</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #1fb6d4 0%, #0ea5e9 100%);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+            position: relative;
+        }
+        .celebration {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.9;
+        }
+        .logo {
+            width: 60px;
+            height: 60px;
+            background-color: white;
+            border-radius: 12px;
+            margin: 0 auto 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .logo-text {
+            color: #1fb6d4;
+            font-size: 12px;
+            font-weight: 600;
+            text-align: center;
+            line-height: 1.2;
+        }
+        .header h1 {
+            margin: 0 0 10px 0;
+            font-size: 32px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        .header p {
+            margin: 0;
+            font-size: 18px;
+            opacity: 0.95;
+            font-weight: 300;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        .greeting {
+            font-size: 18px;
+            color: #1e3a8a;
+            margin-bottom: 25px;
+            font-weight: 500;
+        }
+        .congratulations {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 30px;
+            margin: 25px 0;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
+        }
+        .congratulations h2 {
+            margin: 0 0 10px 0;
+            font-size: 28px;
+            font-weight: 700;
+        }
+        .congratulations p {
+            margin: 0;
+            font-size: 18px;
+            opacity: 0.95;
+        }
+        .message {
+            font-size: 16px;
+            margin-bottom: 25px;
+            color: #374151;
+        }
+        .next-steps {
+            background-color: #f0f9ff;
+            border: 1px solid #bae6fd;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 25px 0;
+        }
+        .next-steps h3 {
+            color: #0c4a6e;
+            margin: 0 0 15px 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .next-steps ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .next-steps li {
+            margin-bottom: 10px;
+            color: #374151;
+        }
+        .contact-section {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid #e5e7eb;
+        }
+        .contact-section h3 {
+            color: #1f2937;
+            margin: 0 0 15px 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .contact-section p {
+            margin: 10px 0;
+            color: #4b5563;
+        }
+        .contact-section a {
+            color: #1fb6d4;
+            text-decoration: none;
+        }
+        .contact-section a:hover {
+            text-decoration: underline;
+        }
+        .signature {
+            margin-top: 30px;
+            font-size: 16px;
+            color: #1f2937;
+        }
+        .button {
+            display: inline-block;
+            background-color: #10b981;
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            margin: 20px 0;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 12px rgba(16, 185, 129, 0.3);
+        }
+        .button:hover {
+            background-color: #059669;
+            transform: translateY(-1px);
+            box-shadow: 0 5px 20px rgba(16, 185, 129, 0.4);
+        }
+        @media (max-width: 600px) {
+            .content {
+                padding: 30px 20px;
+            }
+            .header {
+                padding: 30px 20px;
+            }
+            .header h1 {
+                font-size: 28px;
+            }
+            .congratulations h2 {
+                font-size: 24px;
+            }
+            .celebration {
+                font-size: 36px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="celebration">🎉</div>
+            <div class="logo">
+                <div class="logo-text">UC<br>INVEST</div>
             </div>
-            
-            <p style="color: #e74c3c; font-size: 14px; margin-top: 15px; margin-bottom: 0;">
-              <strong>Important:</strong> Please change your password after your first login for security purposes.
-            </p>
-          </div>
-          
-          <div style="margin-bottom: 30px;">
-            <h3 style="color: #1a365d;">What's Next?</h3>
-            <ul style="color: #666; line-height: 1.6;">
-              <li>Log in to your student dashboard using the credentials above</li>
-              <li>Complete your profile setup</li>
-              <li>Explore available learning modules and career pathways</li>
-              <li>Connect with mentors and fellow students</li>
-              <li>Start building your professional network</li>
-            </ul>
-          </div>
-          
-          <div style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 8px;">
-            <p style="color: #666; margin: 0 0 15px 0;">Ready to get started?</p>
-            <a href="${Deno.env.get('SUPABASE_URL') || 'https://ucinvestmentacademy.com'}/auth" 
-               style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">
-              Access Your Dashboard
-            </a>
-          </div>
-          
-          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
-            <p style="color: #999; font-size: 14px; margin: 0;">
-              Welcome to the UC Investment Academy community!<br>
-              If you have any questions, please don't hesitate to reach out to our support team.
-            </p>
-          </div>
+            <h1>UC Investments Academy</h1>
+            <p>Building the next generation of finance leaders</p>
         </div>
-      `,
+
+        <!-- Main Content -->
+        <div class="content">
+            <div class="greeting">Dear ${firstName},</div>
+            
+            <div class="congratulations">
+                <h2>Congratulations!</h2>
+                <p>You've been accepted to UC Investments Academy</p>
+            </div>
+
+            <div class="message">
+                We're thrilled to welcome you to our program. Your application demonstrated exceptional potential, and we look forward to supporting your journey in finance and investment leadership.
+            </div>
+
+            <div style="text-align: center;">
+                <a href="/set-password?token=${tempPassword}" class="button">Access Your Student Portal</a>
+            </div>
+
+            <div class="contact-section">
+                <h3>Questions or need assistance?</h3>
+                <p>Please contact <a href="mailto:UCinvestmentsacademy@ucop.edu">UCinvestmentsacademy@ucop.edu</a> if you have any questions or need technical support.</p>
+                
+                <div class="signature">
+                    Thank you,<br>
+                    <strong>UC Investments Academy Team</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>`,
     });
 
     console.log("Approval email sent successfully:", emailResponse);
