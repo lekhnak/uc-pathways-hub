@@ -59,7 +59,7 @@ const CreateLearnerProfile = () => {
       
       console.log('Generated temporary credentials for:', formData.email)
 
-      // Create user account with temporary password
+      // Create user account with temporary password (no email will be sent since confirmation is disabled)
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: tempPassword,
@@ -67,8 +67,7 @@ const CreateLearnerProfile = () => {
           data: {
             first_name: formData.firstName,
             last_name: formData.lastName
-          },
-          emailRedirectTo: `https://preview--uc-pathways-hub.lovable.app/auth`
+          }
         }
       })
 

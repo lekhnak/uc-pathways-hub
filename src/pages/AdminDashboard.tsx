@@ -524,7 +524,7 @@ const AdminDashboard = () => {
       
       console.log('Generated temporary credentials for approved application:', email)
 
-      // Create user account with temporary password
+      // Create user account with temporary password (no email will be sent since confirmation is disabled)
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: email,
         password: tempPassword,
@@ -532,8 +532,7 @@ const AdminDashboard = () => {
           data: {
             first_name: firstName,
             last_name: lastName
-          },
-          emailRedirectTo: `https://preview--uc-pathways-hub.lovable.app/auth`
+          }
         }
       })
 
