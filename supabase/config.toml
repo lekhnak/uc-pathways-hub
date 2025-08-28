@@ -26,3 +26,6 @@ verify_jwt = false
 
 [functions.gmail-send-password-setup]
 verify_jwt = false
+
+[functions.sync-tts-progress]
+verify_jwt = false

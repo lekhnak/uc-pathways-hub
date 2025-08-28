@@ -3,8 +3,12 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { PlayCircle, BookOpen, Clock, CheckCircle2, Lock } from "lucide-react"
+import { TTSAccountLinking } from "@/components/TTSAccountLinking"
+import { TTSProgressCard } from "@/components/TTSProgressCard"
+import useTTSProgress from "@/hooks/useTTSProgress"
 
 const Modules = () => {
+  const { progress: ttsProgress, getProgressForCourse } = useTTSProgress();
   const modules = [
     {
       id: 1,
@@ -113,6 +117,24 @@ const Modules = () => {
         </CardContent>
       </Card>
 
+      {/* TTS Account Management */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <div className="lg:col-span-2">
+          <TTSAccountLinking />
+        </div>
+        <div className="bg-gradient-to-br from-indigo-50 to-blue-50 p-6 rounded-lg border border-blue-200">
+          <h3 className="text-lg font-semibold text-blue-900 mb-2">TTS Integration</h3>
+          <p className="text-sm text-blue-800 mb-4">
+            Link your Training The Street account to automatically sync your progress and see real-time updates in your UCIA modules.
+          </p>
+          <div className="text-xs text-blue-700 space-y-1">
+            <p>✓ Automatic progress tracking</p>
+            <p>✓ Real-time completion status</p>
+            <p>✓ Integrated module experience</p>
+          </div>
+        </div>
+      </div>
+
       {/* Modules Grid */}
       <div className="space-y-6">
         {modules.map((module) => (
@@ -138,28 +160,37 @@ const Modules = () => {
                    <CardDescription className="text-base">{module.description}</CardDescription>
                    
                    {module.id === 2 && (
-                     <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                       <p className="text-sm text-blue-800 mb-3">
-                         <strong>Access Training The Street Platform:</strong>
-                       </p>
-                       <div className="flex flex-col gap-2">
-                         <a 
-                           href="https://portal.trainingthestreet.com/s/course-registration?CourseId=701S600000EXe8H&CourseCode=01E4A4" 
-                           target="_blank" 
-                           rel="noopener noreferrer"
-                           className="text-blue-600 hover:text-blue-800 underline text-sm font-medium"
-                         >
-                           📝 Register for TTS Course
-                         </a>
-                         <a 
-                           href="https://tts.mrooms3.net/course/view.php?id=3780" 
-                           target="_blank" 
-                           rel="noopener noreferrer"
-                           className="text-blue-600 hover:text-blue-800 underline text-sm font-medium"
-                         >
-                           🔐 Sign In to TTS Platform
-                         </a>
+                     <div className="mt-4 space-y-4">
+                       <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                         <p className="text-sm text-blue-800 mb-3">
+                           <strong>Access Training The Street Platform:</strong>
+                         </p>
+                         <div className="flex flex-col gap-2">
+                           <a 
+                             href="https://portal.trainingthestreet.com/s/course-registration?CourseId=701S600000EXe8H&CourseCode=01E4A4" 
+                             target="_blank" 
+                             rel="noopener noreferrer"
+                             className="text-blue-600 hover:text-blue-800 underline text-sm font-medium"
+                           >
+                             📝 Register for TTS Course
+                           </a>
+                           <a 
+                             href="https://tts.mrooms3.net/course/view.php?id=3780" 
+                             target="_blank" 
+                             rel="noopener noreferrer"
+                             className="text-blue-600 hover:text-blue-800 underline text-sm font-medium"
+                           >
+                             🔐 Sign In to TTS Platform
+                           </a>
+                         </div>
                        </div>
+                       
+                       <TTSProgressCard
+                         courseId="basic-finance-curriculum"
+                         courseName="TTS Basic Finance Curriculum"
+                         progress={getProgressForCourse("basic-finance-curriculum")}
+                         className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200"
+                       />
                      </div>
                    )}
                    

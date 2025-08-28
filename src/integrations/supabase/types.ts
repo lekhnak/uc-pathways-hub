@@ -323,6 +323,84 @@ export type Database = {
         }
         Relationships: []
       }
+      tts_account_links: {
+        Row: {
+          created_at: string
+          id: string
+          last_sync_at: string | null
+          linked_at: string
+          sync_status: string | null
+          tts_email: string | null
+          tts_username: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_sync_at?: string | null
+          linked_at?: string
+          sync_status?: string | null
+          tts_email?: string | null
+          tts_username: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_sync_at?: string | null
+          linked_at?: string
+          sync_status?: string | null
+          tts_email?: string | null
+          tts_username?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      tts_progress: {
+        Row: {
+          completed_at: string | null
+          completion_status: string | null
+          course_id: string
+          course_name: string
+          created_at: string
+          id: string
+          last_accessed_at: string | null
+          progress_percentage: number | null
+          tts_username: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          completion_status?: string | null
+          course_id: string
+          course_name: string
+          created_at?: string
+          id?: string
+          last_accessed_at?: string | null
+          progress_percentage?: number | null
+          tts_username?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          completion_status?: string | null
+          course_id?: string
+          course_name?: string
+          created_at?: string
+          id?: string
+          last_accessed_at?: string | null
+          progress_percentage?: number | null
+          tts_username?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
