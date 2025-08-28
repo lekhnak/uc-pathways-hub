@@ -49,7 +49,11 @@ const sendGmailEmail = async (accessToken: string, to: string, subject: string, 
     htmlContent,
   ].join("\r\n");
 
-  const encodedEmail = btoa(emailContent).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  // Use TextEncoder to properly handle Unicode characters
+  const encoder = new TextEncoder();
+  const encodedBytes = encoder.encode(emailContent);
+  const base64String = btoa(String.fromCharCode(...encodedBytes));
+  const encodedEmail = base64String.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 
   const response = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
     method: "POST",
