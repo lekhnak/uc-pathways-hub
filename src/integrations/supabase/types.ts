@@ -263,17 +263,22 @@ export type Database = {
           career_interests: string[] | null
           company_interests: string[] | null
           created_at: string
+          email: string | null
           first_name: string | null
           github_url: string | null
           gpa: number | null
           graduation_year: number | null
           id: string
+          is_temp_password_used: boolean | null
           last_name: string | null
           linkedin_url: string | null
           location: string | null
           major: string | null
+          password: string | null
           phone: string | null
           target_companies: Json | null
+          temp_password: string | null
+          temp_password_expires_at: string | null
           uc_campus: string | null
           updated_at: string
           user_id: string
@@ -284,17 +289,22 @@ export type Database = {
           career_interests?: string[] | null
           company_interests?: string[] | null
           created_at?: string
+          email?: string | null
           first_name?: string | null
           github_url?: string | null
           gpa?: number | null
           graduation_year?: number | null
           id?: string
+          is_temp_password_used?: boolean | null
           last_name?: string | null
           linkedin_url?: string | null
           location?: string | null
           major?: string | null
+          password?: string | null
           phone?: string | null
           target_companies?: Json | null
+          temp_password?: string | null
+          temp_password_expires_at?: string | null
           uc_campus?: string | null
           updated_at?: string
           user_id: string
@@ -305,17 +315,22 @@ export type Database = {
           career_interests?: string[] | null
           company_interests?: string[] | null
           created_at?: string
+          email?: string | null
           first_name?: string | null
           github_url?: string | null
           gpa?: number | null
           graduation_year?: number | null
           id?: string
+          is_temp_password_used?: boolean | null
           last_name?: string | null
           linkedin_url?: string | null
           location?: string | null
           major?: string | null
+          password?: string | null
           phone?: string | null
           target_companies?: Json | null
+          temp_password?: string | null
+          temp_password_expires_at?: string | null
           uc_campus?: string | null
           updated_at?: string
           user_id?: string
