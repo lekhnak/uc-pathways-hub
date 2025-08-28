@@ -242,7 +242,7 @@ const CreateLearnerProfile = () => {
         <CardContent className="space-y-2 text-sm text-muted-foreground">
           <p>1. A user account will be created with a temporary password</p>
           <p>2. An approval email with login credentials will be sent to the learner</p>
-          <p>3. The learner can use the "Forgot Password" link on the sign-in page to reset their password</p>
+          <p>3. The learner can use the "Setup your password here" link on the sign-in page to set up their password</p>
           <p>4. They will then have full access to all learner dashboard features</p>
         </CardContent>
       </Card>

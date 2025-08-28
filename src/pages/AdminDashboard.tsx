@@ -505,11 +505,65 @@ const AdminDashboard = () => {
     }
   }
 
+  const generateTempPassword = () => {
+    const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789'
+    let result = ''
+    for (let i = 0; i < 12; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length))
+    }
+    return result
+  }
+
   const handleApproveApplication = async (applicationId: string, email: string, firstName: string, lastName: string) => {
     try {
       console.log(`Starting approval process for ${firstName} ${lastName} (${email})`)
       
-      // First, update application status
+      // Generate temporary password using same logic as CreateLearnerProfile
+      const tempPassword = generateTempPassword()
+      const tempUsername = email // Use email as username
+      
+      console.log('Generated temporary credentials for approved application:', email)
+
+      // Create user account with temporary password
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: email,
+        password: tempPassword,
+        options: {
+          data: {
+            first_name: firstName,
+            last_name: lastName
+          },
+          emailRedirectTo: `https://preview--uc-pathways-hub.lovable.app/auth`
+        }
+      })
+
+      if (authError) {
+        console.error('User creation error:', authError)
+        throw new Error(`Failed to create user account: ${authError.message}`)
+      }
+
+      console.log('User account created successfully for approved application')
+
+      // Create profile record with temporary password
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          user_id: authData.user?.id,
+          first_name: firstName,
+          last_name: lastName,
+          email: email,
+          temp_password: tempPassword,
+          is_temp_password_used: false,
+        })
+
+      if (profileError) {
+        console.error('Profile creation error:', profileError)
+        throw new Error('User account created but failed to create profile')
+      }
+
+      console.log('Profile created successfully for approved application')
+
+      // Update application status
       const { error: updateError } = await supabase
         .from('applications')
         .update({ 
@@ -525,14 +579,14 @@ const AdminDashboard = () => {
 
       console.log('Application status updated to approved')
 
-      // Send approval email using the Gmail function
+      // Send approval email with stored temporary credentials
       const { error: emailError } = await supabase.functions.invoke('gmail-send-application-approval', {
         body: { 
           firstName,
           lastName,
           email,
-          tempUsername: email, // Use email as username for now
-          tempPassword: Math.random().toString(36).substring(2, 15), // Generate temp password
+          tempUsername: tempUsername,
+          tempPassword: tempPassword,
           program: 'UC Investment Academy'
         }
       })
@@ -541,14 +595,14 @@ const AdminDashboard = () => {
         console.error('Email sending error:', emailError)
         toast({
           title: "Application Approved",
-          description: `${firstName}'s application has been approved, but approval email failed to send. Please check email service configuration.`,
+          description: `${firstName}'s application has been approved and account created, but approval email failed to send. Please provide the temporary credentials manually.`,
           variant: "destructive",
         })
       } else {
         console.log('Approval email sent successfully')
         toast({
           title: "Application Approved",
-          description: `${firstName}'s application has been approved and an approval email has been sent to ${email}`,
+          description: `${firstName}'s application has been approved, account created, and approval email sent to ${email}`,
           duration: 5000,
         })
       }

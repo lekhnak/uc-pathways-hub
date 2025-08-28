@@ -171,7 +171,7 @@ const ForgotPassword = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="tempPassword">Temporary Password</Label>
+                <Label htmlFor="tempPassword">Current/Temp Password</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-academy-grey" />
                   <Input

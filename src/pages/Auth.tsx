@@ -467,7 +467,7 @@ const Auth = () => {
                       onClick={() => navigate('/forgot-password')}
                       className="text-sm text-academy-blue hover:text-academy-blue-dark underline"
                     >
-                      Forgot your password? Reset it here
+                      Setup your password here
                     </button>
                   </div>
                 </form>
