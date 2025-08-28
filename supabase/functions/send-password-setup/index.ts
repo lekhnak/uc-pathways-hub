@@ -1,17 +1,29 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
-const smtpClient = new SMTPClient({
-  connection: {
-    hostname: "smtp.gmail.com",
-    port: 587,
-    tls: true,
-    auth: {
-      username: Deno.env.get("GMAIL_USER")!,
-      password: Deno.env.get("GMAIL_PASS")!,
+console.log("Initializing SMTP client...");
+console.log("GMAIL_USER:", Deno.env.get("GMAIL_USER") ? "Set" : "Not set");
+console.log("GMAIL_PASS:", Deno.env.get("GMAIL_PASS") ? "Set" : "Not set");
+
+let smtpClient: SMTPClient;
+
+try {
+  smtpClient = new SMTPClient({
+    connection: {
+      hostname: "smtp.gmail.com",
+      port: 587,
+      tls: true,
+      auth: {
+        username: Deno.env.get("GMAIL_USER")!,
+        password: Deno.env.get("GMAIL_PASS")!,
+      },
     },
-  },
-});
+  });
+  console.log("SMTP client initialized successfully");
+} catch (error) {
+  console.error("Failed to initialize SMTP client:", error);
+  throw error;
+}
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
