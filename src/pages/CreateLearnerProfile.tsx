@@ -59,6 +59,14 @@ const CreateLearnerProfile = () => {
       
       console.log('Generated temporary credentials for:', formData.email)
 
+      // Check if current user is admin
+      const { data: currentSession } = await supabase.auth.getSession()
+      console.log('Current user session:', currentSession.session?.user?.id)
+      
+      // Test admin status
+      const { data: adminCheck, error: adminError } = await supabase.rpc('is_admin_user')
+      console.log('Admin check result:', adminCheck, 'Error:', adminError)
+
       // Check if profile already exists for this email
       const { data: existingProfile, error: profileCheckError } = await supabase
         .from('profiles')
@@ -117,8 +125,14 @@ const CreateLearnerProfile = () => {
         })
 
       if (profileError) {
-        console.error('Profile creation error:', profileError)
-        throw new Error('Account created but failed to create profile')
+        console.error('Profile creation error details:', {
+          error: profileError,
+          message: profileError.message,
+          details: profileError.details,
+          hint: profileError.hint,
+          code: profileError.code
+        })
+        throw new Error(`Account created but failed to create profile: ${profileError.message} (${profileError.code})`)
       }
 
       console.log('Profile created successfully')
