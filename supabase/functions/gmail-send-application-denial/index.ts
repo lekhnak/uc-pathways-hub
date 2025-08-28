@@ -9,6 +9,7 @@ interface DenialEmailRequest {
   firstName: string
   lastName: string
   email: string
+  reason?: string
 }
 
 // Function to get Gmail access token
@@ -72,9 +73,9 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { firstName, lastName, email }: DenialEmailRequest = await req.json()
+    const { firstName, lastName, email, reason }: DenialEmailRequest = await req.json()
     
-    console.log('Sending application denial email:', { firstName, lastName, email })
+    console.log('Sending application denial email:', { firstName, lastName, email, reason })
 
     // Get Gmail access token
     const accessToken = await getGmailAccessToken()
@@ -109,6 +110,13 @@ const handler = async (req: Request): Promise<Response> => {
               <p style="color: #555; font-size: 16px; margin-bottom: 20px;">
                 After careful review of all applications, we regret to inform you that we are unable to offer you a position in this cohort of the UC Investments Academy. The selection process was highly competitive, and we received many exceptional applications.
               </p>
+              
+              ${reason ? `
+              <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px; border-left: 4px solid #0066cc;">
+                <p style="color: #333; font-size: 14px; margin: 0; font-weight: bold;">Feedback:</p>
+                <p style="color: #555; font-size: 14px; margin: 5px 0 0 0; line-height: 1.5;">${reason}</p>
+              </div>
+              ` : ''}
               
               <p style="color: #555; font-size: 16px; margin-bottom: 20px;">
                 We encourage you to continue developing your finance and investment knowledge, and we invite you to apply for future cohorts as the program expands.

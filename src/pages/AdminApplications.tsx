@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast'
 import { Search, Filter, Download, Eye, Check, X } from 'lucide-react'
 import ApplicationModal from '@/components/ApplicationModal'
+import RejectionDialog from '@/components/RejectionDialog'
 
 interface Application {
   id: string
@@ -37,6 +38,7 @@ interface Application {
   question_2?: string
   question_3?: string
   question_4?: string
+  admin_comment?: string
 }
 
 const AdminApplications = () => {
@@ -47,6 +49,8 @@ const AdminApplications = () => {
   const [statusFilter, setStatusFilter] = useState('pending')
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [rejectionDialogOpen, setRejectionDialogOpen] = useState(false)
+  const [applicationToReject, setApplicationToReject] = useState<Application | null>(null)
   const { toast } = useToast()
 
   useEffect(() => {
@@ -106,34 +110,60 @@ const AdminApplications = () => {
       )
     }
 
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(app => app.status === statusFilter)
-    }
-
+    // Don't filter here if we're using server-side filtering
     setFilteredApplications(filtered)
   }
 
-  const handleStatusUpdate = async (applicationId: string, newStatus: 'approved' | 'rejected', applicantName: string, email?: string) => {
+  const handleStatusUpdate = async (applicationId: string, newStatus: 'approved' | 'rejected', applicantName: string, email?: string, adminComment?: string) => {
     console.log(`Starting status update: ${applicationId} to ${newStatus}`)
     
     try {
       if (newStatus === 'rejected') {
-        // For rejected applications, delete the entire row
-        const { error: deleteError } = await supabase
+        // For rejected applications, update status and add comment
+        const { error: updateError } = await supabase
           .from('applications')
-          .delete()
+          .update({ 
+            status: newStatus,
+            reviewed_at: new Date().toISOString(),
+            admin_comment: adminComment || 'No reason provided'
+          })
           .eq('id', applicationId)
 
-        if (deleteError) {
-          console.error('Error deleting rejected application:', deleteError)
-          throw deleteError
+        if (updateError) {
+          console.error('Error updating rejected application:', updateError)
+          throw updateError
         }
 
-        console.log(`Application ${applicationId} deleted (rejected)`)
+        console.log(`Application ${applicationId} status updated to ${newStatus}`)
+
+        // Get the full application data to send rejection email
+        const { data: applicationData, error: fetchError } = await supabase
+          .from('applications')
+          .select('*')
+          .eq('id', applicationId)
+          .single()
+
+        if (fetchError) {
+          console.error('Error fetching application data:', fetchError)
+        } else {
+          // Send rejection email
+          const { error: emailError } = await supabase.functions.invoke('gmail-send-application-denial', {
+            body: {
+              firstName: applicationData.first_name,
+              lastName: applicationData.last_name,
+              email: applicationData.email,
+              reason: adminComment || 'No specific reason provided'
+            }
+          })
+
+          if (emailError) {
+            console.error('Email sending error:', emailError)
+          }
+        }
         
         toast({
           title: "Application Rejected",
-          description: `${applicantName}'s application has been rejected and removed.`,
+          description: `${applicantName}'s application has been rejected and moved to rejected status.`,
         })
       } else {
         // For approved applications, update status and create profile
@@ -239,28 +269,19 @@ const AdminApplications = () => {
       setIsModalOpen(false)
       setSelectedApplication(null)
       
-      // Update local state to move application to appropriate category or remove it
-      if (newStatus === 'rejected') {
-        // Remove rejected applications from all views
-        setApplications(prevApps => prevApps.filter(app => app.id !== applicationId))
-        setFilteredApplications(prevApps => prevApps.filter(app => app.id !== applicationId))
-      } else {
-        // Update status for approved applications
-        setApplications(prevApps => 
-          prevApps.map(app => 
-            app.id === applicationId 
-              ? { ...app, status: newStatus, reviewed_at: new Date().toISOString() }
-              : app
-          )
+      // Update local state to reflect the new status
+      setApplications(prevApps => 
+        prevApps.map(app => 
+          app.id === applicationId 
+            ? { 
+                ...app, 
+                status: newStatus, 
+                reviewed_at: new Date().toISOString(),
+                admin_comment: adminComment || app.admin_comment
+              }
+            : app
         )
-        setFilteredApplications(prevApps => 
-          prevApps.map(app => 
-            app.id === applicationId 
-              ? { ...app, status: newStatus, reviewed_at: new Date().toISOString() }
-              : app
-          )
-        )
-      }
+      )
       
       // Refresh from server to ensure data consistency
       fetchApplications()
@@ -277,6 +298,24 @@ const AdminApplications = () => {
   const handleViewDetails = (application: Application) => {
     setSelectedApplication(application)
     setIsModalOpen(true)
+  }
+
+  const handleReject = (application: Application) => {
+    setApplicationToReject(application)
+    setRejectionDialogOpen(true)
+  }
+
+  const confirmRejection = (reason: string) => {
+    if (applicationToReject) {
+      handleStatusUpdate(
+        applicationToReject.id, 
+        'rejected', 
+        `${applicationToReject.first_name} ${applicationToReject.last_name}`,
+        applicationToReject.email,
+        reason
+      )
+      setApplicationToReject(null)
+    }
   }
 
   const getStatusColor = (status: string) => {
@@ -413,10 +452,10 @@ const AdminApplications = () => {
                         <Button 
                           size="sm" 
                           variant="destructive"
-                          onClick={() => handleStatusUpdate(app.id, 'rejected', `${app.first_name} ${app.last_name}`)}
+                          onClick={() => handleReject(app)}
                         >
                           <X className="w-4 h-4 mr-1" />
-                          Reject & Delete
+                          Reject
                         </Button>
                       </div>
                     )}
@@ -437,7 +476,18 @@ const AdminApplications = () => {
           setSelectedApplication(null)
         }}
         onApprove={(applicationId, newStatus, applicantName, email) => handleStatusUpdate(applicationId, newStatus, applicantName, email)}
-        onReject={(applicationId, newStatus, applicantName) => handleStatusUpdate(applicationId, newStatus, applicantName)}
+        onReject={(app) => handleReject(app)}
+      />
+
+      {/* Rejection Dialog */}
+      <RejectionDialog
+        isOpen={rejectionDialogOpen}
+        onClose={() => {
+          setRejectionDialogOpen(false)
+          setApplicationToReject(null)
+        }}
+        onConfirm={confirmRejection}
+        applicantName={applicationToReject ? `${applicationToReject.first_name} ${applicationToReject.last_name}` : ''}
       />
     </div>
   )

@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Check, X, Download, ExternalLink, User, Mail, GraduationCap, MapPin, Calendar, Briefcase, Star } from 'lucide-react'
+import { supabase } from '@/integrations/supabase/client'
 
 interface Application {
   id: string
@@ -34,6 +35,7 @@ interface Application {
   question_2?: string
   question_3?: string
   question_4?: string
+  admin_comment?: string
 }
 
 interface ApplicationModalProps {
@@ -41,7 +43,7 @@ interface ApplicationModalProps {
   isOpen: boolean
   onClose: () => void
   onApprove: (applicationId: string, newStatus: 'approved', applicantName: string, email: string) => void
-  onReject: (applicationId: string, newStatus: 'rejected', applicantName: string) => void
+  onReject: (application: Application) => void
 }
 
 const ApplicationModal: React.FC<ApplicationModalProps> = ({
@@ -62,18 +64,48 @@ const ApplicationModal: React.FC<ApplicationModalProps> = ({
     }
   }
 
-  const handleDownload = (filePath: string, fileName: string) => {
-    const link = document.createElement('a');
-    link.href = `https://wotqxwqlmjcnrckfjgno.supabase.co/storage/v1/object/public/application-documents/${filePath}`;
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = async (filePath: string, fileName: string) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from('application-documents')
+        .download(filePath)
+
+      if (error) throw error
+
+      // Create download link
+      const url = URL.createObjectURL(data)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = fileName
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('Error downloading file:', error)
+    }
   }
 
-  const handleViewDocument = (filePath: string) => {
-    const url = `https://wotqxwqlmjcnrckfjgno.supabase.co/storage/v1/object/public/application-documents/${filePath}`;
-    window.open(url, '_blank', 'width=800,height=600');
+  const handleViewDocument = async (filePath: string) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from('application-documents')
+        .download(filePath)
+
+      if (error) throw error
+
+      // Create blob URL for viewing
+      const url = URL.createObjectURL(data)
+      window.open(url, '_blank')
+      
+      // Clean up the URL after a delay
+      setTimeout(() => URL.revokeObjectURL(url), 1000)
+    } catch (error) {
+      console.error('Error viewing file:', error)
+      // Fallback to public URL if download fails
+      const publicUrl = `https://wotqxwqlmjcnrckfjgno.supabase.co/storage/v1/object/public/application-documents/${filePath}`
+      window.open(publicUrl, '_blank')
+    }
   }
 
   return (
@@ -367,10 +399,10 @@ const ApplicationModal: React.FC<ApplicationModalProps> = ({
           <div className="flex justify-end gap-3 pt-4 border-t">
             <Button
               variant="destructive"
-              onClick={() => onReject(application.id, 'rejected', `${application.first_name} ${application.last_name}`)}
+              onClick={() => onReject(application)}
             >
               <X className="h-4 w-4 mr-2" />
-              Reject & Delete
+              Reject
             </Button>
             <Button
               onClick={() => onApprove(application.id, 'approved', `${application.first_name} ${application.last_name}`, application.email)}

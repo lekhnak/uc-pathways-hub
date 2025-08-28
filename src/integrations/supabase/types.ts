@@ -49,6 +49,7 @@ export type Database = {
       }
       applications: {
         Row: {
+          admin_comment: string | null
           consent_form_file_path: string | null
           created_at: string
           current_employer: string | null
@@ -82,6 +83,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          admin_comment?: string | null
           consent_form_file_path?: string | null
           created_at?: string
           current_employer?: string | null
@@ -115,6 +117,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          admin_comment?: string | null
           consent_form_file_path?: string | null
           created_at?: string
           current_employer?: string | null
