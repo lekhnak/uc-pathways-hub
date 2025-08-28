@@ -31,7 +31,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`Sending confirmation email to ${email} for application ${applicationId}`);
 
     const emailResponse = await resend.emails.send({
-      from: "UC Investments Academy <onboarding@resend.dev>",
+      from: "UC Investments Academy <UCinvestmentsacademy@ucop.edu>",
       to: [email],
       subject: "UC Investments Academy - Application Confirmation",
       html: `<!DOCTYPE html>
