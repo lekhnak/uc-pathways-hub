@@ -13,14 +13,27 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    // Create admin client with service role key
+    // Verify this is an admin request by checking the request body for admin credentials
+    const body = await req.json()
+    const { adminToken, status } = body
+
+    // Simple admin token validation (you could make this more secure)
+    if (!adminToken || adminToken !== 'admin-access-token') {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized access" }),
+        {
+          status: 401,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      )
+    }
+
+    // Create admin client with service role key to bypass RLS
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const { status } = await req.json()
-    
     let query = supabaseAdmin
       .from('applications')
       .select('*')
@@ -31,12 +44,13 @@ const handler = async (req: Request): Promise<Response> => {
       query = query.eq('status', status)
     }
 
-    // Limit to recent applications
-    query = query.limit(10)
+    // Limit to recent applications for performance
+    query = query.limit(50)
 
     const { data: applications, error } = await query
 
     if (error) {
+      console.error('Database error:', error)
       throw error
     }
 

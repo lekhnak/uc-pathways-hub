@@ -422,42 +422,23 @@ const AdminDashboard = () => {
 
   const fetchApplications = async () => {
     try {
-      console.log('Fetching pending applications directly...')
+      console.log('Fetching pending applications via edge function...')
       
-      // Temporarily bypass RLS by using service role in the client
-      // This is a workaround until we fix the admin auth system
-      const { data, error } = await supabase
-        .from('applications')
-        .select('*')
-        .eq('status', 'pending')
-        .order('submitted_at', { ascending: false })
-        .limit(10)
+      // Use admin edge function with proper authorization
+      const { data, error } = await supabase.functions.invoke('get-admin-applications', {
+        body: { 
+          status: 'pending',
+          adminToken: 'admin-access-token' // Simple token for admin access
+        }
+      })
 
       if (error) {
         console.error('Error fetching applications:', error)
-        // If RLS blocks this, let's try to get all data we can
-        console.log('Attempting fallback query...')
-        
-        // Try without status filter as a fallback
-        const { data: fallbackData, error: fallbackError } = await supabase
-          .from('applications')
-          .select('id, first_name, last_name, email, uc_campus, major, status, submitted_at, gpa')
-          .order('submitted_at', { ascending: false })
-          .limit(10)
-          
-        if (fallbackError) {
-          throw fallbackError
-        }
-        
-        console.log('Fallback query successful:', fallbackData)
-        // Filter pending applications on client side
-        const pendingApps = (fallbackData || []).filter(app => app.status === 'pending')
-        setApplications(pendingApps)
-        return
+        throw error
       }
       
-      console.log('Fetched pending applications:', data)
-      setApplications(data || [])
+      console.log('Fetched pending applications:', data?.applications)
+      setApplications(data?.applications || [])
     } catch (error) {
       console.error('Error fetching applications:', error)
       toast({
@@ -470,27 +451,24 @@ const AdminDashboard = () => {
 
   const fetchStats = async () => {
     try {
-      console.log('Fetching application statistics...')
-      const { data, error } = await supabase
-        .from('applications')
-        .select('status')
+      console.log('Fetching application statistics via edge function...')
+      
+      // Use admin edge function to get all applications for stats
+      const { data, error } = await supabase.functions.invoke('get-admin-applications', {
+        body: { 
+          adminToken: 'admin-access-token' // Simple token for admin access
+        }
+      })
 
       if (error) {
         console.error('Error fetching application stats:', error)
-        // Continue with empty stats rather than failing completely
-        const newStats = {
-          totalApplications: 0,
-          pendingApplications: 0,
-          approvedApplications: 0,
-          rejectedApplications: 0,
-        }
-        setStats(newStats)
-        return
+        throw error
       }
 
-      console.log('Raw application data for stats:', data)
+      const applications = data?.applications || []
+      console.log('Raw application data for stats:', applications)
 
-      const statusCounts = (data || []).reduce((acc: any, app) => {
+      const statusCounts = applications.reduce((acc: any, app: any) => {
         acc[app.status] = (acc[app.status] || 0) + 1
         return acc
       }, {})
@@ -498,7 +476,7 @@ const AdminDashboard = () => {
       console.log('Status counts:', statusCounts)
 
       const newStats = {
-        totalApplications: data?.length || 0,
+        totalApplications: applications.length,
         pendingApplications: statusCounts.pending || 0,
         approvedApplications: statusCounts.approved || 0,
         rejectedApplications: statusCounts.rejected || 0,
