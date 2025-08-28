@@ -254,7 +254,7 @@ const Auth = () => {
           question_3: data.question3,
           question_4: data.question4,
         })
-        .select()
+        
 
       if (error) {
         setError(error.message)
@@ -268,8 +268,7 @@ const Auth = () => {
             firstName: data.firstName,
             lastName: data.lastName,
             email: data.email,
-            program: data.ucCampus,
-            applicationId: insertData[0].id
+            program: data.ucCampus
           }
         })
         console.log('Confirmation email sent successfully')
