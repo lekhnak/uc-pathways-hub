@@ -55,10 +55,15 @@ const UpcomingEventsSection = () => {
                 <span>{format(eventDate, 'dd')}</span>
               </div>
               <div className="flex-1">
-                <h4 className="font-semibold text-academy-blue mb-1">{event.title}</h4>
+                <h4 className="font-semibold text-academy-blue mb-1 line-clamp-1">{event.title}</h4>
                 {event.speakers && event.speakers.length > 0 && (
-                  <p className="text-sm text-academy-grey mb-1">
+                  <p className="text-sm text-academy-grey mb-1 line-clamp-1">
                     {event.speakers[0]}
+                  </p>
+                )}
+                {event.description && (
+                  <p className="text-xs text-academy-grey mb-2 line-clamp-2">
+                    {event.description.length > 80 ? `${event.description.substring(0, 80)}...` : event.description}
                   </p>
                 )}
                 <div className="flex items-center gap-4 text-xs text-academy-grey">
@@ -80,13 +85,14 @@ const UpcomingEventsSection = () => {
                 size="sm" 
                 variant="outline" 
                 className="border-academy-blue text-academy-blue hover:bg-academy-blue-light"
+                disabled={!event.signup_url}
                 onClick={() => {
                   if (event.signup_url) {
                     window.open(event.signup_url, '_blank')
                   }
                 }}
               >
-                Register
+                {event.signup_url ? 'Register' : 'Info Only'}
               </Button>
             </div>
           )

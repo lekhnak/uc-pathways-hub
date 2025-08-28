@@ -22,12 +22,36 @@ const Calendar = () => {
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'Masterclass': return 'bg-purple-100 text-purple-800'
-      case 'Workshop': return 'bg-blue-100 text-blue-800'
-      case 'Webinar': return 'bg-green-100 text-green-800'
-      case 'Networking': return 'bg-orange-100 text-orange-800'
-      case 'Lecture': return 'bg-indigo-100 text-indigo-800'
+      case 'masterclass': return 'bg-purple-100 text-purple-800'
+      case 'workshop': return 'bg-blue-100 text-blue-800'
+      case 'webinar': return 'bg-green-100 text-green-800'
+      case 'networking': return 'bg-orange-100 text-orange-800'
+      case 'teach-in': return 'bg-indigo-100 text-indigo-800'
+      case 'general': return 'bg-gray-100 text-gray-800'
       default: return 'bg-academy-grey-light text-academy-grey'
+    }
+  }
+
+  const formatEventType = (type: string) => {
+    switch (type) {
+      case 'masterclass': return 'Masterclass'
+      case 'workshop': return 'Workshop'
+      case 'webinar': return 'Webinar'
+      case 'networking': return 'Networking'
+      case 'teach-in': return 'Teach-In'
+      case 'general': return 'General'
+      default: return type
+    }
+  }
+
+  const formatStatus = (status: string) => {
+    switch (status) {
+      case 'filling-fast': return 'Filling Fast'
+      case 'open': return 'Open'
+      case 'full': return 'Full'
+      case 'upcoming': return 'Upcoming'
+      case 'cancelled': return 'Cancelled'
+      default: return status
     }
   }
 
@@ -143,17 +167,15 @@ const Calendar = () => {
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <CardTitle className="text-xl text-academy-blue">{event.title}</CardTitle>
-                      <Badge className={getTypeColor(event.event_type)}>{event.event_type}</Badge>
+                      <Badge className={getTypeColor(event.event_type)}>{formatEventType(event.event_type)}</Badge>
                       <Badge className={getStatusColor(event.status)}>
-                        {event.status === 'filling-fast' ? 'Filling Fast' : 
-                         event.status === 'open' ? 'Open' : 
-                         event.status === 'full' ? 'Full' : 'Upcoming'}
+                        {formatStatus(event.status)}
                       </Badge>
                     </div>
                     <CardDescription className="text-lg font-medium text-academy-blue mb-2">
                       {event.speakers && event.speakers.length > 0 ? event.speakers.join(', ') : 'TBA'}
                     </CardDescription>
-                    <CardDescription className="text-base">{event.description}</CardDescription>
+                    <CardDescription className="text-base line-clamp-3">{event.description}</CardDescription>
                   </div>
                 </div>
               </CardHeader>
@@ -203,14 +225,16 @@ const Calendar = () => {
                 <div className="flex gap-3 pt-2">
                   <Button 
                     className="flex-1 bg-academy-blue hover:bg-academy-blue-dark"
-                    disabled={event.status === 'full'}
+                    disabled={event.status === 'full' || event.status === 'cancelled' || !event.signup_url}
                     onClick={() => {
                       if (event.signup_url) {
                         window.open(event.signup_url, '_blank');
                       }
                     }}
                   >
-                    {event.status === 'full' ? 'Event Full' : 'Register Now'}
+                    {event.status === 'full' ? 'Event Full' : 
+                     event.status === 'cancelled' ? 'Cancelled' :
+                     !event.signup_url ? 'Info Only' : 'Register Now'}
                   </Button>
                   <Button variant="outline" className="border-academy-blue text-academy-blue hover:bg-academy-blue-light">
                     <Bell className="h-4 w-4 mr-2" />
