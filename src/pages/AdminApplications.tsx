@@ -181,9 +181,14 @@ const AdminApplications = () => {
           : `${applicantName}'s application has been ${newStatus}`,
       })
 
-      // Close modal and refresh applications
+      // Close modal and immediately update the local state to remove the application from view
       setIsModalOpen(false)
       setSelectedApplication(null)
+      
+      // Remove the updated application from the current list immediately for better UX
+      setApplications(prevApps => prevApps.filter(app => app.id !== applicationId))
+      
+      // Also refresh from server to ensure data consistency
       fetchApplications()
     } catch (error: any) {
       console.error('Error updating application:', error)

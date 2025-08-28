@@ -424,7 +424,7 @@ const AdminDashboard = () => {
     try {
       console.log('Fetching pending applications via edge function...')
       
-      // Use admin edge function with proper authorization
+      // Use admin edge function with proper authorization - only fetch pending applications
       const { data, error } = await supabase.functions.invoke('get-admin-applications', {
         body: { 
           status: 'pending',
@@ -438,7 +438,9 @@ const AdminDashboard = () => {
       }
       
       console.log('Fetched pending applications:', data?.applications)
-      setApplications(data?.applications || [])
+      // Only show pending applications in Recent Applications section
+      const pendingApplications = (data?.applications || []).filter((app: any) => app.status === 'pending')
+      setApplications(pendingApplications)
     } catch (error) {
       console.error('Error fetching applications:', error)
       toast({
