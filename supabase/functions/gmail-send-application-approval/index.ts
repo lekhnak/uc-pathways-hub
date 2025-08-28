@@ -103,7 +103,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("Sending application approval email:", { email, program });
 
     const accessToken = await getGmailAccessToken();
-    const loginUrl = `${Deno.env.get("SITE_URL") || "https://wotqxwqlmjcnrckfjgno.lovableproject.com"}/auth`;
+    const loginUrl = `https://preview--uc-pathways-hub.lovable.app/auth`;
 
     const htmlContent = `
       <!DOCTYPE html>
