@@ -22,6 +22,7 @@ import Mentorship from "./pages/Mentorship";
 import Chat from "./pages/Chat";
 import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
+import ForgotPassword from "./pages/ForgotPassword";
 import AdminAuth from "./pages/AdminAuth";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminApplications from "./pages/AdminApplications";
@@ -45,6 +46,7 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               <Route path="/auth" element={<Auth />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/set-password" element={<SetPassword />} />
               <Route path="/change-password" element={<ChangePassword />} />
               <Route path="/admin/auth" element={<AdminAuth />} />

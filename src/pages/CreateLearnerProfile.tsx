@@ -68,7 +68,7 @@ const CreateLearnerProfile = () => {
             first_name: formData.firstName,
             last_name: formData.lastName
           },
-          emailRedirectTo: `${window.location.origin}/change-password`
+          emailRedirectTo: `https://preview--uc-pathways-hub.lovable.app/auth`
         }
       })
 
@@ -78,6 +78,25 @@ const CreateLearnerProfile = () => {
       }
 
       console.log('User account created successfully')
+
+      // Create profile record with temporary password
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          user_id: authData.user?.id,
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          email: formData.email,
+          temp_password: tempPassword,
+          is_temp_password_used: false,
+        })
+
+      if (profileError) {
+        console.error('Profile creation error:', profileError)
+        throw new Error('Account created but failed to create profile')
+      }
+
+      console.log('Profile created successfully')
 
       // Send approval email with temporary credentials
       const { error: emailError } = await supabase.functions.invoke('gmail-send-application-approval', {
@@ -223,7 +242,7 @@ const CreateLearnerProfile = () => {
         <CardContent className="space-y-2 text-sm text-muted-foreground">
           <p>1. A user account will be created with a temporary password</p>
           <p>2. An approval email with login credentials will be sent to the learner</p>
-          <p>3. The learner can login and change their password using the Change Password page</p>
+          <p>3. The learner can use the "Forgot Password" link on the sign-in page to reset their password</p>
           <p>4. They will then have full access to all learner dashboard features</p>
         </CardContent>
       </Card>

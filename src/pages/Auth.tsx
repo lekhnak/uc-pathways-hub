@@ -411,9 +411,8 @@ const Auth = () => {
           
           <CardContent>
             <Tabs defaultValue="signin" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 mb-6">
+              <TabsList className="grid w-full grid-cols-2 mb-6">
                 <TabsTrigger value="signin">Sign In</TabsTrigger>
-                <TabsTrigger value="change-password">Change Password</TabsTrigger>
                 <TabsTrigger value="apply">Apply Now</TabsTrigger>
               </TabsList>
 
@@ -461,156 +460,19 @@ const Auth = () => {
                   >
                     {isLoading ? "Signing in..." : "Sign In"}
                   </Button>
+
+                  <div className="text-center mt-4">
+                    <button
+                      type="button"
+                      onClick={() => navigate('/forgot-password')}
+                      className="text-sm text-academy-blue hover:text-academy-blue-dark underline"
+                    >
+                      Forgot your password? Reset it here
+                    </button>
+                  </div>
                 </form>
               </TabsContent>
 
-              <TabsContent value="change-password">
-                <form onSubmit={changePasswordForm.handleSubmit(handleChangePassword)} className="space-y-6">
-                  <div className="text-center mb-6">
-                    <Shield className="h-8 w-8 text-academy-blue mx-auto mb-2" />
-                    <h3 className="text-xl font-semibold text-academy-blue">Change Your Password</h3>
-                    <p className="text-academy-grey">Use your temporary credentials to set up a new password</p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="change-email">Email Address</Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-3 h-4 w-4 text-academy-grey" />
-                      <Input
-                        id="change-email"
-                        type="email"
-                        placeholder="Enter your email"
-                        className="pl-10"
-                        {...changePasswordForm.register("email", { required: true })}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="current-password">Current/Temporary Password</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-3 h-4 w-4 text-academy-grey" />
-                      <Input
-                        id="current-password"
-                        type={showPasswords.current ? "text" : "password"}
-                        placeholder="Enter your temporary password"
-                        className="pl-10 pr-10"
-                        {...changePasswordForm.register("currentPassword", { required: true })}
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                        onClick={() => togglePasswordVisibility('current')}
-                      >
-                        {showPasswords.current ? (
-                          <EyeOff className="h-4 w-4" />
-                        ) : (
-                          <Eye className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="new-password">New Password</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-3 h-4 w-4 text-academy-grey" />
-                      <Input
-                        id="new-password"
-                        type={showPasswords.new ? "text" : "password"}
-                        placeholder="Enter your new password"
-                        className="pl-10 pr-10"
-                        {...changePasswordForm.register("newPassword", { required: true })}
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                        onClick={() => togglePasswordVisibility('new')}
-                      >
-                        {showPasswords.new ? (
-                          <EyeOff className="h-4 w-4" />
-                        ) : (
-                          <Eye className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="confirm-password">Confirm New Password</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-3 h-4 w-4 text-academy-grey" />
-                      <Input
-                        id="confirm-password"
-                        type={showPasswords.confirm ? "text" : "password"}
-                        placeholder="Confirm your new password"
-                        className="pl-10 pr-10"
-                        {...changePasswordForm.register("confirmPassword", { required: true })}
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                        onClick={() => togglePasswordVisibility('confirm')}
-                      >
-                        {showPasswords.confirm ? (
-                          <EyeOff className="h-4 w-4" />
-                        ) : (
-                          <Eye className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-
-                  {changePasswordForm.watch("newPassword") && (
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium">Password Requirements</Label>
-                      <div className="space-y-1">
-                        {[
-                          { key: 'length', text: 'At least 8 characters', valid: changePasswordForm.watch("newPassword")?.length >= 8 },
-                          { key: 'number', text: 'Contains a number', valid: /\d/.test(changePasswordForm.watch("newPassword") || '') },
-                          { key: 'special', text: 'Contains a special character', valid: /[!@#$%^&*(),.?":{}|<>]/.test(changePasswordForm.watch("newPassword") || '') },
-                          { key: 'match', text: 'Passwords match', valid: changePasswordForm.watch("newPassword") === changePasswordForm.watch("confirmPassword") && changePasswordForm.watch("confirmPassword") !== '' }
-                        ].map(({ key, text, valid }) => (
-                          <div key={key} className="flex items-center gap-2 text-sm">
-                            {valid ? (
-                              <Check className="h-3 w-3 text-green-500" />
-                            ) : (
-                              <X className="h-3 w-3 text-red-500" />
-                            )}
-                            <span className={valid ? "text-green-700" : "text-red-700"}>
-                              {text}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  <Button 
-                    type="submit" 
-                    className="w-full bg-academy-blue hover:bg-academy-blue-dark text-white"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        Changing Password...
-                      </>
-                    ) : (
-                      <>
-                        <Shield className="h-4 w-4 mr-2" />
-                        Change Password
-                      </>
-                    )}
-                  </Button>
-                </form>
-              </TabsContent>
 
               <TabsContent value="apply">
                 <form onSubmit={applicationForm.handleSubmit(handleApplicationSubmit)} className="space-y-6">
