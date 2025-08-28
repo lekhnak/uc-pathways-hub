@@ -1,6 +1,35 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { Resend } from "npm:resend@2.0.0";
 
 console.log("Edge function starting up...");
+
+// Primary email sending function using Resend
+const sendEmail = async (to: string, subject: string, htmlContent: string) => {
+  const resendApiKey = Deno.env.get("RESEND_API_KEY");
+  
+  if (resendApiKey) {
+    console.log("Using Resend to send email...");
+    try {
+      const resend = new Resend(resendApiKey);
+      
+      const emailResponse = await resend.emails.send({
+        from: "UC Investment Academy <onboarding@resend.dev>",
+        to: [to],
+        subject: subject,
+        html: htmlContent,
+      });
+
+      console.log("Email sent successfully via Resend:", emailResponse);
+      return emailResponse;
+    } catch (error) {
+      console.error("Resend failed, trying Gmail fallback:", error.message);
+      return await sendGmailEmail(to, subject, htmlContent);
+    }
+  } else {
+    console.log("No Resend API key, using Gmail...");
+    return await sendGmailEmail(to, subject, htmlContent);
+  }
+};
 
 // Gmail API function to send emails with better error handling
 const sendGmailEmail = async (to: string, subject: string, htmlContent: string) => {
@@ -193,15 +222,15 @@ const handler = async (req: Request): Promise<Response> => {
       </html>
     `;
 
-    console.log("Sending email via Gmail API...");
+    console.log("Sending email...");
     
-    const emailResponse = await sendGmailEmail(
+    const emailResponse = await sendEmail(
       email,
       "Set Your Password - UC Investment Academy",
       htmlContent
     );
 
-    console.log("Email sent successfully via Gmail:", emailResponse);
+    console.log("Email sent successfully:", emailResponse);
 
     return new Response(JSON.stringify({ 
       success: true, 
