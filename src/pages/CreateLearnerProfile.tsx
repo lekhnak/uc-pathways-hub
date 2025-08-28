@@ -59,7 +59,24 @@ const CreateLearnerProfile = () => {
       
       console.log('Generated temporary credentials for:', formData.email)
 
+      // Check if profile already exists for this email
+      const { data: existingProfile, error: profileCheckError } = await supabase
+        .from('profiles')
+        .select('id, email')
+        .eq('email', formData.email)
+        .maybeSingle()
+
+      if (profileCheckError) {
+        console.error('Error checking existing profile:', profileCheckError)
+        throw new Error('Failed to check existing profile')
+      }
+
+      if (existingProfile) {
+        throw new Error('A learner profile with this email already exists. Please use a different email address.')
+      }
+
       // Create user account with temporary password (no email will be sent since confirmation is disabled)
+      let userId: string | undefined;
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: tempPassword,
@@ -73,16 +90,25 @@ const CreateLearnerProfile = () => {
 
       if (authError) {
         console.error('User creation error:', authError)
-        throw authError
+        if (authError.message?.includes('User already registered') || authError.message?.includes('user_already_exists')) {
+          throw new Error('An account with this email already exists but no profile is set up. Please contact the administrator to resolve this issue.')
+        } else {
+          throw authError
+        }
       }
 
+      userId = authData.user?.id
+      if (!userId) {
+        throw new Error('Failed to get user ID from created account')
+      }
+      
       console.log('User account created successfully')
 
       // Create profile record with temporary password
       const { error: profileError } = await supabase
         .from('profiles')
         .insert({
-          user_id: authData.user?.id,
+          user_id: userId,
           first_name: formData.firstName,
           last_name: formData.lastName,
           email: formData.email,
