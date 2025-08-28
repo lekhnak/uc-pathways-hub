@@ -263,12 +263,12 @@ const Auth = () => {
 
       // Send confirmation email
       try {
-        await supabase.functions.invoke('send-application-confirmation', {
+        await supabase.functions.invoke('gmail-send-application-confirmation', {
           body: {
             firstName: data.firstName,
             lastName: data.lastName,
             email: data.email,
-            ucCampus: data.ucCampus,
+            program: data.ucCampus,
             applicationId: insertData[0].id
           }
         })

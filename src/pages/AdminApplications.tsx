@@ -144,7 +144,7 @@ const AdminApplications = () => {
           console.log('Password reset token created for approval')
           
           // Send password setup email
-          const { error: emailError } = await supabase.functions.invoke('send-password-setup', {
+          const { error: emailError } = await supabase.functions.invoke('gmail-send-password-setup', {
             body: { 
               firstName,
               lastName,

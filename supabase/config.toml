@@ -6,5 +6,17 @@ verify_jwt = false
 [functions.send-application-approval]
 verify_jwt = false
 
+[functions.send-password-setup]
+verify_jwt = false
+
 [functions.admin-login]
+verify_jwt = false
+
+[functions.gmail-send-application-confirmation]
+verify_jwt = false
+
+[functions.gmail-send-application-approval]
+verify_jwt = false
+
+[functions.gmail-send-password-setup]
 verify_jwt = false

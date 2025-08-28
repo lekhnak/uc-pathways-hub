@@ -513,7 +513,7 @@ const AdminDashboard = () => {
       console.log('Password reset token created successfully')
 
       // Send password setup email
-      const { error: emailError } = await supabase.functions.invoke('send-password-setup', {
+      const { error: emailError } = await supabase.functions.invoke('gmail-send-password-setup', {
         body: { 
           firstName,
           lastName,
