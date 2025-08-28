@@ -186,7 +186,7 @@ const AdminApplications = () => {
           throw new Error('Failed to get user ID from created account')
         }
 
-        // Create profile
+        // Create profile with all application data
         const { error: profileError } = await supabase
           .from('profiles')
           .insert({
@@ -198,6 +198,7 @@ const AdminApplications = () => {
             major: applicationData.major,
             gpa: applicationData.gpa,
             graduation_year: applicationData.graduation_year,
+            linkedin_url: applicationData.linkedin_url,
             temp_password: tempPassword,
             is_temp_password_used: false,
           })
@@ -235,9 +236,28 @@ const AdminApplications = () => {
       setIsModalOpen(false)
       setSelectedApplication(null)
       
-      // Remove the application from current view
-      setApplications(prevApps => prevApps.filter(app => app.id !== applicationId))
-      setFilteredApplications(prevApps => prevApps.filter(app => app.id !== applicationId))
+      // Update local state to move application to appropriate category or remove it
+      if (newStatus === 'rejected') {
+        // Remove rejected applications from all views
+        setApplications(prevApps => prevApps.filter(app => app.id !== applicationId))
+        setFilteredApplications(prevApps => prevApps.filter(app => app.id !== applicationId))
+      } else {
+        // Update status for approved applications
+        setApplications(prevApps => 
+          prevApps.map(app => 
+            app.id === applicationId 
+              ? { ...app, status: newStatus, reviewed_at: new Date().toISOString() }
+              : app
+          )
+        )
+        setFilteredApplications(prevApps => 
+          prevApps.map(app => 
+            app.id === applicationId 
+              ? { ...app, status: newStatus, reviewed_at: new Date().toISOString() }
+              : app
+          )
+        )
+      }
       
       // Refresh from server to ensure data consistency
       fetchApplications()

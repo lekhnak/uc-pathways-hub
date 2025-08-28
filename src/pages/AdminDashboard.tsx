@@ -775,13 +775,26 @@ const AdminDashboard = () => {
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Rejected</CardTitle>
+            <UserCheck className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-red-600">{stats.rejectedApplications}</div>
+            <p className="text-xs text-muted-foreground">
+              Denied applications
+            </p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Success Rate</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {stats.totalApplications > 0 
-                ? Math.round((stats.approvedApplications / stats.totalApplications) * 100)
+              {(stats.approvedApplications + stats.rejectedApplications) > 0 
+                ? Math.round((stats.approvedApplications / (stats.approvedApplications + stats.rejectedApplications)) * 100)
                 : 0}%
             </div>
             <p className="text-xs text-muted-foreground">
@@ -791,67 +804,39 @@ const AdminDashboard = () => {
         </Card>
       </div>
 
-      {/* Recent Applications */}
+      {/* Applications Management */}
       <Card>
         <CardHeader>
-          <CardTitle>Recent Applications</CardTitle>
-          <CardDescription>
-            Pending applications awaiting review
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Application Management</CardTitle>
+              <CardDescription>
+                Review and manage student applications
+              </CardDescription>
+            </div>
+            <NavLink to="/admin/applications">
+              <Button>
+                <Users className="h-4 w-4 mr-2" />
+                Manage Applications
+              </Button>
+            </NavLink>
+          </div>
         </CardHeader>
         <CardContent>
-          {applications.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p>No applications found</p>
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="text-center p-4 border rounded-lg">
+              <div className="text-2xl font-bold text-orange-600">{stats.pendingApplications}</div>
+              <p className="text-sm text-muted-foreground">Pending Review</p>
             </div>
-          ) : (
-            <div className="space-y-4">
-              {applications.map((app) => (
-                <div key={app.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <h4 className="font-medium">{app.first_name} {app.last_name}</h4>
-                      <Badge variant="secondary">{app.uc_campus}</Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground">{app.email}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {app.major} • GPA: {app.gpa}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Submitted: {new Date(app.submitted_at).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant={
-                      app.status === 'pending' ? 'outline' : 
-                      app.status === 'approved' ? 'default' : 
-                      'destructive'
-                    }>
-                      {app.status}
-                    </Badge>
-                    {app.status === 'pending' && (
-                      <div className="flex gap-2">
-                        <Button 
-                          size="sm"
-                          onClick={() => handleApproveApplication(app.id, app.email, app.first_name, app.last_name)}
-                        >
-                          Approve
-                        </Button>
-                        <Button 
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleDenyApplication(app.id, app.email, app.first_name, app.last_name)}
-                        >
-                          Deny
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
+            <div className="text-center p-4 border rounded-lg">
+              <div className="text-2xl font-bold text-green-600">{stats.approvedApplications}</div>
+              <p className="text-sm text-muted-foreground">Approved</p>
             </div>
-          )}
+            <div className="text-center p-4 border rounded-lg">
+              <div className="text-2xl font-bold text-red-600">{stats.rejectedApplications}</div>
+              <p className="text-sm text-muted-foreground">Rejected</p>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
