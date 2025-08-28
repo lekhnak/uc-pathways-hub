@@ -135,9 +135,35 @@ const Modules = () => {
                       </Badge>
                     )}
                   </div>
-                  <CardDescription className="text-base">{module.description}</CardDescription>
-                  
-                  {module.id === 4 && (
+                   <CardDescription className="text-base">{module.description}</CardDescription>
+                   
+                   {module.id === 2 && (
+                     <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                       <p className="text-sm text-blue-800 mb-3">
+                         <strong>Access Training The Street Platform:</strong>
+                       </p>
+                       <div className="flex flex-col gap-2">
+                         <a 
+                           href="https://portal.trainingthestreet.com/s/course-registration?CourseId=701S600000EXe8H&CourseCode=01E4A4" 
+                           target="_blank" 
+                           rel="noopener noreferrer"
+                           className="text-blue-600 hover:text-blue-800 underline text-sm font-medium"
+                         >
+                           📝 Register for TTS Course
+                         </a>
+                         <a 
+                           href="https://tts.mrooms3.net/course/view.php?id=3780" 
+                           target="_blank" 
+                           rel="noopener noreferrer"
+                           className="text-blue-600 hover:text-blue-800 underline text-sm font-medium"
+                         >
+                           🔐 Sign In to TTS Platform
+                         </a>
+                       </div>
+                     </div>
+                   )}
+                   
+                   {module.id === 4 && (
                     <div className="mt-4 p-4 bg-purple-50 rounded-lg border border-purple-200">
                       <p className="text-sm text-purple-800 mb-3">
                         <strong>About COWL 52:</strong> If you are interested in learning more about Personal Finance 
