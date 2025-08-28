@@ -28,6 +28,15 @@ const CreateLearnerProfile = () => {
     return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
   }
 
+  const generateTempPassword = () => {
+    const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789'
+    let result = ''
+    for (let i = 0; i < 12; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length))
+    }
+    return result
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -40,56 +49,60 @@ const CreateLearnerProfile = () => {
       return
     }
 
-    console.log('Starting direct profile creation for:', formData)
+    console.log('Starting learner account creation for:', formData)
     setLoading(true)
 
     try {
-      // Generate secure token
-      const token = generateToken()
-      const expiresAt = new Date()
-      expiresAt.setHours(expiresAt.getHours() + 24) // Token expires in 24 hours
+      // Generate temporary password
+      const tempPassword = generateTempPassword()
+      const tempUsername = formData.email // Use email as username
+      
+      console.log('Generated temporary credentials for:', formData.email)
 
-      console.log('Generated token:', token)
-      console.log('Token expires at:', expiresAt.toISOString())
+      // Create user account with temporary password
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: tempPassword,
+        options: {
+          data: {
+            first_name: formData.firstName,
+            last_name: formData.lastName
+          },
+          emailRedirectTo: `${window.location.origin}/change-password`
+        }
+      })
 
-      // Store password reset token
-      const { error: tokenError } = await supabase
-        .from('password_reset_tokens')
-        .insert({
-          email: formData.email,
-          token,
-          expires_at: expiresAt.toISOString()
-        })
-
-      if (tokenError) {
-        console.error('Token creation error:', tokenError)
-        throw tokenError
+      if (authError) {
+        console.error('User creation error:', authError)
+        throw authError
       }
 
-      console.log('Password reset token created successfully')
+      console.log('User account created successfully')
 
-      // Send password setup email
-      const { error: emailError } = await supabase.functions.invoke('gmail-send-password-setup', {
+      // Send approval email with temporary credentials
+      const { error: emailError } = await supabase.functions.invoke('gmail-send-application-approval', {
         body: {
           firstName: formData.firstName,
           lastName: formData.lastName,
           email: formData.email,
-          token
+          tempUsername: tempUsername,
+          tempPassword: tempPassword,
+          program: 'UC Investment Academy'
         }
       })
 
       if (emailError) {
         console.error('Email sending error:', emailError)
         toast({
-          title: "Profile Created",
-          description: `Learner profile created successfully, but the password setup email failed to send. Error: ${emailError.message || 'Unknown error'}`,
+          title: "Account Created",
+          description: `Learner account created successfully, but the approval email failed to send. Error: ${emailError.message || 'Unknown error'}. Please provide the temporary credentials manually.`,
           variant: "destructive",
         })
       } else {
-        console.log('Password setup email sent successfully')
+        console.log('Approval email sent successfully')
         toast({
-          title: "Profile Created Successfully",
-          description: `${formData.firstName} ${formData.lastName} has been added as a learner. A password setup email has been sent to ${formData.email}.`,
+          title: "Account Created Successfully",
+          description: `${formData.firstName} ${formData.lastName} has been added as a learner. An approval email with login credentials has been sent to ${formData.email}.`,
           duration: 5000,
         })
       }
@@ -102,10 +115,10 @@ const CreateLearnerProfile = () => {
       })
 
     } catch (error: any) {
-      console.error('Error creating profile:', error)
+      console.error('Error creating learner account:', error)
       toast({
         title: "Error",
-        description: `Failed to create learner profile: ${error.message || 'Unknown error'}. Please try again.`,
+        description: `Failed to create learner account: ${error.message || 'Unknown error'}. Please try again.`,
         variant: "destructive",
       })
     } finally {
@@ -185,16 +198,16 @@ const CreateLearnerProfile = () => {
             </div>
 
             <div className="pt-4">
-              <Button type="submit" disabled={loading} className="w-full md:w-auto">
+            <Button type="submit" disabled={loading} className="w-full md:w-auto">
                 {loading ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Creating Profile...
+                    Creating Account...
                   </>
                 ) : (
                   <>
                     <Send className="h-4 w-4 mr-2" />
-                    Create Profile & Send Setup Email
+                    Create Account & Send Email
                   </>
                 )}
               </Button>
@@ -208,10 +221,10 @@ const CreateLearnerProfile = () => {
           <CardTitle className="text-sm font-medium">What happens next?</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-sm text-muted-foreground">
-          <p>1. A secure password setup link will be sent to the learner's email</p>
-          <p>2. The learner will be able to create their password and access the platform</p>
-          <p>3. They will have full access to all learner dashboard features</p>
-          <p>4. The setup link expires after 24 hours for security</p>
+          <p>1. A user account will be created with a temporary password</p>
+          <p>2. An approval email with login credentials will be sent to the learner</p>
+          <p>3. The learner can login and change their password using the Change Password page</p>
+          <p>4. They will then have full access to all learner dashboard features</p>
         </CardContent>
       </Card>
     </div>

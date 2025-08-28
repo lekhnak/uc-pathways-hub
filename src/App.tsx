@@ -30,6 +30,7 @@ import AdminCalendarEvents from "./pages/AdminCalendarEvents";
 import AdminProfile from "./pages/AdminProfile";
 import CreateLearnerProfile from "./pages/CreateLearnerProfile";
 import SetPassword from "./pages/SetPassword";
+import ChangePassword from "./pages/ChangePassword";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -45,6 +46,7 @@ const App = () => (
             <Routes>
               <Route path="/auth" element={<Auth />} />
               <Route path="/set-password" element={<SetPassword />} />
+              <Route path="/change-password" element={<ChangePassword />} />
               <Route path="/admin/auth" element={<AdminAuth />} />
           <Route path="/admin/*" element={<AdminLayout />}>
             <Route path="" element={<AdminDashboard />} />
