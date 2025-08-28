@@ -13,6 +13,8 @@ interface LoginRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
+  console.log('Admin login function called - v2.0');
+  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -47,6 +49,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     console.log(`Admin login attempt for username: ${username}`);
+    console.log('Password received:', password);
 
     // Fetch admin user from database
     const { data: adminUser, error: fetchError } = await supabaseClient
@@ -69,8 +72,13 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    console.log('Admin user found:', adminUser.username);
+    console.log('Stored password hash:', adminUser.password_hash);
+
     // Verify password using scrypt
+    console.log('Attempting password verification...');
     const isValidPassword = await verify(password, adminUser.password_hash);
+    console.log('Password verification result:', isValidPassword);
 
     if (!isValidPassword) {
       console.log('Invalid password for admin user:', username);
