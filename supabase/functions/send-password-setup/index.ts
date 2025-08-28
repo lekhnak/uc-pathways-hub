@@ -1,19 +1,17 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
-// Simple email sending using a basic SMTP approach
-const sendEmail = async (to: string, subject: string, html: string) => {
-  console.log(`Attempting to send email to: ${to}`);
-  
-  // For now, let's simulate email sending and log the content
-  console.log("Email Details:");
-  console.log("To:", to);
-  console.log("Subject:", subject);
-  console.log("HTML Content:", html.substring(0, 200) + "...");
-  
-  // In a real scenario, you would integrate with a proper email service
-  // For testing purposes, we'll return success
-  return { success: true };
-};
+const smtpClient = new SMTPClient({
+  connection: {
+    hostname: "smtp.gmail.com",
+    port: 587,
+    tls: true,
+    auth: {
+      username: Deno.env.get("GMAIL_USER")!,
+      password: Deno.env.get("GMAIL_PASS")!,
+    },
+  },
+});
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -142,17 +140,16 @@ const handler = async (req: Request): Promise<Response> => {
       </html>
     `;
 
-    console.log("Attempting to send email...");
+    console.log("Attempting to send email via Gmail SMTP...");
     
-    const emailResult = await sendEmail(
-      email,
-      "Set Your Password - UC Investment Academy",
-      htmlContent
-    );
-    
-    console.log("Email send result:", emailResult);
+    await smtpClient.send({
+      from: "UC Investment Academy <uc.investment.academy@gmail.com>",
+      to: email,
+      subject: "Set Your Password - UC Investment Academy",
+      html: htmlContent,
+    });
 
-    console.log("Password setup email processed successfully");
+    console.log("Password setup email sent successfully via Gmail SMTP");
 
     return new Response(JSON.stringify({ 
       success: true, 
