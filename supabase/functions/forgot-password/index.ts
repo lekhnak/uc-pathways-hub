@@ -39,7 +39,7 @@ const handler = async (req: Request): Promise<Response> => {
       .from('profiles')
       .select('id, email, temp_password, is_temp_password_used, temp_password_expires_at, user_id')
       .eq('email', email)
-      .single()
+      .maybeSingle()
 
     if (profileError || !profile) {
       console.error('Profile not found:', profileError)
