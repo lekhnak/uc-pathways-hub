@@ -19,21 +19,31 @@ const getGmailAccessToken = async () => {
   const clientSecret = Deno.env.get("GMAIL_CLIENT_SECRET");
   const refreshToken = Deno.env.get("GMAIL_REFRESH_TOKEN");
 
-  const response = await fetch("https://oauth2.googleapis.com/token", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: new URLSearchParams({
-      client_id: clientId!,
-      client_secret: clientSecret!,
-      refresh_token: refreshToken!,
-      grant_type: "refresh_token",
-    }),
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
-  const data = await response.json();
-  return data.access_token;
+  try {
+    const response = await fetch("https://oauth2.googleapis.com/token", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        client_id: clientId!,
+        client_secret: clientSecret!,
+        refresh_token: refreshToken!,
+        grant_type: "refresh_token",
+      }),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+    const data = await response.json();
+    return data.access_token;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    throw new Error(`Failed to get Gmail access token: ${error.message}`);
+  }
 };
 
 const sendGmailEmail = async (accessToken: string, to: string, subject: string, htmlContent: string) => {
@@ -55,18 +65,31 @@ const sendGmailEmail = async (accessToken: string, to: string, subject: string, 
   const base64String = btoa(String.fromCharCode(...encodedBytes));
   const encodedEmail = base64String.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 
-  const response = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      raw: encodedEmail,
-    }),
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
 
-  return response.json();
+  try {
+    const response = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        raw: encodedEmail,
+      }),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+    if (!response.ok) {
+      throw new Error(`Gmail API error: ${response.status} ${response.statusText}`);
+    }
+    return response.json();
+  } catch (error) {
+    clearTimeout(timeoutId);
+    throw new Error(`Failed to send email via Gmail: ${error.message}`);
+  }
 };
 
 const handler = async (req: Request): Promise<Response> => {
