@@ -370,7 +370,7 @@ const ApplicationModal: React.FC<ApplicationModalProps> = ({
               onClick={() => onReject(application.id, 'rejected', `${application.first_name} ${application.last_name}`)}
             >
               <X className="h-4 w-4 mr-2" />
-              Reject
+              Reject & Delete
             </Button>
             <Button
               onClick={() => onApprove(application.id, 'approved', `${application.first_name} ${application.last_name}`, application.email)}

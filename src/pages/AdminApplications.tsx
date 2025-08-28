@@ -114,84 +114,132 @@ const AdminApplications = () => {
     console.log(`Starting status update: ${applicationId} to ${newStatus}`)
     
     try {
-      const { error } = await supabase
-        .from('applications')
-        .update({ 
-          status: newStatus,
-          reviewed_at: new Date().toISOString()
-        })
-        .eq('id', applicationId)
+      if (newStatus === 'rejected') {
+        // For rejected applications, delete the entire row
+        const { error: deleteError } = await supabase
+          .from('applications')
+          .delete()
+          .eq('id', applicationId)
 
-      if (error) {
-        console.error('Error updating application status:', error)
-        throw error
-      }
-
-      console.log(`Application ${applicationId} status updated to ${newStatus}`)
-
-      // Enhanced approval process - create learner profile and send password setup email
-      if (newStatus === 'approved' && email) {
-        const [firstName, lastName] = applicantName.split(' ')
-        
-        console.log(`Processing approval for ${firstName} ${lastName} (${email})`)
-        
-        // Generate secure token for password setup
-        const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
-        const expiresAt = new Date()
-        expiresAt.setHours(expiresAt.getHours() + 24) // Token expires in 24 hours
-
-        console.log('Generated token for approval:', token)
-
-        // Store password reset token
-        const { error: tokenError } = await supabase
-          .from('password_reset_tokens')
-          .insert({
-            email,
-            token,
-            expires_at: expiresAt.toISOString()
-          })
-
-        if (tokenError) {
-          console.error('Token creation error during approval:', tokenError)
-        } else {
-          console.log('Password reset token created for approval')
-          
-          // Send password setup email
-          const { error: emailError } = await supabase.functions.invoke('gmail-send-password-setup', {
-            body: { 
-              firstName,
-              lastName,
-              email,
-              token
-            }
-          })
-
-          if (emailError) {
-            console.error('Email sending error during approval:', emailError)
-          } else {
-            console.log('Password setup email sent for approval')
-          }
+        if (deleteError) {
+          console.error('Error deleting rejected application:', deleteError)
+          throw deleteError
         }
+
+        console.log(`Application ${applicationId} deleted (rejected)`)
+        
+        toast({
+          title: "Application Rejected",
+          description: `${applicantName}'s application has been rejected and removed.`,
+        })
+      } else {
+        // For approved applications, update status and create profile
+        const { error: updateError } = await supabase
+          .from('applications')
+          .update({ 
+            status: newStatus,
+            reviewed_at: new Date().toISOString()
+          })
+          .eq('id', applicationId)
+
+        if (updateError) {
+          console.error('Error updating application status:', updateError)
+          throw updateError
+        }
+
+        console.log(`Application ${applicationId} status updated to ${newStatus}`)
+
+        // Get the full application data to create profile
+        const { data: applicationData, error: fetchError } = await supabase
+          .from('applications')
+          .select('*')
+          .eq('id', applicationId)
+          .single()
+
+        if (fetchError) {
+          console.error('Error fetching application data:', fetchError)
+          throw fetchError
+        }
+
+        // Generate temporary password
+        const tempPassword = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+
+        // Create user account
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+          email: applicationData.email,
+          password: tempPassword,
+          options: {
+            data: {
+              first_name: applicationData.first_name,
+              last_name: applicationData.last_name
+            }
+          }
+        })
+
+        if (authError && !authError.message?.includes('User already registered')) {
+          console.error('User creation error:', authError)
+          throw authError
+        }
+
+        const userId = authData.user?.id
+        if (!userId) {
+          throw new Error('Failed to get user ID from created account')
+        }
+
+        // Create profile
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            user_id: userId,
+            first_name: applicationData.first_name,
+            last_name: applicationData.last_name,
+            email: applicationData.email,
+            uc_campus: applicationData.uc_campus,
+            major: applicationData.major,
+            gpa: applicationData.gpa,
+            graduation_year: applicationData.graduation_year,
+            temp_password: tempPassword,
+            is_temp_password_used: false,
+          })
+
+        if (profileError) {
+          console.error('Profile creation error:', profileError)
+          throw profileError
+        }
+
+        console.log('Profile created successfully for approved application')
+
+        // Send approval email with login credentials
+        const { error: emailError } = await supabase.functions.invoke('gmail-send-application-approval', {
+          body: {
+            firstName: applicationData.first_name,
+            lastName: applicationData.last_name,
+            email: applicationData.email,
+            tempUsername: applicationData.email,
+            tempPassword: tempPassword,
+            program: 'UC Investment Academy'
+          }
+        })
+
+        if (emailError) {
+          console.error('Email sending error:', emailError)
+        }
+
+        toast({
+          title: "Application Approved",
+          description: `${applicantName}'s application has been approved, profile created, and login credentials sent to ${email}`,
+        })
       }
 
-      toast({
-        title: `Application ${newStatus}`,
-        description: newStatus === 'approved' && email 
-          ? `${applicantName}'s application has been approved and a password setup email has been sent to ${email}`
-          : `${applicantName}'s application has been ${newStatus}`,
-      })
-
-      // Close modal and immediately update the local state to remove the application from view
+      // Close modal and immediately update the local state
       setIsModalOpen(false)
       setSelectedApplication(null)
       
-      // For both approved and rejected applications, remove them from current view if we're showing pending
-      if (statusFilter === 'pending' || statusFilter === 'all') {
-        setApplications(prevApps => prevApps.filter(app => app.id !== applicationId))
-        setFilteredApplications(prevApps => prevApps.filter(app => app.id !== applicationId))
-      }
+      // Remove the application from current view
+      setApplications(prevApps => prevApps.filter(app => app.id !== applicationId))
+      setFilteredApplications(prevApps => prevApps.filter(app => app.id !== applicationId))
       
-      // Also refresh from server to ensure data consistency
+      // Refresh from server to ensure data consistency
       fetchApplications()
     } catch (error: any) {
       console.error('Error updating application:', error)
@@ -345,7 +393,7 @@ const AdminApplications = () => {
                           onClick={() => handleStatusUpdate(app.id, 'rejected', `${app.first_name} ${app.last_name}`)}
                         >
                           <X className="w-4 h-4 mr-1" />
-                          Reject
+                          Reject & Delete
                         </Button>
                       </div>
                     )}
