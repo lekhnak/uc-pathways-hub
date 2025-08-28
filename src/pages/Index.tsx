@@ -4,6 +4,7 @@ import { Progress } from "@/components/ui/progress"
 import { BookOpen, Award, Calendar, Users, TrendingUp, Play, MessageCircle } from "lucide-react"
 import { NavLink } from "react-router-dom"
 import heroImage from "@/assets/ucia-hero.jpg"
+import ActionItemsChecklist from "@/components/ActionItemsChecklist"
 
 const Index = () => {
 
@@ -54,6 +55,9 @@ const Index = () => {
           </div>
         </div>
       </div>
+
+      {/* Action Items Checklist */}
+      <ActionItemsChecklist />
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
