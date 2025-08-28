@@ -12,12 +12,8 @@ export default function Layout() {
   const navigate = useNavigate()
   const [isInfoDialogOpen, setIsInfoDialogOpen] = useState(false)
 
-  useEffect(() => {
-    if (!loading && !user) {
-      navigate("/auth")
-    }
-  }, [user, loading, navigate])
-
+  // Remove authentication requirement
+  
   if (loading) {
     return (
       <div className="min-h-screen bg-academy-grey-light flex items-center justify-center">
@@ -29,10 +25,6 @@ export default function Layout() {
         </div>
       </div>
     )
-  }
-
-  if (!user) {
-    return null
   }
 
   return (
@@ -60,7 +52,7 @@ export default function Layout() {
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
                 <span className="text-sm text-academy-grey">
-                  Welcome, {user.user_metadata?.first_name || user.email}
+                  Welcome, {user ? (user.user_metadata?.first_name || user.email) : 'Lekhna'}
                 </span>
                 <Dialog open={isInfoDialogOpen} onOpenChange={setIsInfoDialogOpen}>
                   <DialogTrigger asChild>
@@ -113,15 +105,17 @@ export default function Layout() {
                   </DialogContent>
                 </Dialog>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => signOut()}
-                className="border-academy-grey text-academy-grey hover:bg-academy-grey-light"
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Sign Out
-              </Button>
+              {user && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => signOut()}
+                  className="border-academy-grey text-academy-grey hover:bg-academy-grey-light"
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sign Out
+                </Button>
+              )}
             </div>
           </header>
 
