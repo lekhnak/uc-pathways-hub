@@ -408,14 +408,19 @@ const AdminDashboard = () => {
 
   const fetchApplications = async () => {
     try {
+      console.log('Fetching recent applications...')
       const { data, error } = await supabase
         .from('applications')
         .select('*')
-        .eq('status', 'pending')
         .order('submitted_at', { ascending: false })
-        .limit(5)
+        .limit(10) // Show more recent applications and remove status filter
 
-      if (error) throw error
+      if (error) {
+        console.error('Error fetching applications:', error)
+        throw error
+      }
+      
+      console.log('Fetched applications:', data)
       setApplications(data || [])
     } catch (error) {
       console.error('Error fetching applications:', error)
@@ -472,14 +477,6 @@ const AdminDashboard = () => {
     try {
       console.log(`Starting approval process for ${firstName} ${lastName} (${email})`)
       
-      // Generate secure token for password setup
-      const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
-      const expiresAt = new Date()
-      expiresAt.setHours(expiresAt.getHours() + 24) // Token expires in 24 hours
-
-      console.log('Generated token:', token)
-      console.log('Token expires at:', expiresAt.toISOString())
-
       // First, update application status
       const { error: updateError } = await supabase
         .from('applications')
@@ -496,29 +493,15 @@ const AdminDashboard = () => {
 
       console.log('Application status updated to approved')
 
-      // Store password reset token
-      const { error: tokenError } = await supabase
-        .from('password_reset_tokens')
-        .insert({
-          email,
-          token,
-          expires_at: expiresAt.toISOString()
-        })
-
-      if (tokenError) {
-        console.error('Token creation error:', tokenError)
-        throw tokenError
-      }
-
-      console.log('Password reset token created successfully')
-
-      // Send password setup email
-      const { error: emailError } = await supabase.functions.invoke('gmail-send-password-setup', {
+      // Send approval email using the Gmail function
+      const { error: emailError } = await supabase.functions.invoke('gmail-send-application-approval', {
         body: { 
           firstName,
           lastName,
           email,
-          token
+          tempUsername: email, // Use email as username for now
+          tempPassword: Math.random().toString(36).substring(2, 15), // Generate temp password
+          program: 'UC Investment Academy'
         }
       })
 
@@ -526,14 +509,14 @@ const AdminDashboard = () => {
         console.error('Email sending error:', emailError)
         toast({
           title: "Application Approved",
-          description: `${firstName}'s application has been approved, but password setup email failed to send. Please check email service configuration.`,
+          description: `${firstName}'s application has been approved, but approval email failed to send. Please check email service configuration.`,
           variant: "destructive",
         })
       } else {
-        console.log('Password setup email sent successfully')
+        console.log('Approval email sent successfully')
         toast({
           title: "Application Approved",
-          description: `${firstName}'s application has been approved and a password setup email has been sent to ${email}`,
+          description: `${firstName}'s application has been approved and an approval email has been sent to ${email}`,
           duration: 5000,
         })
       }
@@ -643,14 +626,14 @@ const AdminDashboard = () => {
         <CardHeader>
           <CardTitle>Recent Applications</CardTitle>
           <CardDescription>
-            Latest student applications requiring review
+            Latest student applications (showing all statuses)
           </CardDescription>
         </CardHeader>
         <CardContent>
           {applications.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p>No pending applications</p>
+              <p>No applications found</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -665,15 +648,26 @@ const AdminDashboard = () => {
                     <p className="text-sm text-muted-foreground">
                       {app.major} • GPA: {app.gpa}
                     </p>
+                    <p className="text-xs text-muted-foreground">
+                      Submitted: {new Date(app.submitted_at).toLocaleDateString()}
+                    </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline">{app.status}</Badge>
-                    <Button 
-                      size="sm"
-                      onClick={() => handleApproveApplication(app.id, app.email, app.first_name, app.last_name)}
-                    >
-                      Approve
-                    </Button>
+                    <Badge variant={
+                      app.status === 'pending' ? 'outline' : 
+                      app.status === 'approved' ? 'default' : 
+                      'destructive'
+                    }>
+                      {app.status}
+                    </Badge>
+                    {app.status === 'pending' && (
+                      <Button 
+                        size="sm"
+                        onClick={() => handleApproveApplication(app.id, app.email, app.first_name, app.last_name)}
+                      >
+                        Approve
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))}
