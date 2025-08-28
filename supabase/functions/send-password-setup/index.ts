@@ -2,14 +2,45 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
 console.log("Edge function starting up...");
 
-// Simple email logging function for debugging
-const logEmail = (to: string, subject: string, html: string) => {
-  console.log("=== EMAIL DETAILS ===");
-  console.log("To:", to);
-  console.log("Subject:", subject);
-  console.log("HTML preview:", html.substring(0, 150) + "...");
-  console.log("=== END EMAIL DETAILS ===");
-  return { success: true, id: "simulated-" + Date.now() };
+// Gmail API function to send emails
+const sendGmailEmail = async (to: string, subject: string, htmlContent: string) => {
+  const accessToken = Deno.env.get("GMAIL_ACCESS_TOKEN");
+  
+  if (!accessToken) {
+    throw new Error("Gmail access token not found");
+  }
+
+  // Create the email message in RFC 2822 format
+  const emailMessage = [
+    `To: ${to}`,
+    `Subject: ${subject}`,
+    `Content-Type: text/html; charset=utf-8`,
+    `MIME-Version: 1.0`,
+    ``,
+    htmlContent
+  ].join('\r\n');
+
+  // Base64 encode the message
+  const encodedMessage = btoa(emailMessage).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+
+  const response = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      raw: encodedMessage
+    })
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("Gmail API error:", errorText);
+    throw new Error(`Gmail API error: ${response.status} - ${errorText}`);
+  }
+
+  return await response.json();
 };
 
 const corsHeaders = {
@@ -139,15 +170,15 @@ const handler = async (req: Request): Promise<Response> => {
       </html>
     `;
 
-    console.log("Logging email details...");
+    console.log("Sending email via Gmail API...");
     
-    const emailResponse = logEmail(
+    const emailResponse = await sendGmailEmail(
       email,
       "Set Your Password - UC Investment Academy",
       htmlContent
     );
 
-    console.log("Email logged successfully:", emailResponse);
+    console.log("Email sent successfully via Gmail:", emailResponse);
 
     return new Response(JSON.stringify({ 
       success: true, 
