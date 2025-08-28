@@ -53,34 +53,32 @@ export const AdminAuthProvider = ({ children }: { children: React.ReactNode }) =
 
   const signIn = async (username: string, password: string) => {
     try {
-      // For demo purposes, we'll check against a simple credential
-      // In production, you'd want to implement proper password hashing verification
-      const { data, error } = await supabase
-        .from('admin_users')
-        .select('*')
-        .eq('username', username)
-        .single()
+      // Call the secure admin authentication edge function
+      const { data, error } = await supabase.functions.invoke('admin-login', {
+        body: { username, password }
+      })
 
-      if (error || !data) {
-        return { success: false, error: 'Invalid credentials' }
+      if (error) {
+        console.error('Authentication error:', error)
+        return { success: false, error: 'Authentication failed' }
       }
 
-      // Simple password check for demo (in production, use proper hashing)
-      if (password === 'admin123') {
+      if (data?.success && data?.adminUser) {
         const adminUserData = {
-          id: data.id,
-          username: data.username,
-          email: data.email,
-          full_name: data.full_name
+          id: data.adminUser.id,
+          username: data.adminUser.username,
+          email: data.adminUser.email,
+          full_name: data.adminUser.full_name
         }
         
         setAdminUser(adminUserData)
         localStorage.setItem('admin_user', JSON.stringify(adminUserData))
         return { success: true }
       } else {
-        return { success: false, error: 'Invalid credentials' }
+        return { success: false, error: data?.error || 'Invalid credentials' }
       }
     } catch (error) {
+      console.error('Signin error:', error)
       return { success: false, error: 'Authentication failed' }
     }
   }
