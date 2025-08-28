@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { BookOpen, Award, Calendar, Users, TrendingUp, MessageCircle, Clock, MapPin } from "lucide-react"
+import { BookOpen, Award, Calendar, Users, TrendingUp, MessageCircle, Clock, MapPin, Lock } from "lucide-react"
 import { NavLink } from "react-router-dom"
 import heroImage from "@/assets/ucia-hero.jpg"
 import ActionItemsChecklist from "@/components/ActionItemsChecklist"
@@ -244,13 +244,14 @@ const Index = () => {
           </CardContent>
         </Card>
 
-        <Card className="bg-white shadow-card border-academy-grey-light hover:shadow-elevated transition-shadow cursor-pointer">
+        <Card className="bg-white shadow-card border-academy-grey-light hover:shadow-elevated transition-shadow cursor-pointer opacity-75">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-academy-blue">
               <Users className="h-5 w-5" />
               Mentorship
+              <Lock className="h-4 w-4 text-academy-grey" />
             </CardTitle>
-            <CardDescription>Connect with industry professionals</CardDescription>
+            <CardDescription>Connect with industry professionals (Coming Soon)</CardDescription>
           </CardHeader>
           <CardContent>
             <Button variant="outline" className="w-full border-academy-blue text-academy-blue hover:bg-academy-blue-light" asChild>
@@ -259,13 +260,14 @@ const Index = () => {
           </CardContent>
         </Card>
 
-        <Card className="bg-white shadow-card border-academy-grey-light hover:shadow-elevated transition-shadow cursor-pointer">
+        <Card className="bg-white shadow-card border-academy-grey-light hover:shadow-elevated transition-shadow cursor-pointer opacity-75">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-academy-blue">
               <TrendingUp className="h-5 w-5" />
               Career Pathways
+              <Lock className="h-4 w-4 text-academy-grey" />
             </CardTitle>
-            <CardDescription>Discover your finance career path</CardDescription>
+            <CardDescription>Discover your finance career path (Coming Soon)</CardDescription>
           </CardHeader>
           <CardContent>
             <Button variant="outline" className="w-full border-academy-blue text-academy-blue hover:bg-academy-blue-light" asChild>
@@ -295,12 +297,13 @@ const Index = () => {
             </Button>
             <Button 
               variant="outline" 
-              className="flex-1 border-academy-blue text-academy-blue hover:bg-academy-blue-light"
+              className="flex-1 border-academy-blue text-academy-blue hover:bg-academy-blue-light opacity-75"
               asChild
             >
               <NavLink to="/chat">
                 <Users className="mr-2 h-4 w-4" />
                 Chat with Fellows
+                <Lock className="ml-2 h-3 w-3" />
               </NavLink>
             </Button>
           </div>

@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { MessageCircle, Send, Search, Users, Clock, Phone, Video } from "lucide-react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { MessageCircle, Send, Search, Users, Clock, Phone, Video, AlertTriangle } from "lucide-react"
 import { useState } from "react"
 
 const Chat = () => {
@@ -126,6 +127,15 @@ const Chat = () => {
 
   return (
     <div className="flex flex-col min-h-[calc(100vh-2rem)]">
+      {/* Development Warning */}
+      <Alert className="border-yellow-200 bg-yellow-50 mb-6">
+        <AlertTriangle className="h-4 w-4 text-yellow-600" />
+        <AlertDescription className="text-yellow-800">
+          <strong>Still in Development:</strong> The Chat with Fellows feature is currently being built. 
+          We're setting up the messaging infrastructure and user verification system. Coming soon!
+        </AlertDescription>
+      </Alert>
+
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-3xl font-bold mb-4 text-academy-blue">Chat with UC IA Fellows</h1>

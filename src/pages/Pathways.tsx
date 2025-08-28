@@ -1,7 +1,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { TrendingUp, Building, DollarSign, PieChart, BarChart3 } from "lucide-react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { TrendingUp, Building, DollarSign, PieChart, BarChart3, AlertTriangle } from "lucide-react"
 
 const Pathways = () => {
   const pathways = [
@@ -64,6 +65,15 @@ const Pathways = () => {
 
   return (
     <div className="space-y-8">
+      {/* Development Warning */}
+      <Alert className="border-yellow-200 bg-yellow-50">
+        <AlertTriangle className="h-4 w-4 text-yellow-600" />
+        <AlertDescription className="text-yellow-800">
+          <strong>Still in Development:</strong> This Career Pathways section is currently being built. 
+          Content and features are subject to change as we finalize the curriculum and partnerships.
+        </AlertDescription>
+      </Alert>
+
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold mb-4 text-academy-blue">Career Pathways</h1>

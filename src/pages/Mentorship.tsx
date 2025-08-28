@@ -4,7 +4,8 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Users, MessageCircle, Calendar, Star, Search, Filter, MapPin, Briefcase } from "lucide-react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Users, MessageCircle, Calendar, Star, Search, Filter, MapPin, Briefcase, AlertTriangle } from "lucide-react"
 
 const Mentorship = () => {
   const mentors = [
@@ -81,6 +82,15 @@ const Mentorship = () => {
 
   return (
     <div className="space-y-8">
+      {/* Development Warning */}
+      <Alert className="border-yellow-200 bg-yellow-50">
+        <AlertTriangle className="h-4 w-4 text-yellow-600" />
+        <AlertDescription className="text-yellow-800">
+          <strong>Still in Development:</strong> The Mentorship program is currently being set up. 
+          We're onboarding mentors and building the matching system. Available soon!
+        </AlertDescription>
+      </Alert>
+
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold mb-4 text-academy-blue">Mentorship Program</h1>
