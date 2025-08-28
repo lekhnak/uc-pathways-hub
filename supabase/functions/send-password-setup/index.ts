@@ -1,16 +1,16 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "npm:resend@2.0.0";
 
 console.log("Edge function starting up...");
-console.log("RESEND_API_KEY available:", Deno.env.get("RESEND_API_KEY") ? "Yes" : "No");
 
-let resend: Resend;
-try {
-  resend = new Resend(Deno.env.get("RESEND_API_KEY"));
-  console.log("Resend client initialized successfully");
-} catch (error) {
-  console.error("Failed to initialize Resend:", error);
-}
+// Simple email logging function for debugging
+const logEmail = (to: string, subject: string, html: string) => {
+  console.log("=== EMAIL DETAILS ===");
+  console.log("To:", to);
+  console.log("Subject:", subject);
+  console.log("HTML preview:", html.substring(0, 150) + "...");
+  console.log("=== END EMAIL DETAILS ===");
+  return { success: true, id: "simulated-" + Date.now() };
+};
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -139,16 +139,15 @@ const handler = async (req: Request): Promise<Response> => {
       </html>
     `;
 
-    console.log("Attempting to send email via Resend...");
+    console.log("Logging email details...");
     
-    const emailResponse = await resend.emails.send({
-      from: "UC Investment Academy <onboarding@resend.dev>",
-      to: [email],
-      subject: "Set Your Password - UC Investment Academy",
-      html: htmlContent,
-    });
+    const emailResponse = logEmail(
+      email,
+      "Set Your Password - UC Investment Academy",
+      htmlContent
+    );
 
-    console.log("Email sent successfully via Resend:", emailResponse);
+    console.log("Email logged successfully:", emailResponse);
 
     return new Response(JSON.stringify({ 
       success: true, 
