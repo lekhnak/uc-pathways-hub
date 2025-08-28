@@ -44,7 +44,7 @@ const AdminApplications = () => {
   const [filteredApplications, setFilteredApplications] = useState<Application[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
-  const [statusFilter, setStatusFilter] = useState('all')
+  const [statusFilter, setStatusFilter] = useState('pending')
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const { toast } = useToast()
@@ -185,8 +185,11 @@ const AdminApplications = () => {
       setIsModalOpen(false)
       setSelectedApplication(null)
       
-      // Remove the updated application from the current list immediately for better UX
-      setApplications(prevApps => prevApps.filter(app => app.id !== applicationId))
+      // For both approved and rejected applications, remove them from current view if we're showing pending
+      if (statusFilter === 'pending' || statusFilter === 'all') {
+        setApplications(prevApps => prevApps.filter(app => app.id !== applicationId))
+        setFilteredApplications(prevApps => prevApps.filter(app => app.id !== applicationId))
+      }
       
       // Also refresh from server to ensure data consistency
       fetchApplications()
@@ -264,8 +267,8 @@ const AdminApplications = () => {
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="pending">Pending Applications</SelectItem>
                 <SelectItem value="all">All Applications</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
                 <SelectItem value="approved">Approved</SelectItem>
                 <SelectItem value="rejected">Rejected</SelectItem>
               </SelectContent>
