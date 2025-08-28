@@ -18,5 +18,8 @@ verify_jwt = false
 [functions.gmail-send-application-approval]
 verify_jwt = false
 
+[functions.gmail-send-application-denial]
+verify_jwt = false
+
 [functions.gmail-send-password-setup]
 verify_jwt = false

@@ -408,19 +408,20 @@ const AdminDashboard = () => {
 
   const fetchApplications = async () => {
     try {
-      console.log('Fetching recent applications...')
+      console.log('Fetching pending applications...')
       const { data, error } = await supabase
         .from('applications')
         .select('*')
+        .eq('status', 'pending') // Only show pending applications
         .order('submitted_at', { ascending: false })
-        .limit(10) // Show more recent applications and remove status filter
+        .limit(10)
 
       if (error) {
         console.error('Error fetching applications:', error)
         throw error
       }
       
-      console.log('Fetched applications:', data)
+      console.log('Fetched pending applications:', data)
       setApplications(data || [])
     } catch (error) {
       console.error('Error fetching applications:', error)
@@ -532,6 +533,62 @@ const AdminDashboard = () => {
     }
   }
 
+  const handleDenyApplication = async (applicationId: string, email: string, firstName: string, lastName: string) => {
+    try {
+      console.log(`Starting denial process for ${firstName} ${lastName} (${email})`)
+      
+      // First, update application status
+      const { error: updateError } = await supabase
+        .from('applications')
+        .update({ 
+          status: 'rejected',
+          reviewed_at: new Date().toISOString()
+        })
+        .eq('id', applicationId)
+
+      if (updateError) {
+        console.error('Error updating application status:', updateError)
+        throw updateError
+      }
+
+      console.log('Application status updated to rejected')
+
+      // Send denial email using the Gmail function
+      const { error: emailError } = await supabase.functions.invoke('gmail-send-application-denial', {
+        body: { 
+          firstName,
+          lastName,
+          email
+        }
+      })
+
+      if (emailError) {
+        console.error('Email sending error:', emailError)
+        toast({
+          title: "Application Denied",
+          description: `${firstName}'s application has been denied, but denial email failed to send. Please check email service configuration.`,
+          variant: "destructive",
+        })
+      } else {
+        console.log('Denial email sent successfully')
+        toast({
+          title: "Application Denied",
+          description: `${firstName}'s application has been denied and a notification email has been sent to ${email}`,
+          duration: 5000,
+        })
+      }
+
+      // Data will be refreshed automatically by the real-time subscription
+    } catch (error: any) {
+      console.error('Error denying application:', error)
+      toast({
+        title: "Error",
+        description: `Failed to deny application: ${error.message || 'Unknown error'}`,
+        variant: "destructive",
+      })
+    }
+  }
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -626,7 +683,7 @@ const AdminDashboard = () => {
         <CardHeader>
           <CardTitle>Recent Applications</CardTitle>
           <CardDescription>
-            Latest student applications (showing all statuses)
+            Pending applications awaiting review
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -661,12 +718,21 @@ const AdminDashboard = () => {
                       {app.status}
                     </Badge>
                     {app.status === 'pending' && (
-                      <Button 
-                        size="sm"
-                        onClick={() => handleApproveApplication(app.id, app.email, app.first_name, app.last_name)}
-                      >
-                        Approve
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button 
+                          size="sm"
+                          onClick={() => handleApproveApplication(app.id, app.email, app.first_name, app.last_name)}
+                        >
+                          Approve
+                        </Button>
+                        <Button 
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleDenyApplication(app.id, app.email, app.first_name, app.last_name)}
+                        >
+                          Deny
+                        </Button>
+                      </div>
                     )}
                   </div>
                 </div>

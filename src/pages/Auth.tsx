@@ -96,6 +96,19 @@ const Auth = () => {
     setError(null)
 
     try {
+      // First check if the user has an approved application
+      const { data: applicationData, error: appError } = await supabase
+        .from('applications')
+        .select('status')
+        .eq('email', data.email)
+        .eq('status', 'approved')
+        .single()
+
+      if (appError || !applicationData) {
+        setError("Only users with approved applications can sign in. Please wait for your application to be reviewed.")
+        return
+      }
+
       const { error } = await supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password,
