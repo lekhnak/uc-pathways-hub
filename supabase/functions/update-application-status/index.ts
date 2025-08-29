@@ -135,53 +135,122 @@ const handler = async (req: Request): Promise<Response> => {
         throw updateError;
       }
 
-      // Create Supabase auth user first
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email: applicationData.email,
-        password: tempPassword,
-        email_confirm: true,
-        user_metadata: {
-          first_name: applicationData.first_name,
-          last_name: applicationData.last_name
+      // Check if user already exists first
+      let userId: string;
+      let authUser = null;
+      
+      // Try to get existing user by email
+      const { data: existingUsers, error: listError } = await supabase.auth.admin.listUsers();
+      const existingUser = existingUsers?.users?.find(u => u.email === applicationData.email);
+      
+      if (existingUser) {
+        console.log('User already exists, updating password:', existingUser.id);
+        userId = existingUser.id;
+        
+        // Update existing user's password
+        const { data: updateData, error: updateUserError } = await supabase.auth.admin.updateUserById(
+          userId,
+          {
+            password: tempPassword,
+            user_metadata: {
+              first_name: applicationData.first_name,
+              last_name: applicationData.last_name
+            }
+          }
+        );
+        
+        if (updateUserError) {
+          console.error('Error updating existing user:', updateUserError);
+          throw updateUserError;
         }
-      });
-
-      if (authError) {
-        console.error('Error creating auth user:', authError);
-        throw authError;
-      }
-
-      const userId = authData.user?.id;
-      if (!userId) {
-        throw new Error('Failed to get user ID from created auth user');  
-      }
-
-      console.log('Auth user created successfully with ID:', userId);
-
-      // Create user profile with the auth user_id
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert({
-          user_id: userId,
-          first_name: applicationData.first_name,
-          last_name: applicationData.last_name,
+        
+        authUser = updateData.user;
+        console.log('Existing user updated successfully');
+      } else {
+        // Create new Supabase auth user
+        const { data: authData, error: authError } = await supabase.auth.admin.createUser({
           email: applicationData.email,
-          username: tempUsername,
-          temp_password: tempPassword,
-          is_temp_password_used: false,
-          uc_campus: applicationData.uc_campus,
-          major: applicationData.major,
-          graduation_year: applicationData.graduation_year,
-          gpa: applicationData.gpa,
-          linkedin_url: applicationData.linkedin_url
+          password: tempPassword,
+          email_confirm: true,
+          user_metadata: {
+            first_name: applicationData.first_name,
+            last_name: applicationData.last_name
+          }
         });
 
-      if (profileError) {
-        console.error('Error creating user profile:', profileError);
-        throw profileError;
+        if (authError) {
+          console.error('Error creating auth user:', authError);
+          throw authError;
+        }
+
+        authUser = authData.user;
+        userId = authUser?.id;
+        
+        if (!userId) {
+          throw new Error('Failed to get user ID from created auth user');  
+        }
+
+        console.log('New auth user created successfully with ID:', userId);
       }
 
-      console.log('User profile created successfully');
+      // Check if profile already exists and update or create
+      const { data: existingProfile, error: profileCheckError } = await supabase
+        .from('profiles')
+        .select('user_id')
+        .eq('user_id', userId)
+        .single();
+
+      if (existingProfile) {
+        // Update existing profile
+        const { error: profileUpdateError } = await supabase
+          .from('profiles')
+          .update({
+            first_name: applicationData.first_name,
+            last_name: applicationData.last_name,
+            email: applicationData.email,
+            username: tempUsername,
+            temp_password: tempPassword,
+            is_temp_password_used: false,
+            uc_campus: applicationData.uc_campus,
+            major: applicationData.major,
+            graduation_year: applicationData.graduation_year,
+            gpa: applicationData.gpa,
+            linkedin_url: applicationData.linkedin_url
+          })
+          .eq('user_id', userId);
+
+        if (profileUpdateError) {
+          console.error('Error updating user profile:', profileUpdateError);
+          throw profileUpdateError;
+        }
+
+        console.log('User profile updated successfully');
+      } else {
+        // Create new user profile
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            user_id: userId,
+            first_name: applicationData.first_name,
+            last_name: applicationData.last_name,
+            email: applicationData.email,
+            username: tempUsername,
+            temp_password: tempPassword,
+            is_temp_password_used: false,
+            uc_campus: applicationData.uc_campus,
+            major: applicationData.major,
+            graduation_year: applicationData.graduation_year,
+            gpa: applicationData.gpa,
+            linkedin_url: applicationData.linkedin_url
+          });
+
+        if (profileError) {
+          console.error('Error creating user profile:', profileError);
+          throw profileError;
+        }
+
+        console.log('User profile created successfully');
+      }
 
       // Send approval email
       try {
