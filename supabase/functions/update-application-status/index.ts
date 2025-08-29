@@ -75,7 +75,7 @@ const handler = async (req: Request): Promise<Response> => {
         .update({
           status: 'rejected',
           reviewed_at: new Date().toISOString(),
-          reviewed_by: adminToken,
+          reviewed_by: null,
           admin_comment: adminComment
         })
         .eq('id', applicationId);
@@ -126,7 +126,7 @@ const handler = async (req: Request): Promise<Response> => {
         .update({
           status: 'approved',
           reviewed_at: new Date().toISOString(),
-          reviewed_by: adminToken
+          reviewed_by: null
         })
         .eq('id', applicationId);
 
