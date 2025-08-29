@@ -60,7 +60,7 @@ export default function Layout() {
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
                 <span className="text-sm text-academy-grey">
-                  Welcome, {user.user_metadata?.first_name || user.email}
+                  Welcome, {user.firstName || user.email}
                 </span>
                 <Dialog open={isInfoDialogOpen} onOpenChange={setIsInfoDialogOpen}>
                   <DialogTrigger asChild>

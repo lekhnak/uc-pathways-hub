@@ -1,10 +1,15 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
-import { User, Session } from '@supabase/supabase-js'
-import { supabase } from '@/integrations/supabase/client'
+
+interface CustomUser {
+  id: string
+  email: string
+  firstName?: string
+  lastName?: string
+}
 
 interface AuthContextType {
-  user: User | null
-  session: Session | null
+  user: CustomUser | null
+  session: any | null
   loading: boolean
   signOut: () => Promise<void>
 }
@@ -25,8 +30,8 @@ export const useAuth = () => {
 }
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null)
-  const [session, setSession] = useState<Session | null>(null)
+  const [user, setUser] = useState<CustomUser | null>(null)
+  const [session, setSession] = useState<any | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
