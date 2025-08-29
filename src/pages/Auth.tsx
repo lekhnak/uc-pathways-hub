@@ -12,6 +12,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { GraduationCap, Mail, Lock, User, AlertCircle, FileUp, ExternalLink, Eye, EyeOff, Shield, Check, X } from "lucide-react"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
+import { useAuth } from "@/hooks/useAuth"
 import uciaLogo from "@/assets/ucia-logo.png"
 
 interface SignInFormData {
@@ -88,6 +89,7 @@ const Auth = () => {
   })
   const navigate = useNavigate()
   const { toast } = useToast()
+  const { setUser } = useAuth()
 
   const signInForm = useForm<SignInFormData>()
   const applicationForm = useForm<ApplicationFormData>()
@@ -120,6 +122,9 @@ const Auth = () => {
 
       // Store user data in localStorage for session management
       localStorage.setItem('user', JSON.stringify(result.user))
+      
+      // Update the auth context immediately
+      setUser(result.user)
       
       toast({
         title: "Welcome back!",
