@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
-import { Search, Filter, Download, Eye, Check, X } from 'lucide-react'
+import { Search, Filter, Download, Eye, Check, X, Mail, UserX } from 'lucide-react'
 import ApplicationModal from '@/components/ApplicationModal'
 import RejectionDialog from '@/components/RejectionDialog'
 
@@ -51,6 +51,8 @@ const AdminApplications = () => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [rejectionDialogOpen, setRejectionDialogOpen] = useState(false)
   const [applicationToReject, setApplicationToReject] = useState<Application | null>(null)
+  const [sendingApproval, setSendingApproval] = useState<string | null>(null)
+  const [revokingApproval, setRevokingApproval] = useState<string | null>(null)
   const { toast } = useToast()
 
   useEffect(() => {
@@ -195,6 +197,84 @@ const AdminApplications = () => {
     }
   }
 
+  const handleSendApproval = async (application: Application) => {
+    setSendingApproval(application.id)
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('send-application-approval', {
+        body: {
+          firstName: application.first_name,
+          lastName: application.last_name,
+          email: application.email,
+          tempUsername: `${application.first_name.toLowerCase()}.${application.last_name.toLowerCase()}`,
+          tempPassword: 'temp-password' // This should be retrieved from the profile
+        }
+      })
+
+      if (error) {
+        throw new Error(error.message)
+      }
+
+      toast({
+        title: "Email Sent",
+        description: `Approval email sent to ${application.first_name} ${application.last_name}`,
+      })
+
+    } catch (error: any) {
+      console.error('Error sending approval email:', error)
+      toast({
+        title: "Error", 
+        description: `Failed to send approval email: ${error.message}`,
+        variant: "destructive",
+      })
+    } finally {
+      setSendingApproval(null)
+    }
+  }
+
+  const handleRevokeApproval = async (application: Application) => {
+    setRevokingApproval(application.id)
+    
+    try {
+      // Delete user profile from database
+      const { error } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('email', application.email)
+
+      if (error) {
+        throw new Error(error.message)
+      }
+
+      // Update application status back to pending
+      setApplications(prevApps => 
+        prevApps.map(app => 
+          app.id === application.id 
+            ? { ...app, status: 'pending' }
+            : app
+        )
+      )
+
+      // Refresh data
+      await fetchApplications()
+
+      toast({
+        title: "Access Revoked",
+        description: `Access revoked for ${application.first_name} ${application.last_name}`,
+      })
+
+    } catch (error: any) {
+      console.error('Error revoking approval:', error)
+      toast({
+        title: "Error", 
+        description: `Failed to revoke access: ${error.message}`,
+        variant: "destructive",
+      })
+    } finally {
+      setRevokingApproval(null)
+    }
+  }
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'pending': return 'bg-yellow-100 text-yellow-800'
@@ -333,6 +413,28 @@ const AdminApplications = () => {
                         >
                           <X className="w-4 h-4 mr-1" />
                           Reject
+                        </Button>
+                      </div>
+                    )}
+                    {app.status === 'approved' && (
+                      <div className="flex gap-2">
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => handleSendApproval(app)}
+                          disabled={sendingApproval === app.id}
+                        >
+                          <Mail className="w-4 h-4 mr-1" />
+                          {sendingApproval === app.id ? 'Sending...' : 'Send Approval'}
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="destructive"
+                          onClick={() => handleRevokeApproval(app)}
+                          disabled={revokingApproval === app.id}
+                        >
+                          <UserX className="w-4 h-4 mr-1" />
+                          {revokingApproval === app.id ? 'Revoking...' : 'Revoke Access'}
                         </Button>
                       </div>
                     )}
