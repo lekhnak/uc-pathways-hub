@@ -118,6 +118,22 @@ const AdminApplications = () => {
     console.log(`Starting status update: ${applicationId} to ${newStatus}`)
     
     try {
+      // First get the application data before any updates (to avoid RLS issues)
+      const { data: applicationData, error: fetchError } = await supabase
+        .from('applications')
+        .select('*')
+        .eq('id', applicationId)
+        .maybeSingle()
+
+      if (fetchError) {
+        console.error('Error fetching application data:', fetchError)
+        throw fetchError
+      }
+
+      if (!applicationData) {
+        throw new Error('Application not found')
+      }
+
       if (newStatus === 'rejected') {
         // For rejected applications, update status and add comment
         const { error: updateError } = await supabase
@@ -136,47 +152,29 @@ const AdminApplications = () => {
 
         console.log(`Application ${applicationId} status updated to ${newStatus}`)
 
-        // Get the full application data to send rejection email
-        const { data: applicationData, error: fetchError } = await supabase
-          .from('applications')
-          .select('*')
-          .eq('id', applicationId)
-          .maybeSingle()
-
-        if (fetchError) {
-          console.error('Error fetching application data:', fetchError)
-        } else if (applicationData) {
-          // Send rejection email
-          const { error: emailError } = await supabase.functions.invoke('gmail-send-application-denial', {
-            body: {
-              firstName: applicationData.first_name,
-              lastName: applicationData.last_name,
-              email: applicationData.email,
-              reason: adminComment || 'No specific reason provided'
-            }
-          })
-
-          if (emailError) {
-            console.error('Email sending error:', emailError)
-            toast({
-              title: "Warning", 
-              description: "Application status updated but rejection email failed to send",
-              variant: "destructive"
-            })
-          } else {
-            toast({
-              title: "Email Sent",
-              description: "Rejection email sent successfully"
-            })
+        // Send rejection email using already fetched data
+        const { error: emailError } = await supabase.functions.invoke('gmail-send-application-denial', {
+          body: {
+            firstName: applicationData.first_name,
+            lastName: applicationData.last_name,
+            email: applicationData.email,
+            reason: adminComment || 'No specific reason provided'
           }
+        })
+
+        if (emailError) {
+          console.error('Email sending error:', emailError)
+          toast({
+            title: "Warning", 
+            description: "Application status updated but rejection email failed to send",
+            variant: "destructive"
+          })
         } else {
           toast({
-            title: "Warning",
-            description: "Application status updated but could not retrieve application data for email"
+            title: "Application Rejected",
+            description: "Application rejected and email sent successfully"
           })
         }
-        
-        // Main success message will be shown after email handling above
       } else {
         // For approved applications, update status and create profile
         const { error: updateError } = await supabase
@@ -193,22 +191,6 @@ const AdminApplications = () => {
         }
 
         console.log(`Application ${applicationId} status updated to ${newStatus}`)
-
-        // Get the full application data to create profile
-        const { data: applicationData, error: fetchError } = await supabase
-          .from('applications')
-          .select('*')
-          .eq('id', applicationId)
-          .maybeSingle()
-
-        if (fetchError) {
-          console.error('Error fetching application data:', fetchError)
-          throw fetchError
-        }
-
-        if (!applicationData) {
-          throw new Error('Application not found')
-        }
 
         // Generate temporary password
         const tempPassword = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
