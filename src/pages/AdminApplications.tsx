@@ -313,6 +313,8 @@ const AdminApplications = () => {
     setRevokingApproval(application.id)
     
     try {
+      console.log('Starting revoke process for:', application.email)
+      
       // First, get the user_id from the profile
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
@@ -320,36 +322,48 @@ const AdminApplications = () => {
         .eq('email', application.email)
         .single()
 
+      console.log('Profile lookup result:', profileData, 'Error:', profileError)
+
       if (profileError || !profileData) {
         console.log('Profile not found, deleting application only')
       }
 
       // Delete user profile from database if it exists
       if (profileData?.user_id) {
+        console.log('Deleting profile for user_id:', profileData.user_id)
+        
         const { error: deleteProfileError } = await supabase
           .from('profiles')
           .delete()
           .eq('user_id', profileData.user_id)
+
+        console.log('Profile deletion result:', deleteProfileError)
 
         if (deleteProfileError) {
           console.error('Error deleting profile:', deleteProfileError)
         }
 
         // Also delete the Supabase auth user
+        console.log('Deleting auth user:', profileData.user_id)
         const { error: deleteAuthError } = await supabase.auth.admin.deleteUser(profileData.user_id)
         
+        console.log('Auth user deletion result:', deleteAuthError)
         if (deleteAuthError) {
           console.error('Error deleting auth user:', deleteAuthError)
         }
       }
 
       // Delete the entire application row
+      console.log('Deleting application:', application.id)
       const { error: deleteError } = await supabase
         .from('applications')
         .delete()
         .eq('id', application.id)
 
+      console.log('Application deletion result:', deleteError)
+
       if (deleteError) {
+        console.error('Application deletion failed:', deleteError)
         throw new Error(deleteError.message)
       }
 
@@ -357,6 +371,8 @@ const AdminApplications = () => {
       setApplications(prevApps => 
         prevApps.filter(app => app.id !== application.id)
       )
+
+      console.log('Application successfully deleted and removed from local state')
 
       // Refresh data
       await fetchApplications()
