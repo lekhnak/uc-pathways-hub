@@ -115,175 +115,28 @@ const AdminApplications = () => {
   }
 
   const handleStatusUpdate = async (applicationId: string, newStatus: 'approved' | 'rejected', applicantName: string, email?: string, adminComment?: string) => {
-    console.log(`Starting status update: ${applicationId} to ${newStatus}`)
-    console.log('Application ID type:', typeof applicationId, 'Value:', applicationId)
+    console.log(`Starting status update via edge function: ${applicationId} to ${newStatus}`)
     
     try {
-      // First get the application data before any updates (to avoid RLS issues)
-      console.log('Attempting to fetch application with ID:', applicationId)
-      const { data: applicationData, error: fetchError } = await supabase
-        .from('applications')
-        .select('*')
-        .eq('id', applicationId)
-        .maybeSingle()
+      const { data, error } = await supabase.functions.invoke('update-application-status', {
+        body: {
+          applicationId,
+          newStatus,
+          applicantName,
+          email,
+          adminComment,
+          adminToken: 'admin-access-token'
+        }
+      })
 
-      console.log('Fetch result - Data:', applicationData, 'Error:', fetchError)
-
-      if (fetchError) {
-        console.error('Error fetching application data:', fetchError)
-        throw fetchError
+      if (error) {
+        console.error('Edge function error:', error)
+        throw new Error(error.message)
       }
 
-      if (!applicationData) {
-        console.error('No application data found for ID:', applicationId)
-        
-        // Let's try to see if we can fetch all applications to debug
-        const { data: allApps, error: allAppsError } = await supabase
-          .from('applications')
-          .select('id, status, first_name, last_name')
-          .limit(10)
-        
-        console.log('All applications check - Data:', allApps, 'Error:', allAppsError)
-        throw new Error('Application not found')
-      }
+      console.log('Status update successful:', data)
 
-      console.log('Successfully fetched application:', applicationData.first_name, applicationData.last_name)
-
-      if (newStatus === 'rejected') {
-        // For rejected applications, update status and add comment
-        const { error: updateError } = await supabase
-          .from('applications')
-          .update({ 
-            status: newStatus,
-            reviewed_at: new Date().toISOString(),
-            admin_comment: adminComment || 'No reason provided'
-          })
-          .eq('id', applicationId)
-
-        if (updateError) {
-          console.error('Error updating rejected application:', updateError)
-          throw updateError
-        }
-
-        console.log(`Application ${applicationId} status updated to ${newStatus}`)
-
-        // Send rejection email using already fetched data
-        const { error: emailError } = await supabase.functions.invoke('gmail-send-application-denial', {
-          body: {
-            firstName: applicationData.first_name,
-            lastName: applicationData.last_name,
-            email: applicationData.email,
-            reason: adminComment || 'No specific reason provided'
-          }
-        })
-
-        if (emailError) {
-          console.error('Email sending error:', emailError)
-          toast({
-            title: "Warning", 
-            description: "Application status updated but rejection email failed to send",
-            variant: "destructive"
-          })
-        } else {
-          toast({
-            title: "Application Rejected",
-            description: "Application rejected and email sent successfully"
-          })
-        }
-      } else {
-        // For approved applications, update status and create profile
-        const { error: updateError } = await supabase
-          .from('applications')
-          .update({ 
-            status: newStatus,
-            reviewed_at: new Date().toISOString()
-          })
-          .eq('id', applicationId)
-
-        if (updateError) {
-          console.error('Error updating application status:', updateError)
-          throw updateError
-        }
-
-        console.log(`Application ${applicationId} status updated to ${newStatus}`)
-
-        // Generate temporary password
-        const tempPassword = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
-
-        // Create user account
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-          email: applicationData.email,
-          password: tempPassword,
-          options: {
-            data: {
-              first_name: applicationData.first_name,
-              last_name: applicationData.last_name
-            }
-          }
-        })
-
-        if (authError && !authError.message?.includes('User already registered')) {
-          console.error('User creation error:', authError)
-          throw authError
-        }
-
-        const userId = authData.user?.id
-        if (!userId) {
-          throw new Error('Failed to get user ID from created account')
-        }
-
-        // Create profile with all application data
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            user_id: userId,
-            first_name: applicationData.first_name,
-            last_name: applicationData.last_name,
-            email: applicationData.email,
-            uc_campus: applicationData.uc_campus,
-            major: applicationData.major,
-            gpa: applicationData.gpa,
-            graduation_year: applicationData.graduation_year,
-            linkedin_url: applicationData.linkedin_url,
-            temp_password: tempPassword,
-            is_temp_password_used: false,
-          })
-
-        if (profileError) {
-          console.error('Profile creation error:', profileError)
-          throw profileError
-        }
-
-        console.log('Profile created successfully for approved application')
-
-        // Send approval email with login credentials
-        const { error: emailError } = await supabase.functions.invoke('gmail-send-application-approval', {
-          body: {
-            firstName: applicationData.first_name,
-            lastName: applicationData.last_name,
-            email: applicationData.email,
-            tempUsername: applicationData.email,
-            tempPassword: tempPassword,
-            program: 'UC Investment Academy'
-          }
-        })
-
-        if (emailError) {
-          console.error('Email sending error:', emailError)
-          toast({
-            title: "Warning",
-            description: "Profile created but approval email failed to send",
-            variant: "destructive"
-          })
-        }
-
-        toast({
-          title: "Application Approved",
-          description: `${applicantName}'s application has been approved, profile created, and login credentials sent to ${email}`,
-        })
-      }
-
-      // Close modal and immediately update the local state
+      // Close modal and update local state
       setIsModalOpen(false)
       setSelectedApplication(null)
       
@@ -302,12 +155,18 @@ const AdminApplications = () => {
       )
       
       // Refresh from server to ensure data consistency
-      fetchApplications()
-    } catch (error: any) {
-      console.error('Error updating application:', error)
+      await fetchApplications()
+      
       toast({
-        title: "Error",
-        description: `Failed to update application: ${error.message || 'Unknown error'}`,
+        title: "Application Updated",
+        description: `Application has been ${newStatus} successfully.`,
+      })
+
+    } catch (error: any) {
+      console.error('Error updating application status:', error)
+      toast({
+        title: "Error", 
+        description: `Failed to update application: ${error.message}`,
         variant: "destructive",
       })
     }
