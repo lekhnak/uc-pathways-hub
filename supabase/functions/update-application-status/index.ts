@@ -135,10 +135,34 @@ const handler = async (req: Request): Promise<Response> => {
         throw updateError;
       }
 
-      // Create user profile
+      // Create Supabase auth user first
+      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+        email: applicationData.email,
+        password: tempPassword,
+        email_confirm: true,
+        user_metadata: {
+          first_name: applicationData.first_name,
+          last_name: applicationData.last_name
+        }
+      });
+
+      if (authError) {
+        console.error('Error creating auth user:', authError);
+        throw authError;
+      }
+
+      const userId = authData.user?.id;
+      if (!userId) {
+        throw new Error('Failed to get user ID from created auth user');  
+      }
+
+      console.log('Auth user created successfully with ID:', userId);
+
+      // Create user profile with the auth user_id
       const { error: profileError } = await supabase
         .from('profiles')
         .insert({
+          user_id: userId,
           first_name: applicationData.first_name,
           last_name: applicationData.last_name,
           email: applicationData.email,
