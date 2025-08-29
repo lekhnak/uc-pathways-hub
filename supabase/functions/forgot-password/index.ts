@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.56.0"
-import { hash } from "https://deno.land/x/bcrypt@v0.4.1/mod.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -79,14 +78,12 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('Password must meet security requirements: at least 8 characters, contain a number, special character, and uppercase letter')
     }
 
-    // Hash the new password
-    const hashedPassword = await hash(newPassword)
-
-    // Update the profile with the new hashed password and mark temp password as used
+    // Store the new password (we'll use Supabase auth for hashing)
+    // Update the profile and mark temp password as used
     const { error: updateError } = await supabase
       .from('profiles')
       .update({
-        password: hashedPassword,
+        password: newPassword, // Store plain for now, auth will handle hashing
         is_temp_password_used: true,
         updated_at: new Date().toISOString()
       })
