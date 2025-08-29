@@ -31,6 +31,7 @@ interface ApplicationFormData {
   firstName: string
   lastName: string
   email: string
+  preferredEmail: string
   ucCampus: string
   studentType: string
   major: string
@@ -217,6 +218,12 @@ const Auth = () => {
         return
       }
 
+      // Validate preferred email if provided
+      if (data.preferredEmail && !data.preferredEmail.includes('@')) {
+        setError("Please provide a valid preferred email address")
+        return
+      }
+
       // Validate file types
       const resumeFile = data.resumeFile[0]
       const transcriptFile = data.transcriptFile[0]
@@ -253,6 +260,7 @@ const Auth = () => {
           first_name: data.firstName,
           last_name: data.lastName,
           email: data.email,
+          preferred_email: data.preferredEmail || null,
           uc_campus: data.ucCampus,
           student_type: data.studentType,
           major: data.major,
@@ -288,7 +296,7 @@ const Auth = () => {
           body: {
             firstName: data.firstName,
             lastName: data.lastName,
-            email: data.email,
+            email: data.preferredEmail || data.email,
             program: data.ucCampus
           }
         })
@@ -504,6 +512,17 @@ const Auth = () => {
                         {...applicationForm.register("email", { required: true })}
                       />
                       <p className="text-xs text-academy-grey">Must be a valid UC campus student email address ending in .edu</p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="preferredEmail">Preferred Email Address (Optional)</Label>
+                      <Input
+                        id="preferredEmail"
+                        type="email"
+                        placeholder="Enter your preferred email for communications"
+                        {...applicationForm.register("preferredEmail")}
+                      />
+                      <p className="text-xs text-academy-grey">If provided, we'll use this email for all communications instead of your UC email</p>
                     </div>
                   </div>
 
