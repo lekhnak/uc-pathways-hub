@@ -201,22 +201,26 @@ const handler = async (req: Request): Promise<Response> => {
         .single();
 
       if (existingProfile) {
-        // Update existing profile
+        // Update existing profile - only include non-null values
+        const updateData: any = {
+          first_name: applicationData.first_name,
+          last_name: applicationData.last_name,
+          email: applicationData.email,
+          username: tempUsername,
+          temp_password: tempPassword,
+          is_temp_password_used: false
+        };
+
+        // Only add optional fields if they exist
+        if (applicationData.uc_campus) updateData.uc_campus = applicationData.uc_campus;
+        if (applicationData.major) updateData.major = applicationData.major;
+        if (applicationData.graduation_year) updateData.graduation_year = applicationData.graduation_year;
+        if (applicationData.gpa) updateData.gpa = applicationData.gpa;
+        if (applicationData.linkedin_url) updateData.linkedin_url = applicationData.linkedin_url;
+
         const { error: profileUpdateError } = await supabase
           .from('profiles')
-          .update({
-            first_name: applicationData.first_name,
-            last_name: applicationData.last_name,
-            email: applicationData.email,
-            username: tempUsername,
-            temp_password: tempPassword,
-            is_temp_password_used: false,
-            uc_campus: applicationData.uc_campus,
-            major: applicationData.major,
-            graduation_year: applicationData.graduation_year,
-            gpa: applicationData.gpa,
-            linkedin_url: applicationData.linkedin_url
-          })
+          .update(updateData)
           .eq('user_id', userId);
 
         if (profileUpdateError) {
@@ -226,23 +230,27 @@ const handler = async (req: Request): Promise<Response> => {
 
         console.log('User profile updated successfully');
       } else {
-        // Create new user profile
+        // Create new user profile - only include non-null values
+        const insertData: any = {
+          user_id: userId,
+          first_name: applicationData.first_name,
+          last_name: applicationData.last_name,
+          email: applicationData.email,
+          username: tempUsername,
+          temp_password: tempPassword,
+          is_temp_password_used: false
+        };
+
+        // Only add optional fields if they exist
+        if (applicationData.uc_campus) insertData.uc_campus = applicationData.uc_campus;
+        if (applicationData.major) insertData.major = applicationData.major;
+        if (applicationData.graduation_year) insertData.graduation_year = applicationData.graduation_year;
+        if (applicationData.gpa) insertData.gpa = applicationData.gpa;
+        if (applicationData.linkedin_url) insertData.linkedin_url = applicationData.linkedin_url;
+
         const { error: profileError } = await supabase
           .from('profiles')
-          .insert({
-            user_id: userId,
-            first_name: applicationData.first_name,
-            last_name: applicationData.last_name,
-            email: applicationData.email,
-            username: tempUsername,
-            temp_password: tempPassword,
-            is_temp_password_used: false,
-            uc_campus: applicationData.uc_campus,
-            major: applicationData.major,
-            graduation_year: applicationData.graduation_year,
-            gpa: applicationData.gpa,
-            linkedin_url: applicationData.linkedin_url
-          });
+          .insert(insertData);
 
         if (profileError) {
           console.error('Error creating user profile:', profileError);
