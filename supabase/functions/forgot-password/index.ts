@@ -27,17 +27,25 @@ const handler = async (req: Request): Promise<Response> => {
     const { email, tempPassword, newPassword }: ForgotPasswordRequest = await req.json()
 
     console.log('Processing forgot password request for email:', email)
+    console.log('Received temp password:', tempPassword)
 
     // Validate input
     if (!email || !tempPassword || !newPassword) {
       throw new Error('Email, temporary password, and new password are required')
     }
 
+    // Trim whitespace from inputs
+    const trimmedEmail = email.trim().toLowerCase()
+    const trimmedTempPassword = tempPassword.trim()
+    
+    console.log('Trimmed email:', trimmedEmail)
+    console.log('Trimmed temp password:', trimmedTempPassword)
+
     // Find the profile with matching email
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('id, email, temp_password, is_temp_password_used, temp_password_expires_at, user_id')
-      .eq('email', email)
+      .eq('email', trimmedEmail)
       .maybeSingle()
 
     if (profileError || !profile) {
@@ -45,24 +53,33 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('Invalid email or temporary password')
     }
 
+    console.log('Profile found. Stored temp password:', profile.temp_password)
+    console.log('Is temp password used:', profile.is_temp_password_used)
+
     // Check if temporary password has expired
     if (profile.temp_password_expires_at) {
       const expiryTime = new Date(profile.temp_password_expires_at)
       const currentTime = new Date()
+      console.log('Current time:', currentTime)
+      console.log('Expiry time:', expiryTime)
       if (currentTime > expiryTime) {
         throw new Error('Temporary password has expired')
       }
     }
 
-    // Validate temporary password
-    if (profile.temp_password !== tempPassword) {
-      console.error('Temporary password mismatch')
-      throw new Error('Invalid email or temporary password')
-    }
-
     // Check if temporary password has already been used
     if (profile.is_temp_password_used) {
       throw new Error('Temporary password has already been used')
+    }
+
+    // Validate temporary password
+    if (profile.temp_password !== trimmedTempPassword) {
+      console.error('Temporary password mismatch!')
+      console.error('Expected:', profile.temp_password)
+      console.error('Received:', trimmedTempPassword)
+      console.error('Expected length:', profile.temp_password?.length)
+      console.error('Received length:', trimmedTempPassword.length)
+      throw new Error('Invalid email or temporary password')
     }
 
     // Password strength validation
