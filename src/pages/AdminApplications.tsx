@@ -321,7 +321,7 @@ const AdminApplications = () => {
         .single()
 
       if (profileError || !profileData) {
-        console.log('Profile not found, updating application status only')
+        console.log('Profile not found, deleting application only')
       }
 
       // Delete user profile from database if it exists
@@ -343,31 +343,27 @@ const AdminApplications = () => {
         }
       }
 
-      // Update application status back to pending
-      const { error: updateError } = await supabase
+      // Delete the entire application row
+      const { error: deleteError } = await supabase
         .from('applications')
-        .update({ status: 'pending', reviewed_at: null })
+        .delete()
         .eq('id', application.id)
 
-      if (updateError) {
-        throw new Error(updateError.message)
+      if (deleteError) {
+        throw new Error(deleteError.message)
       }
 
-      // Update local state
+      // Update local state by removing the application
       setApplications(prevApps => 
-        prevApps.map(app => 
-          app.id === application.id 
-            ? { ...app, status: 'pending', reviewed_at: null }
-            : app
-        )
+        prevApps.filter(app => app.id !== application.id)
       )
 
       // Refresh data
       await fetchApplications()
 
       toast({
-        title: "Access Revoked",
-        description: `Access revoked for ${application.first_name} ${application.last_name}`,
+        title: "Access Revoked & Application Deleted",
+        description: `Access revoked and application deleted for ${application.first_name} ${application.last_name}`,
       })
 
     } catch (error: any) {
