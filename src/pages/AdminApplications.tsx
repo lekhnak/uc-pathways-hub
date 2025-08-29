@@ -202,29 +202,29 @@ const AdminApplications = () => {
     setSendingApproval(application.id)
     
     try {
-      // First, get the user's actual credentials from the profile
+      // First, get the user's actual credentials from the profile using admin edge function
       console.log('Looking for profile with email:', application.email)
       
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('username, temp_password, user_id, first_name, last_name')
-        .eq('email', application.email)
-        .single()
-
-      console.log('Profile query result:', { profileData, profileError })
-
-      if (profileError) {
-        console.error('Profile error:', profileError)
-        if (profileError.code === 'PGRST116') {
-          throw new Error('User profile not found. Please use "Fix Profile" to recreate the user account first.')
+      const { data: profileResponse, error: profileFunctionError } = await supabase.functions.invoke('get-user-profile-for-admin', {
+        body: {
+          email: application.email,
+          adminToken: 'admin-access-token'
         }
-        throw new Error(`Database error: ${profileError.message}`)
+      })
+
+      console.log('Profile function result:', { profileResponse, profileFunctionError })
+
+      if (profileFunctionError) {
+        console.error('Profile function error:', profileFunctionError)
+        throw new Error(`Failed to get profile: ${profileFunctionError.message}`)
       }
 
-      if (!profileData) {
+      if (!profileResponse?.profile) {
         throw new Error('User profile not found. Please use "Fix Profile" to recreate the user account first.')
       }
 
+      const profileData = profileResponse.profile
+      
       if (!profileData.username || !profileData.temp_password) {
         console.error('Missing credentials:', profileData)
         throw new Error('User credentials are missing. Please use "Fix Profile" to recreate the user account.')

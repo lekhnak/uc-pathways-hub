@@ -29,3 +29,15 @@ verify_jwt = false
 
 [functions.sync-tts-progress]
 verify_jwt = false
+
+[functions.forgot-password]
+verify_jwt = false
+
+[functions.update-application-status]
+verify_jwt = false
+
+[functions.resend-user-credentials]
+verify_jwt = false
+
+[functions.get-user-profile-for-admin]
+verify_jwt = false
