@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
-import { Search, Filter, Download, Eye, Check, X, Mail, UserX } from 'lucide-react'
+import { Search, Filter, Download, Eye, Check, X, Mail, UserX, UserPlus } from 'lucide-react'
 import ApplicationModal from '@/components/ApplicationModal'
 import RejectionDialog from '@/components/RejectionDialog'
 
@@ -53,6 +53,7 @@ const AdminApplications = () => {
   const [applicationToReject, setApplicationToReject] = useState<Application | null>(null)
   const [sendingApproval, setSendingApproval] = useState<string | null>(null)
   const [revokingApproval, setRevokingApproval] = useState<string | null>(null)
+  const [fixingProfile, setFixingProfile] = useState<string | null>(null)
   const { toast } = useToast()
 
   useEffect(() => {
@@ -201,13 +202,28 @@ const AdminApplications = () => {
     setSendingApproval(application.id)
     
     try {
+      // First, get the user's actual credentials from the profile
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('username, temp_password')
+        .eq('email', application.email)
+        .single()
+
+      if (profileError || !profileData) {
+        throw new Error('User profile not found. Please use "Fix Profile" to recreate the user account first.')
+      }
+
+      if (!profileData.username || !profileData.temp_password) {
+        throw new Error('User credentials are missing. Please use "Fix Profile" to recreate the user account.')
+      }
+
       const { data, error } = await supabase.functions.invoke('send-application-approval', {
         body: {
           firstName: application.first_name,
           lastName: application.last_name,
           email: application.email,
-          tempUsername: `${application.first_name.toLowerCase()}.${application.last_name.toLowerCase()}`,
-          tempPassword: 'temp-password' // This should be retrieved from the profile
+          tempUsername: profileData.username,
+          tempPassword: profileData.temp_password
         }
       })
 
@@ -232,25 +248,94 @@ const AdminApplications = () => {
     }
   }
 
-  const handleRevokeApproval = async (application: Application) => {
-    setRevokingApproval(application.id)
+  const handleFixProfile = async (application: Application) => {
+    setFixingProfile(application.id)
     
     try {
-      // Delete user profile from database
-      const { error } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('email', application.email)
+      // Re-run the approval process to create the missing profile
+      const { data, error } = await supabase.functions.invoke('update-application-status', {
+        body: {
+          applicationId: application.id,
+          newStatus: 'approved',
+          applicantName: `${application.first_name} ${application.last_name}`,
+          email: application.email,
+          adminToken: 'admin-access-token'
+        }
+      })
 
       if (error) {
         throw new Error(error.message)
       }
 
+      toast({
+        title: "Profile Fixed",
+        description: `User profile created for ${application.first_name} ${application.last_name}`,
+      })
+
+      // Refresh data
+      await fetchApplications()
+
+    } catch (error: any) {
+      console.error('Error fixing profile:', error)
+      toast({
+        title: "Error", 
+        description: `Failed to fix profile: ${error.message}`,
+        variant: "destructive",
+      })
+    } finally {
+      setFixingProfile(null)
+    }
+  }
+
+  const handleRevokeApproval = async (application: Application) => {
+    setRevokingApproval(application.id)
+    
+    try {
+      // First, get the user_id from the profile
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('user_id')
+        .eq('email', application.email)
+        .single()
+
+      if (profileError || !profileData) {
+        console.log('Profile not found, updating application status only')
+      }
+
+      // Delete user profile from database if it exists
+      if (profileData?.user_id) {
+        const { error: deleteProfileError } = await supabase
+          .from('profiles')
+          .delete()
+          .eq('user_id', profileData.user_id)
+
+        if (deleteProfileError) {
+          console.error('Error deleting profile:', deleteProfileError)
+        }
+
+        // Also delete the Supabase auth user
+        const { error: deleteAuthError } = await supabase.auth.admin.deleteUser(profileData.user_id)
+        
+        if (deleteAuthError) {
+          console.error('Error deleting auth user:', deleteAuthError)
+        }
+      }
+
       // Update application status back to pending
+      const { error: updateError } = await supabase
+        .from('applications')
+        .update({ status: 'pending', reviewed_at: null })
+        .eq('id', application.id)
+
+      if (updateError) {
+        throw new Error(updateError.message)
+      }
+
+      // Update local state
       setApplications(prevApps => 
         prevApps.map(app => 
           app.id === application.id 
-            ? { ...app, status: 'pending' }
+            ? { ...app, status: 'pending', reviewed_at: null }
             : app
         )
       )
@@ -417,24 +502,36 @@ const AdminApplications = () => {
                       </div>
                     )}
                     {app.status === 'approved' && (
-                      <div className="flex gap-2">
+                      <div className="flex flex-col gap-2">
+                        <div className="flex gap-2">
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => handleSendApproval(app)}
+                            disabled={sendingApproval === app.id}
+                          >
+                            <Mail className="w-4 h-4 mr-1" />
+                            {sendingApproval === app.id ? 'Sending...' : 'Send Approval'}
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="destructive"
+                            onClick={() => handleRevokeApproval(app)}
+                            disabled={revokingApproval === app.id}
+                          >
+                            <UserX className="w-4 h-4 mr-1" />
+                            {revokingApproval === app.id ? 'Revoking...' : 'Revoke Access'}
+                          </Button>
+                        </div>
                         <Button 
                           size="sm" 
-                          variant="outline"
-                          onClick={() => handleSendApproval(app)}
-                          disabled={sendingApproval === app.id}
+                          variant="secondary"
+                          onClick={() => handleFixProfile(app)}
+                          disabled={fixingProfile === app.id}
+                          className="w-full"
                         >
-                          <Mail className="w-4 h-4 mr-1" />
-                          {sendingApproval === app.id ? 'Sending...' : 'Send Approval'}
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="destructive"
-                          onClick={() => handleRevokeApproval(app)}
-                          disabled={revokingApproval === app.id}
-                        >
-                          <UserX className="w-4 h-4 mr-1" />
-                          {revokingApproval === app.id ? 'Revoking...' : 'Revoke Access'}
+                          <UserPlus className="w-4 h-4 mr-1" />
+                          {fixingProfile === app.id ? 'Fixing...' : 'Fix Profile'}
                         </Button>
                       </div>
                     )}
