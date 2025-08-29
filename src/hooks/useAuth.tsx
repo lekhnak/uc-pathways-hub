@@ -30,27 +30,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session)
-        setUser(session?.user ?? null)
-        setLoading(false)
+    // Check if user is already logged in via localStorage instead of Supabase auth
+    const userData = localStorage.getItem('user')
+    if (userData) {
+      try {
+        const user = JSON.parse(userData)
+        setUser(user)
+      } catch (error) {
+        console.error('Error parsing user data:', error)
+        localStorage.removeItem('user')
       }
-    )
-
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      setLoading(false)
-    })
-
-    return () => subscription.unsubscribe()
+    }
+    setLoading(false)
   }, [])
 
   const signOut = async () => {
-    await supabase.auth.signOut()
+    // Clear localStorage instead of Supabase auth
+    localStorage.removeItem('user')
+    setUser(null)
+    setSession(null)
   }
 
   const value = {

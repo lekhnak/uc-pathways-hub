@@ -94,14 +94,11 @@ const Auth = () => {
   const changePasswordForm = useForm<ChangePasswordFormData>()
 
   useEffect(() => {
-    // Check if user is already logged in
-    const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session) {
-        navigate("/")
-      }
+    // Check if user is already logged in via localStorage
+    const userData = localStorage.getItem('user')
+    if (userData) {
+      navigate("/")
     }
-    checkUser()
   }, [navigate])
 
   const handleSignIn = async (data: SignInFormData) => {
@@ -109,35 +106,28 @@ const Auth = () => {
     setError(null)
 
     try {
-      // First check if the user has an approved application
-      const { data: applicationData, error: appError } = await supabase
-        .from('applications')
-        .select('status')
-        .eq('email', data.email)
-        .eq('status', 'approved')
-        .single()
-
-      if (appError || !applicationData) {
-        setError("Only users with approved applications can sign in. Please wait for your application to be reviewed.")
-        return
-      }
-
-      const { error } = await supabase.auth.signInWithPassword({
-        email: data.email,
-        password: data.password,
+      // Use profile-login edge function for authentication
+      const { data: result, error: functionError } = await supabase.functions.invoke('profile-login', {
+        body: {
+          email: data.email,
+          password: data.password
+        }
       })
 
-      if (error) {
-        setError(error.message)
-      } else {
-        toast({
-          title: "Welcome back!",
-          description: "You have successfully signed in.",
-        })
-        navigate("/")
+      if (functionError || result?.error) {
+        throw new Error(result?.error || functionError?.message || 'Sign in failed')
       }
-    } catch (err) {
-      setError("An unexpected error occurred")
+
+      // Store user data in localStorage for session management
+      localStorage.setItem('user', JSON.stringify(result.user))
+      
+      toast({
+        title: "Welcome back!",
+        description: "You have successfully signed in.",
+      })
+      navigate("/")
+    } catch (err: any) {
+      setError(err.message || "An unexpected error occurred")
     } finally {
       setIsLoading(false)
     }
