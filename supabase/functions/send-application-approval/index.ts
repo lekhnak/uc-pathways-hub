@@ -257,7 +257,22 @@ const handler = async (req: Request): Promise<Response> => {
 </html>`,
     });
 
-    console.log("Approval email sent successfully:", emailResponse);
+    console.log("Approval email sent:", emailResponse);
+
+    // Check if there's an error in the response
+    if (emailResponse.error) {
+      console.error("Email sending failed:", emailResponse.error);
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: `Email sending failed: ${emailResponse.error.message}` 
+      }), {
+        status: 400,
+        headers: {
+          "Content-Type": "application/json",
+          ...corsHeaders,
+        },
+      });
+    }
 
     return new Response(JSON.stringify({ 
       success: true, 
