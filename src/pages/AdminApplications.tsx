@@ -203,19 +203,37 @@ const AdminApplications = () => {
     
     try {
       // First, get the user's actual credentials from the profile
+      console.log('Looking for profile with email:', application.email)
+      
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('username, temp_password')
+        .select('username, temp_password, user_id, first_name, last_name')
         .eq('email', application.email)
         .single()
 
-      if (profileError || !profileData) {
+      console.log('Profile query result:', { profileData, profileError })
+
+      if (profileError) {
+        console.error('Profile error:', profileError)
+        if (profileError.code === 'PGRST116') {
+          throw new Error('User profile not found. Please use "Fix Profile" to recreate the user account first.')
+        }
+        throw new Error(`Database error: ${profileError.message}`)
+      }
+
+      if (!profileData) {
         throw new Error('User profile not found. Please use "Fix Profile" to recreate the user account first.')
       }
 
       if (!profileData.username || !profileData.temp_password) {
+        console.error('Missing credentials:', profileData)
         throw new Error('User credentials are missing. Please use "Fix Profile" to recreate the user account.')
       }
+
+      console.log('Sending approval email with credentials:', { 
+        username: profileData.username, 
+        hasPassword: !!profileData.temp_password 
+      })
 
       const { data, error } = await supabase.functions.invoke('send-application-approval', {
         body: {
@@ -228,8 +246,11 @@ const AdminApplications = () => {
       })
 
       if (error) {
+        console.error('Email function error:', error)
         throw new Error(error.message)
       }
+
+      console.log('Email sent successfully:', data)
 
       toast({
         title: "Email Sent",
