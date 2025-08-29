@@ -235,13 +235,14 @@ const AdminApplications = () => {
         hasPassword: !!profileData.temp_password 
       })
 
-      const { data, error } = await supabase.functions.invoke('send-application-approval', {
+      const { data, error } = await supabase.functions.invoke('gmail-send-application-approval', {
         body: {
           firstName: application.first_name,
           lastName: application.last_name,
           email: application.email,
           tempUsername: profileData.username,
-          tempPassword: profileData.temp_password
+          tempPassword: profileData.temp_password,
+          program: 'UC Investments Academy'
         }
       })
 
