@@ -116,14 +116,18 @@ const AdminApplications = () => {
 
   const handleStatusUpdate = async (applicationId: string, newStatus: 'approved' | 'rejected', applicantName: string, email?: string, adminComment?: string) => {
     console.log(`Starting status update: ${applicationId} to ${newStatus}`)
+    console.log('Application ID type:', typeof applicationId, 'Value:', applicationId)
     
     try {
       // First get the application data before any updates (to avoid RLS issues)
+      console.log('Attempting to fetch application with ID:', applicationId)
       const { data: applicationData, error: fetchError } = await supabase
         .from('applications')
         .select('*')
         .eq('id', applicationId)
         .maybeSingle()
+
+      console.log('Fetch result - Data:', applicationData, 'Error:', fetchError)
 
       if (fetchError) {
         console.error('Error fetching application data:', fetchError)
@@ -131,8 +135,19 @@ const AdminApplications = () => {
       }
 
       if (!applicationData) {
+        console.error('No application data found for ID:', applicationId)
+        
+        // Let's try to see if we can fetch all applications to debug
+        const { data: allApps, error: allAppsError } = await supabase
+          .from('applications')
+          .select('id, status, first_name, last_name')
+          .limit(10)
+        
+        console.log('All applications check - Data:', allApps, 'Error:', allAppsError)
         throw new Error('Application not found')
       }
+
+      console.log('Successfully fetched application:', applicationData.first_name, applicationData.last_name)
 
       if (newStatus === 'rejected') {
         // For rejected applications, update status and add comment
