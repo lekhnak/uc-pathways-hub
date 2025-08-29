@@ -1,210 +1,139 @@
-import React, { useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { useToast } from '@/hooks/use-toast'
-import { UserPlus, Mail, User, Send } from 'lucide-react'
-import { supabase } from '@/integrations/supabase/client'
+import React, { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { User, Mail, FileText, CheckCircle, Clock } from 'lucide-react';
 
 const CreateLearnerProfile = () => {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: ''
-  })
-  const [loading, setLoading] = useState(false)
-  const { toast } = useToast()
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
+    const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: value
-    }))
-  }
-
-  const generateToken = () => {
-    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
-  }
-
-  const generateTempPassword = () => {
-    const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789'
-    let result = ''
-    for (let i = 0; i < 12; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length))
-    }
-    return result
-  }
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     
-    if (!formData.firstName.trim() || !formData.lastName.trim() || !formData.email.trim()) {
+    if (!formData.firstName || !formData.lastName || !formData.email) {
       toast({
         title: "Missing Information",
         description: "Please fill in all required fields.",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
-    console.log('Starting learner account creation for:', formData)
-    setLoading(true)
+    setIsLoading(true);
 
     try {
-      // Generate temporary password
-      const tempPassword = generateTempPassword()
-      const tempUsername = formData.email // Use email as username
+      // First check if current user is admin
+      const { data: isAdmin, error: adminError } = await supabase.rpc('is_admin_user');
       
-      console.log('Generated temporary credentials for:', formData.email)
-
-      // Check if current user is admin
-      const { data: currentSession } = await supabase.auth.getSession()
-      console.log('Current user session:', currentSession.session?.user?.id)
-      
-      // Test admin status
-      const { data: adminCheck, error: adminError } = await supabase.rpc('is_admin_user')
-      console.log('Admin check result:', adminCheck, 'Error:', adminError)
-
-      if (!adminCheck) {
-        throw new Error('You must be logged in as an admin to create learner profiles')
+      if (adminError) {
+        console.error('Error checking admin status:', adminError);
+        throw new Error('Failed to verify admin permissions');
       }
 
-      // Check if profile already exists for this email
-      const { data: existingProfile, error: profileCheckError } = await supabase
-        .from('profiles')
-        .select('id, email')
-        .eq('email', formData.email)
-        .maybeSingle()
-
-      if (profileCheckError) {
-        console.error('Error checking existing profile:', profileCheckError)
-        throw new Error('Failed to check existing profile')
+      if (!isAdmin) {
+        throw new Error('You do not have permission to create applications');
       }
 
-      if (existingProfile) {
-        throw new Error('A learner profile with this email already exists. Please use a different email address.')
+      // Check if email already exists in applications
+      const { data: existingApplication, error: applicationError } = await supabase
+        .from('applications')
+        .select('email')
+        .eq('email', formData.email.toLowerCase())
+        .single();
+
+      if (applicationError && applicationError.code !== 'PGRST116') { // PGRST116 is "no rows returned"
+        console.error('Error checking existing application:', applicationError);
+        throw new Error('Failed to check existing applications');
       }
 
-      // Create user account with temporary password (no email will be sent since confirmation is disabled)
-      let userId: string | undefined;
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: formData.email,
-        password: tempPassword,
-        options: {
-          data: {
-            first_name: formData.firstName,
-            last_name: formData.lastName
-          }
-        }
-      })
-
-      if (authError) {
-        console.error('User creation error:', authError)
-        if (authError.message?.includes('User already registered') || authError.message?.includes('user_already_exists')) {
-          throw new Error('An account with this email already exists but no profile is set up. Please contact the administrator to resolve this issue.')
-        } else {
-          throw authError
-        }
+      if (existingApplication) {
+        throw new Error('An application with this email already exists');
       }
 
-      userId = authData.user?.id
-      if (!userId) {
-        throw new Error('Failed to get user ID from created account')
-      }
-      
-      console.log('User account created successfully')
-
-      // Create profile record with temporary password
-      const { error: profileError } = await supabase
-        .from('profiles')
+      // Create application record
+      const { error: insertError } = await supabase
+        .from('applications')
         .insert({
-          user_id: userId,
           first_name: formData.firstName,
           last_name: formData.lastName,
-          email: formData.email,
-          temp_password: tempPassword,
-          is_temp_password_used: false,
-        })
+          email: formData.email.toLowerCase(),
+          status: 'pending',
+          created_by_admin: true,
+          // Optional fields will be null and can be filled later
+          uc_campus: null,
+          student_type: null,
+          major: null,
+          question_1: null,
+          question_2: null,
+          question_3: null,
+          question_4: null,
+          gpa: null
+        });
 
-      if (profileError) {
-        console.error('Profile creation error details:', {
-          error: profileError,
-          message: profileError.message,
-          details: profileError.details,
-          hint: profileError.hint,
-          code: profileError.code
-        })
-        throw new Error(`Account created but failed to create profile: ${profileError.message} (${profileError.code})`)
+      if (insertError) {
+        console.error('Application insertion error:', insertError);
+        throw new Error('Failed to create application: ' + insertError.message);
       }
 
-      console.log('Profile created successfully')
-
-      // Send approval email with temporary credentials
-      const { error: emailError } = await supabase.functions.invoke('gmail-send-application-approval', {
-        body: {
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          email: formData.email,
-          tempUsername: tempUsername,
-          tempPassword: tempPassword,
-          program: 'UC Investment Academy'
-        }
-      })
-
-      if (emailError) {
-        console.error('Email sending error:', emailError)
-        toast({
-          title: "Account Created",
-          description: `Learner account created successfully, but the approval email failed to send. Error: ${emailError.message || 'Unknown error'}. Please provide the temporary credentials manually.`,
-          variant: "destructive",
-        })
-      } else {
-        console.log('Approval email sent successfully')
-        toast({
-          title: "Account Created Successfully",
-          description: `${formData.firstName} ${formData.lastName} has been added as a learner. An approval email with login credentials has been sent to ${formData.email}.`,
-          duration: 5000,
-        })
-      }
+      toast({
+        title: "Success!",
+        description: "Application created successfully and is now pending review. You can manage it from the Applications page.",
+        variant: "default",
+      });
 
       // Reset form
       setFormData({
         firstName: '',
         lastName: '',
         email: ''
-      })
+      });
 
     } catch (error: any) {
-      console.error('Error creating learner account:', error)
+      console.error('Error creating application:', error);
       toast({
         title: "Error",
-        description: `Failed to create learner account: ${error.message || 'Unknown error'}. Please try again.`,
+        description: error.message || "Failed to create application. Please try again.",
         variant: "destructive",
-      })
+      });
     } finally {
-      setLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Create New Learner Profile</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Create New Application</h1>
         <p className="text-muted-foreground">
-          Add a new learner directly to the platform without going through the application process
+          Create a new application for review with basic learner information
         </p>
       </div>
 
       <Card className="max-w-2xl">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <UserPlus className="h-5 w-5" />
-            New Learner Information
+            <FileText className="h-5 w-5" />
+            Application Information
           </CardTitle>
           <CardDescription>
-            Enter the basic information for the new learner. They will receive an email to set up their password.
+            Enter the basic information for the new application. It will be created with pending status for review.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -260,16 +189,16 @@ const CreateLearnerProfile = () => {
             </div>
 
             <div className="pt-4">
-            <Button type="submit" disabled={loading} className="w-full md:w-auto">
-                {loading ? (
+              <Button type="submit" disabled={isLoading} className="w-full md:w-auto">
+                {isLoading ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Creating Account...
+                    Creating Application...
                   </>
                 ) : (
                   <>
-                    <Send className="h-4 w-4 mr-2" />
-                    Create Account & Send Email
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    Create Application
                   </>
                 )}
               </Button>
@@ -280,17 +209,26 @@ const CreateLearnerProfile = () => {
 
       <Card className="max-w-2xl">
         <CardHeader>
-          <CardTitle className="text-sm font-medium">What happens next?</CardTitle>
+          <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <Clock className="h-4 w-4" />
+            What happens next?
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-sm text-muted-foreground">
-          <p>1. A user account will be created with a temporary password</p>
-          <p>2. An approval email with login credentials will be sent to the learner</p>
-          <p>3. The learner can use the "Setup your password here" link on the sign-in page to set up their password</p>
-          <p>4. They will then have full access to all learner dashboard features</p>
+          <p>1. A new application will be created with "pending" status</p>
+          <p>2. You can view it in the Applications page with all other applications</p>
+          <p>3. From there you can:</p>
+          <ul className="list-disc list-inside ml-4 space-y-1">
+            <li>View detailed information</li>
+            <li>Approve the application (creates user profile and sends credentials)</li>
+            <li>Reject the application if needed</li>
+            <li>Send approval emails after creating the profile</li>
+          </ul>
+          <p>4. The application can be managed alongside regular student applications</p>
         </CardContent>
       </Card>
     </div>
-  )
-}
+  );
+};
 
-export default CreateLearnerProfile
+export default CreateLearnerProfile;

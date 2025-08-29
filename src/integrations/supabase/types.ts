@@ -52,6 +52,7 @@ export type Database = {
           admin_comment: string | null
           consent_form_file_path: string | null
           created_at: string
+          created_by_admin: boolean | null
           current_employer: string | null
           current_position: string | null
           currently_employed: boolean | null
@@ -59,33 +60,34 @@ export type Database = {
           first_generation_student: boolean | null
           first_name: string
           gender_identity: string | null
-          gpa: number
+          gpa: number | null
           graduation_year: number | null
           id: string
           last_name: string
           linkedin_url: string | null
-          major: string
+          major: string | null
           pell_grant_eligible: boolean | null
-          question_1: string
-          question_2: string
-          question_3: string
-          question_4: string
+          question_1: string | null
+          question_2: string | null
+          question_3: string | null
+          question_4: string | null
           racial_identity: string | null
           resume_file_path: string | null
           reviewed_at: string | null
           reviewed_by: string | null
           sexual_orientation: string | null
           status: string
-          student_type: string
+          student_type: string | null
           submitted_at: string
           transcript_file_path: string | null
-          uc_campus: string
+          uc_campus: string | null
           updated_at: string
         }
         Insert: {
           admin_comment?: string | null
           consent_form_file_path?: string | null
           created_at?: string
+          created_by_admin?: boolean | null
           current_employer?: string | null
           current_position?: string | null
           currently_employed?: boolean | null
@@ -93,33 +95,34 @@ export type Database = {
           first_generation_student?: boolean | null
           first_name: string
           gender_identity?: string | null
-          gpa: number
+          gpa?: number | null
           graduation_year?: number | null
           id?: string
           last_name: string
           linkedin_url?: string | null
-          major: string
+          major?: string | null
           pell_grant_eligible?: boolean | null
-          question_1: string
-          question_2: string
-          question_3: string
-          question_4: string
+          question_1?: string | null
+          question_2?: string | null
+          question_3?: string | null
+          question_4?: string | null
           racial_identity?: string | null
           resume_file_path?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           sexual_orientation?: string | null
           status?: string
-          student_type: string
+          student_type?: string | null
           submitted_at?: string
           transcript_file_path?: string | null
-          uc_campus: string
+          uc_campus?: string | null
           updated_at?: string
         }
         Update: {
           admin_comment?: string | null
           consent_form_file_path?: string | null
           created_at?: string
+          created_by_admin?: boolean | null
           current_employer?: string | null
           current_position?: string | null
           currently_employed?: boolean | null
@@ -127,27 +130,27 @@ export type Database = {
           first_generation_student?: boolean | null
           first_name?: string
           gender_identity?: string | null
-          gpa?: number
+          gpa?: number | null
           graduation_year?: number | null
           id?: string
           last_name?: string
           linkedin_url?: string | null
-          major?: string
+          major?: string | null
           pell_grant_eligible?: boolean | null
-          question_1?: string
-          question_2?: string
-          question_3?: string
-          question_4?: string
+          question_1?: string | null
+          question_2?: string | null
+          question_3?: string | null
+          question_4?: string | null
           racial_identity?: string | null
           resume_file_path?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           sexual_orientation?: string | null
           status?: string
-          student_type?: string
+          student_type?: string | null
           submitted_at?: string
           transcript_file_path?: string | null
-          uc_campus?: string
+          uc_campus?: string | null
           updated_at?: string
         }
         Relationships: []
