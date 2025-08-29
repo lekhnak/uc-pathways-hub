@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { User, Mail, FileText, CheckCircle, Clock } from 'lucide-react';
 
 const CreateLearnerProfile = () => {
@@ -15,6 +16,7 @@ const CreateLearnerProfile = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { adminUser } = useAdminAuth();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -39,16 +41,9 @@ const CreateLearnerProfile = () => {
     setIsLoading(true);
 
     try {
-      // First check if current user is admin
-      const { data: isAdmin, error: adminError } = await supabase.rpc('is_admin_user');
-      
-      if (adminError) {
-        console.error('Error checking admin status:', adminError);
-        throw new Error('Failed to verify admin permissions');
-      }
-
-      if (!isAdmin) {
-        throw new Error('You do not have permission to create applications');
+      // Check if current user is admin using the admin auth system
+      if (!adminUser) {
+        throw new Error('You must be logged in as an admin to create applications');
       }
 
       // Check if email already exists in applications
