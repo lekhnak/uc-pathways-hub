@@ -44,3 +44,6 @@ verify_jwt = false
 
 [functions.profile-login]
 verify_jwt = false
+
+[functions.revoke-application-access]
+verify_jwt = false

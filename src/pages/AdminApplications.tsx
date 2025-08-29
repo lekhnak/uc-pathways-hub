@@ -313,86 +313,59 @@ const AdminApplications = () => {
     setRevokingApproval(application.id)
     
     try {
-      console.log('Starting revoke process for:', application.email)
+      console.log('Starting revoke process via edge function for:', application.email)
       
-      // First, get the user_id from the profile
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('user_id')
-        .eq('email', application.email)
-        .single()
-
-      console.log('Profile lookup result:', profileData, 'Error:', profileError)
-
-      if (profileError || !profileData) {
-        console.log('Profile not found, deleting application only')
-      }
-
-      // Delete user profile from database if it exists
-      if (profileData?.user_id) {
-        console.log('Deleting profile for user_id:', profileData.user_id)
-        
-        const { error: deleteProfileError } = await supabase
-          .from('profiles')
-          .delete()
-          .eq('user_id', profileData.user_id)
-
-        console.log('Profile deletion result:', deleteProfileError)
-
-        if (deleteProfileError) {
-          console.error('Error deleting profile:', deleteProfileError)
+      // Use the new edge function that handles all deletion logic with service role permissions
+      const { data, error } = await supabase.functions.invoke('revoke-application-access', {
+        body: {
+          applicationId: application.id,
+          email: application.email,
+          adminToken: 'admin-access-token'
         }
+      });
 
-        // Also delete the Supabase auth user
-        console.log('Deleting auth user:', profileData.user_id)
-        const { error: deleteAuthError } = await supabase.auth.admin.deleteUser(profileData.user_id)
-        
-        console.log('Auth user deletion result:', deleteAuthError)
-        if (deleteAuthError) {
-          console.error('Error deleting auth user:', deleteAuthError)
-        }
+      console.log('Edge function response:', data, 'Error:', error);
+
+      if (error) {
+        console.error('Edge function error:', error);
+        throw new Error(error.message || 'Failed to revoke access');
       }
 
-      // Delete the entire application row
-      console.log('Deleting application:', application.id)
-      const { error: deleteError } = await supabase
-        .from('applications')
-        .delete()
-        .eq('id', application.id)
-
-      console.log('Application deletion result:', deleteError)
-
-      if (deleteError) {
-        console.error('Application deletion failed:', deleteError)
-        throw new Error(deleteError.message)
+      if (!data?.success) {
+        console.error('Edge function returned failure:', data);
+        throw new Error(data?.error || 'Unknown error from revoke function');
       }
+
+      console.log('Revoke process completed successfully');
+      console.log('Profile deleted:', data.deletedProfile);
+      console.log('Application deleted:', data.deletedApplication);
 
       // Update local state by removing the application
       setApplications(prevApps => 
         prevApps.filter(app => app.id !== application.id)
-      )
+      );
 
-      console.log('Application successfully deleted and removed from local state')
+      console.log('Application successfully removed from local state');
 
-      // Refresh data
-      await fetchApplications()
+      // Refresh data to ensure consistency
+      await fetchApplications();
 
       toast({
         title: "Access Revoked & Application Deleted",
         description: `Access revoked and application deleted for ${application.first_name} ${application.last_name}`,
-      })
+      });
 
     } catch (error: any) {
-      console.error('Error revoking approval:', error)
+      console.error('Error in revoke process:', error);
       toast({
         title: "Error", 
         description: `Failed to revoke access: ${error.message}`,
         variant: "destructive",
-      })
+      });
     } finally {
-      setRevokingApproval(null)
+      setRevokingApproval(null);
     }
-  }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
