@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useToast } from '@/hooks/use-toast'
-import { Search, Trash2, Users, AlertTriangle } from 'lucide-react'
+import { Search, Trash2, Users, AlertTriangle, Mail } from 'lucide-react'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 
 interface UserProfile {
@@ -13,6 +13,9 @@ interface UserProfile {
   first_name: string
   last_name: string
   email: string
+  username?: string
+  temp_password?: string
+  is_temp_password_used?: boolean
   created_at: string
   uc_campus?: string
   major?: string
@@ -25,6 +28,7 @@ const AdminUserManagement = () => {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [deleteLoading, setDeleteLoading] = useState<string | null>(null)
+  const [resendLoading, setResendLoading] = useState<string | null>(null)
   const { toast } = useToast()
 
   useEffect(() => {
@@ -70,6 +74,37 @@ const AdminUserManagement = () => {
     }
 
     setFilteredUsers(filtered)
+  }
+
+  const handleResendCredentials = async (user: UserProfile) => {
+    setResendLoading(user.id)
+    
+    try {
+      const { error } = await supabase.functions.invoke('resend-user-credentials', {
+        body: {
+          userId: user.user_id,
+          adminToken: 'admin-access-token'
+        }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Credentials Sent",
+        description: `Login credentials have been sent to ${user.first_name} ${user.last_name} at ${user.email}`,
+      })
+    } catch (error: any) {
+      console.error('Error resending credentials:', error)
+      toast({
+        title: "Error",
+        description: `Failed to resend credentials: ${error.message || 'Unknown error'}`,
+        variant: "destructive",
+      })
+    } finally {
+      setResendLoading(null)
+    }
   }
 
   const handleRevokeAccess = async (user: UserProfile) => {
@@ -213,17 +248,38 @@ const AdminUserManagement = () => {
                         {user.first_name} {user.last_name}
                       </h3>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-muted-foreground">
-                      {user.email && <p><strong>Email:</strong> {user.email}</p>}
-                      {user.uc_campus && <p><strong>Campus:</strong> {user.uc_campus}</p>}
-                      {user.major && <p><strong>Major:</strong> {user.major}</p>}
-                      {user.gpa && <p><strong>GPA:</strong> {user.gpa}</p>}
-                      <p><strong>Joined:</strong> {new Date(user.created_at).toLocaleDateString()}</p>
-                      <p><strong>User ID:</strong> {user.user_id}</p>
-                    </div>
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-muted-foreground">
+                       {user.email && <p><strong>Email:</strong> {user.email}</p>}
+                       {user.username && <p><strong>Username:</strong> {user.username}</p>}
+                       {user.uc_campus && <p><strong>Campus:</strong> {user.uc_campus}</p>}
+                       {user.major && <p><strong>Major:</strong> {user.major}</p>}
+                       {user.gpa && <p><strong>GPA:</strong> {user.gpa}</p>}
+                       <p><strong>Joined:</strong> {new Date(user.created_at).toLocaleDateString()}</p>
+                       <p><strong>Status:</strong> {user.is_temp_password_used ? 'Password Changed' : 'Using Temp Password'}</p>
+                     </div>
                   </div>
-                  <div className="flex flex-col gap-2 min-w-[160px]">
-                    <AlertDialog>
+                   <div className="flex flex-col gap-2 min-w-[160px]">
+                     {user.username && user.temp_password && (
+                       <Button 
+                         variant="outline" 
+                         size="sm"
+                         onClick={() => handleResendCredentials(user)}
+                         disabled={resendLoading === user.id}
+                       >
+                         {resendLoading === user.id ? (
+                           <>
+                             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
+                             Sending...
+                           </>
+                         ) : (
+                           <>
+                             <Mail className="w-4 h-4 mr-2" />
+                             Resend Email
+                           </>
+                         )}
+                       </Button>
+                     )}
+                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button 
                           variant="destructive" 

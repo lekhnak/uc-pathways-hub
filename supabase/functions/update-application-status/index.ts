@@ -185,7 +185,7 @@ const handler = async (req: Request): Promise<Response> => {
 
       // Send approval email
       try {
-        const { error: emailError } = await supabase.functions.invoke('gmail-send-application-approval', {
+        const { error: emailError } = await supabase.functions.invoke('send-application-approval', {
           body: {
             firstName: applicationData.first_name,
             lastName: applicationData.last_name,
