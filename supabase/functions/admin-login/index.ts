@@ -74,12 +74,11 @@ const handler = async (req: Request): Promise<Response> => {
     console.log('Admin user found:', adminUser.username);
     console.log('Stored password hash:', adminUser.password_hash);
 
-    // Password verification using scrypt hash
+    // Password verification - compare against stored password hash
     console.log('Attempting password verification against stored hash...');
     
-    // For now, using simple password check since we don't have scrypt in Deno edge functions
-    // In production, implement proper password hashing verification
-    const isValidPassword = password === 'admin123';
+    // Simple password comparison (in production, use proper password hashing)
+    const isValidPassword = password === adminUser.password_hash;
     console.log('Password verification result:', isValidPassword);
 
     if (!isValidPassword) {
