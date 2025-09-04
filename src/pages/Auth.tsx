@@ -102,46 +102,7 @@ const Auth = () => {
     if (userData) {
       navigate("/")
     }
-
-    // Auto-login for the specific user credentials provided
-    const autoLogin = async () => {
-      const targetEmail = "jreimann@uci.edu"
-      const targetPassword = "initiate@1128"
-      
-      try {
-        const { data: result, error: functionError } = await supabase.functions.invoke('profile-login', {
-          body: {
-            email: targetEmail,
-            password: targetPassword
-          }
-        })
-
-        if (functionError || result?.error) {
-          console.log('Auto-login failed:', result?.error || functionError?.message)
-          return
-        }
-
-        // Store user data in localStorage for session management
-        localStorage.setItem('user', JSON.stringify(result.user))
-        
-        // Update the auth context immediately
-        setUser(result.user)
-        
-        toast({
-          title: "Welcome back!",
-          description: "You have been automatically signed in.",
-        })
-        navigate("/")
-      } catch (err: any) {
-        console.log('Auto-login error:', err.message)
-      }
-    }
-
-    // Only auto-login if not already logged in
-    if (!userData) {
-      autoLogin()
-    }
-  }, [navigate, setUser, toast])
+  }, [navigate])
 
   const handleSignIn = async (data: SignInFormData) => {
     setIsLoading(true)
