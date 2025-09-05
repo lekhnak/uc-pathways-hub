@@ -77,9 +77,11 @@ const handler = async (req: Request): Promise<Response> => {
     // Password verification using scrypt hash
     console.log('Attempting password verification against stored hash...');
     
-    // For now, using simple password check since we don't have scrypt in Deno edge functions
-    // In production, implement proper password hashing verification
-    const isValidPassword = password === 'admin123';
+    // Import bcrypt for password verification
+    const bcrypt = await import("https://deno.land/x/bcrypt@v0.4.1/mod.ts");
+    
+    // Verify the password against the stored hash
+    const isValidPassword = await bcrypt.compare(password, adminUser.password_hash);
     console.log('Password verification result:', isValidPassword);
 
     if (!isValidPassword) {
