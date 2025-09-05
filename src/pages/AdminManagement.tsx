@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
-import { Shield, Plus, Edit, Trash2, Users, AlertTriangle, Mail } from 'lucide-react'
+import { Shield, Plus, Edit, Trash2, Users, AlertTriangle } from 'lucide-react'
 import { useAdminAuth } from '@/hooks/useAdminAuth'
 
 interface AdminUser {
@@ -41,18 +41,10 @@ const AdminManagement = () => {
     password: ''
   })
   const { toast } = useToast()
-  const { adminUser } = useAdminAuth()
-
-  // Check if current admin is super admin (first admin user or specific role)
-  const isSuperAdmin = adminUser?.username === 'admin' // You can modify this logic as needed
 
   useEffect(() => {
-    if (isSuperAdmin) {
-      fetchAdmins()
-    } else {
-      setLoading(false)
-    }
-  }, [isSuperAdmin])
+    fetchAdmins()
+  }, [])
 
   const fetchAdmins = async () => {
     try {
@@ -235,21 +227,6 @@ const AdminManagement = () => {
     setFormData({ ...formData, password })
   }
 
-  if (!isSuperAdmin) {
-    return (
-      <div className="space-y-6">
-        <Card>
-          <CardContent className="p-8 text-center">
-            <Shield className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-            <h2 className="text-xl font-semibold mb-2">Access Restricted</h2>
-            <p className="text-muted-foreground">
-              Only Super Administrators can access the Admin Management section.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
 
   if (loading) {
     return (
