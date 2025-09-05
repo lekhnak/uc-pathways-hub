@@ -155,6 +155,63 @@ export type Database = {
         }
         Relationships: []
       }
+      bulk_upload_logs: {
+        Row: {
+          admin_user_id: string
+          column_mapping: Json | null
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          errors: Json | null
+          failed_records: number
+          file_name: string
+          file_size: number
+          file_type: string
+          id: string
+          processing_time_ms: number | null
+          successful_records: number
+          summary_report: Json | null
+          total_records: number
+          upload_status: string
+        }
+        Insert: {
+          admin_user_id: string
+          column_mapping?: Json | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          errors?: Json | null
+          failed_records?: number
+          file_name: string
+          file_size: number
+          file_type: string
+          id?: string
+          processing_time_ms?: number | null
+          successful_records?: number
+          summary_report?: Json | null
+          total_records?: number
+          upload_status?: string
+        }
+        Update: {
+          admin_user_id?: string
+          column_mapping?: Json | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          errors?: Json | null
+          failed_records?: number
+          file_name?: string
+          file_size?: number
+          file_type?: string
+          id?: string
+          processing_time_ms?: number | null
+          successful_records?: number
+          summary_report?: Json | null
+          total_records?: number
+          upload_status?: string
+        }
+        Relationships: []
+      }
       calendar_events: {
         Row: {
           created_at: string

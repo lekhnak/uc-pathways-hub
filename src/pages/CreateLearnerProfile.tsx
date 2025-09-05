@@ -3,10 +3,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
-import { User, Mail, FileText, CheckCircle, Clock } from 'lucide-react';
+import { User, Mail, FileText, CheckCircle, Clock, Upload, Users } from 'lucide-react';
+import BulkUpload from '@/components/BulkUpload';
+import type { UploadResult } from '@/hooks/useBulkUpload';
 
 const CreateLearnerProfile = () => {
   const [formData, setFormData] = useState({
@@ -112,116 +115,142 @@ const CreateLearnerProfile = () => {
     }
   };
 
+  const handleBulkUploadComplete = (result: UploadResult) => {
+    toast({
+      title: "Bulk Upload Complete",
+      description: `Successfully processed ${result.successfulRecords} applications.`,
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Create New Application</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Create Student Applications</h1>
         <p className="text-muted-foreground">
-          Create a new application for review with basic learner information
+          Create new applications individually or upload multiple students at once
         </p>
       </div>
 
-      <Card className="max-w-2xl">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
-            Application Information
-          </CardTitle>
-          <CardDescription>
-            Enter the basic information for the new application. It will be created with pending status for review.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="firstName" className="flex items-center gap-2">
-                  <User className="h-4 w-4" />
-                  First Name *
-                </Label>
-                <Input
-                  id="firstName"
-                  name="firstName"
-                  type="text"
-                  value={formData.firstName}
-                  onChange={handleInputChange}
-                  placeholder="Enter first name"
-                  required
-                />
-              </div>
+      <Tabs defaultValue="individual" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="individual" className="flex items-center gap-2">
+            <User className="h-4 w-4" />
+            Individual Application
+          </TabsTrigger>
+          <TabsTrigger value="bulk" className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            Bulk Upload
+          </TabsTrigger>
+        </TabsList>
 
-              <div className="space-y-2">
-                <Label htmlFor="lastName" className="flex items-center gap-2">
-                  <User className="h-4 w-4" />
-                  Last Name *
-                </Label>
-                <Input
-                  id="lastName"
-                  name="lastName"
-                  type="text"
-                  value={formData.lastName}
-                  onChange={handleInputChange}
-                  placeholder="Enter last name"
-                  required
-                />
-              </div>
-            </div>
+        <TabsContent value="individual" className="space-y-6">
+          <Card className="max-w-2xl">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Application Information
+              </CardTitle>
+              <CardDescription>
+                Enter the basic information for the new application. It will be created with pending status for review.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName" className="flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      First Name *
+                    </Label>
+                    <Input
+                      id="firstName"
+                      name="firstName"
+                      type="text"
+                      value={formData.firstName}
+                      onChange={handleInputChange}
+                      placeholder="Enter first name"
+                      required
+                    />
+                  </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="email" className="flex items-center gap-2">
-                <Mail className="h-4 w-4" />
-                Email Address *
-              </Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                placeholder="Enter email address"
-                required
-              />
-            </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName" className="flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      Last Name *
+                    </Label>
+                    <Input
+                      id="lastName"
+                      name="lastName"
+                      type="text"
+                      value={formData.lastName}
+                      onChange={handleInputChange}
+                      placeholder="Enter last name"
+                      required
+                    />
+                  </div>
+                </div>
 
-            <div className="pt-4">
-              <Button type="submit" disabled={isLoading} className="w-full md:w-auto">
-                {isLoading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Creating Application...
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    Create Application
-                  </>
-                )}
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="flex items-center gap-2">
+                    <Mail className="h-4 w-4" />
+                    Email Address *
+                  </Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    placeholder="Enter email address"
+                    required
+                  />
+                </div>
 
-      <Card className="max-w-2xl">
-        <CardHeader>
-          <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <Clock className="h-4 w-4" />
-            What happens next?
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2 text-sm text-muted-foreground">
-          <p>1. A new application will be created with "pending" status</p>
-          <p>2. You can view it in the Applications page with all other applications</p>
-          <p>3. From there you can:</p>
-          <ul className="list-disc list-inside ml-4 space-y-1">
-            <li>View detailed information</li>
-            <li>Approve the application (creates user profile and sends credentials)</li>
-            <li>Reject the application if needed</li>
-            <li>Send approval emails after creating the profile</li>
-          </ul>
-          <p>4. The application can be managed alongside regular student applications</p>
-        </CardContent>
-      </Card>
+                <div className="pt-4">
+                  <Button type="submit" disabled={isLoading} className="w-full md:w-auto">
+                    {isLoading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Creating Application...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        Create Application
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+
+          <Card className="max-w-2xl">
+            <CardHeader>
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <Clock className="h-4 w-4" />
+                What happens next?
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm text-muted-foreground">
+              <p>1. A new application will be created with "pending" status</p>
+              <p>2. You can view it in the Applications page with all other applications</p>
+              <p>3. From there you can:</p>
+              <ul className="list-disc list-inside ml-4 space-y-1">
+                <li>View detailed information</li>
+                <li>Approve the application (creates user profile and sends credentials)</li>
+                <li>Reject the application if needed</li>
+                <li>Send approval emails after creating the profile</li>
+              </ul>
+              <p>4. The application can be managed alongside regular student applications</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="bulk" className="space-y-6">
+          <BulkUpload onUploadComplete={handleBulkUploadComplete} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
