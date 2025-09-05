@@ -51,34 +51,44 @@ const handler = async (req: Request): Promise<Response> => {
       .ilike('email', email)
       .maybeSingle()
 
-    if (profileError || !profile) {
-      console.error('Profile not found:', profileError)
+    // If profile exists, validate password
+    if (profile) {
+      const isValidPassword = profile.password === password || profile.temp_password === password;
       
-      // If profile doesn't exist but application is approved, something went wrong during approval process
-      if (!appError && applicationData) {
-        throw new Error('Your profile is being set up. Please contact an administrator or try again in a few minutes.')
+      if (!isValidPassword) {
+        console.error('Password mismatch for user:', email)
+        throw new Error('Invalid email or password')
       }
-      
-      throw new Error('Invalid email or password')
+
+      console.log('Login successful for:', email)
+
+      return new Response(JSON.stringify({ 
+        success: true, 
+        user: {
+          id: profile.id,
+          email: profile.email,
+          firstName: profile.first_name,
+          lastName: profile.last_name
+        }
+      }), {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          ...corsHeaders,
+        },
+      })
     }
 
-    // Validate password (check both regular password and temp_password)
-    const isValidPassword = profile.password === password || profile.temp_password === password;
-    
-    if (!isValidPassword) {
-      console.error('Password mismatch for user:', email)
-      throw new Error('Invalid email or password')
-    }
-
-    console.log('Login successful for:', email)
+    // If no profile exists but application is approved, allow login with application data
+    console.log('No profile found, but application is approved. Allowing login for:', email)
 
     return new Response(JSON.stringify({ 
       success: true, 
       user: {
-        id: profile.id,
-        email: profile.email,
-        firstName: profile.first_name,
-        lastName: profile.last_name
+        id: applicationData.first_name + applicationData.last_name + email, // temporary ID
+        email: email,
+        firstName: applicationData.first_name,
+        lastName: applicationData.last_name
       }
     }), {
       status: 200,
