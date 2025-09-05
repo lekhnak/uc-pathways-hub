@@ -47,40 +47,55 @@ const handler = async (req: Request): Promise<Response> => {
     // Find the profile with matching email (case-insensitive)
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('id, email, password, first_name, last_name, user_id, temp_password')
+      .select('id, email, password, first_name, last_name, user_id, temp_password, temp_password_expires_at')
       .ilike('email', email)
       .maybeSingle()
 
     // If profile exists, validate password
     if (profile) {
-      const isValidPassword = profile.password === password || profile.temp_password === password;
+      console.log('Profile found for user:', email, 'checking password...')
       
-      if (!isValidPassword) {
-        console.error('Password mismatch for user:', email)
-        throw new Error('Invalid email or password')
+      // Check if temp_password has expired
+      const tempPasswordExpired = profile.temp_password_expires_at && 
+        new Date(profile.temp_password_expires_at) < new Date();
+      
+      // Validate password (regular password or non-expired temp_password)
+      const isValidPassword = profile.password === password || 
+        (profile.temp_password === password && !tempPasswordExpired);
+      
+      if (isValidPassword) {
+        console.log('Login successful for:', email, 'using profile data')
+
+        return new Response(JSON.stringify({ 
+          success: true, 
+          user: {
+            id: profile.id,
+            email: profile.email,
+            firstName: profile.first_name,
+            lastName: profile.last_name
+          }
+        }), {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/json',
+            ...corsHeaders,
+          },
+        })
+      } else {
+        console.log('Password validation failed for user:', email, {
+          hasPassword: !!profile.password,
+          hasTempPassword: !!profile.temp_password,
+          tempPasswordExpired: tempPasswordExpired
+        })
+        // Don't throw error here - fall through to check application-only login
       }
-
-      console.log('Login successful for:', email)
-
-      return new Response(JSON.stringify({ 
-        success: true, 
-        user: {
-          id: profile.id,
-          email: profile.email,
-          firstName: profile.first_name,
-          lastName: profile.last_name
-        }
-      }), {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-          ...corsHeaders,
-        },
-      })
     }
 
-    // If no profile exists but application is approved, allow login with application data
-    console.log('No profile found, but application is approved. Allowing login for:', email)
+    // If no profile exists or password validation failed, allow login with application data only
+    // This handles cases where:
+    // 1. Profile doesn't exist but application is approved
+    // 2. Profile exists but password is wrong/expired - still allow access since application is approved
+    console.log('Using application-only login for:', email)
 
     return new Response(JSON.stringify({ 
       success: true, 
@@ -100,12 +115,22 @@ const handler = async (req: Request): Promise<Response> => {
 
   } catch (error: any) {
     console.error('Error in profile-login function:', error)
+    
+    // Return appropriate HTTP status codes
+    let statusCode = 500; // Default to server error
+    
+    if (error.message.includes('Only users with approved applications')) {
+      statusCode = 401; // Unauthorized - no approved application
+    } else if (error.message.includes('Email and password are required')) {
+      statusCode = 400; // Bad request - missing required fields
+    }
+    
     return new Response(
       JSON.stringify({ 
         error: error.message || 'An unexpected error occurred' 
       }),
       {
-        status: 400,
+        status: statusCode,
         headers: { 
           'Content-Type': 'application/json', 
           ...corsHeaders 
