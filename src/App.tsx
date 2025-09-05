@@ -30,6 +30,7 @@ import AdminCertifications from "./pages/AdminCertifications";
 import AdminCalendarEvents from "./pages/AdminCalendarEvents";
 import AdminProfile from "./pages/AdminProfile";
 import AdminUserManagement from "./pages/AdminUserManagement";
+import AdminManagement from "./pages/AdminManagement";
 import CreateLearnerProfile from "./pages/CreateLearnerProfile";
 import SetPassword from "./pages/SetPassword";
 import ChangePassword from "./pages/ChangePassword";
@@ -55,6 +56,7 @@ const App = () => (
             <Route path="" element={<AdminDashboard />} />
             <Route path="applications" element={<AdminApplications />} />
             <Route path="user-management" element={<AdminUserManagement />} />
+            <Route path="admin-management" element={<AdminManagement />} />
             <Route path="create-learner" element={<CreateLearnerProfile />} />
             <Route path="pathways" element={<div>Admin Pathways - Coming Soon</div>} />
             <Route path="certifications" element={<AdminCertifications />} />

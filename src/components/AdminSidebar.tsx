@@ -22,6 +22,7 @@ import {
   MessageSquare,
   UserCog,
   Settings,
+  Shield,
 } from 'lucide-react'
 
 const navigationItems = [
@@ -39,6 +40,11 @@ const navigationItems = [
     title: 'User Management',
     url: '/admin/user-management',
     icon: UserCog,
+  },
+  {
+    title: 'Admin Management',
+    url: '/admin/admin-management',
+    icon: Shield,
   },
   {
     title: 'Create Learner',
