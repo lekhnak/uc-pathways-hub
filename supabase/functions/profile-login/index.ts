@@ -32,23 +32,11 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('Email and password are required')
     }
 
-    // Find the profile with matching email
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('id, email, password, first_name, last_name, user_id')
-      .eq('email', email)
-      .maybeSingle()
-
-    if (profileError || !profile) {
-      console.error('Profile not found:', profileError)
-      throw new Error('Invalid email or password')
-    }
-
-    // Check if user has an approved application
+    // Check if user has an approved application (case-insensitive)
     const { data: applicationData, error: appError } = await supabase
       .from('applications')
-      .select('status')
-      .eq('email', email)
+      .select('status, first_name, last_name')
+      .ilike('email', email)
       .eq('status', 'approved')
       .single()
 
@@ -56,8 +44,28 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('Only users with approved applications can sign in. Please wait for your application to be reviewed.')
     }
 
-    // Validate password
-    if (profile.password !== password) {
+    // Find the profile with matching email (case-insensitive)
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('id, email, password, first_name, last_name, user_id, temp_password')
+      .ilike('email', email)
+      .maybeSingle()
+
+    if (profileError || !profile) {
+      console.error('Profile not found:', profileError)
+      
+      // If profile doesn't exist but application is approved, something went wrong during approval process
+      if (!appError && applicationData) {
+        throw new Error('Your profile is being set up. Please contact an administrator or try again in a few minutes.')
+      }
+      
+      throw new Error('Invalid email or password')
+    }
+
+    // Validate password (check both regular password and temp_password)
+    const isValidPassword = profile.password === password || profile.temp_password === password;
+    
+    if (!isValidPassword) {
       console.error('Password mismatch for user:', email)
       throw new Error('Invalid email or password')
     }
