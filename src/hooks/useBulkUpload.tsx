@@ -6,47 +6,41 @@ import * as XLSX from 'xlsx';
 import Papa from 'papaparse';
 
 export interface StudentRecord {
-  // Basic Info (Required)
-  firstName: string;
-  lastName: string;
-  email: string;
+  // Required Fields
+  timestamp?: string; // 1. Timestamp
+  email: string; // 2. Email Address
+  firstName: string; // 3. First and Last Name (first part)
+  lastName: string; // 3. First and Last Name (last part)
   
   // Academic Info
-  campus?: string;
-  gpa?: number;
-  classStanding?: string; // maps to student_type
-  major?: string;
-  graduationYear?: number;
-  
-  // Program Interest
-  programInterest?: string; // maps to question_1
-  
-  // Employment Status
-  currentlyEmployed?: boolean;
-  currentEmployer?: string;
-  currentPosition?: string;
-  
-  // Program Commitments
-  informFutureJobs?: string; // maps to question_2
-  investmentClubMember?: string; // maps to question_3  
-  completeAssignments?: string; // maps to question_4
+  campus?: string; // 4. Campus Currently Enrolled
+  gpa?: number; // 5. Overall GPA
+  classStanding?: string; // 6. Class Standing in Fall 2025
+  fieldOfStudy?: string; // 21. Field of Study
   
   // Demographics
-  firstGenerationStudent?: boolean;
-  pellGrantEligible?: boolean;
-  genderIdentity?: string;
-  racialIdentity?: string;
-  sexualOrientation?: string;
+  firstGenerationStudent?: boolean; // 7. Are you a first generation college student?
+  pellGrantEligible?: boolean; // 8. Are you Pell Grant Eligible?
+  
+  // Program Questions
+  programInterest?: string; // 9. Briefly explain why you are interested in this program.
+  employmentStatus?: string; // 10. Are you currently employed or are in an internship? If yes, where are you employed/interning?
+  informFutureJobs?: string; // 11. Will you be able to inform UC Investments if you are able to get a related job/internship in the field after completing the program?
+  investmentClubMember?: string; // 12. Are you currently a member of your campus investment / finance club?
+  completeAssignments?: string; // 13. Will you be able to complete the all assigned materials including Training The Street, Forage, and Guest Speaker events?
+  exitSurveyAgreement?: string; // 14. Do you agree to complete an exit survey at the completion of the program?
+  
+  // File Uploads
+  transcriptFile?: string; // 15. Upload Unofficial Transcript
+  consentFormFile?: string; // 16. Upload Consent Form (Template Form Link)
   
   // Contact/Links
-  linkedinUrl?: string;
+  linkedinUrl?: string; // 17. Please enter your Linkedin profile link (Join UC Investments Academy LinkedIn Group here)
   
-  // File Uploads (URLs or references)
-  transcriptFile?: string;
-  consentFormFile?: string;
-  
-  // Timestamp
-  timestamp?: string;
+  // Optional Demographics
+  optionalQuestion1?: string; // 18. Optional Question 1: Which of the following best describes you?
+  optionalQuestion2?: string; // 19. Optional Question 2: I identify as?
+  optionalQuestion3?: string; // 20. Optional Question 3: Do you consider yourself to be:
   
   [key: string]: any;
 }
@@ -74,7 +68,19 @@ export interface ColumnMapping {
 
 const REQUIRED_FIELDS = ['firstName', 'lastName', 'email'];
 const VALID_FIELD_MAPPINGS = {
-  // Basic Info
+  // 1. Timestamp
+  'timestamp': 'timestamp',
+  'date': 'timestamp',
+  'submitted': 'timestamp',
+  
+  // 2. Email Address
+  'email address': 'email',
+  'email_address': 'email',
+  'email': 'email',
+  
+  // 3. First and Last Name
+  'first and last name': 'firstName', // Will need special handling for combined name
+  'first_and_last_name': 'firstName',
   'first_name': 'firstName',
   'firstname': 'firstName',
   'fname': 'firstName',
@@ -83,77 +89,146 @@ const VALID_FIELD_MAPPINGS = {
   'lastname': 'lastName',
   'lname': 'lastName',
   'last': 'lastName',
-  'email_address': 'email',
-  'email': 'email',
-  'timestamp': 'timestamp',
-  'date': 'timestamp',
-  'submitted': 'timestamp',
+  'name': 'firstName', // Will split if contains space
   
-  // Academic Info  
+  // 4. Campus Currently Enrolled
+  'campus currently enrolled': 'campus',
+  'campus_currently_enrolled': 'campus',
   'uc_campus': 'campus',
   'campus': 'campus',
   'school': 'campus',
-  'campus_currently_enrolled': 'campus',
+  
+  // 5. Overall GPA
+  'overall gpa': 'gpa',
   'overall_gpa': 'gpa',
   'gpa': 'gpa',
+  
+  // 6. Class Standing in Fall 2025
+  'class standing in fall 2025': 'classStanding',
   'class_standing_in_fall_2025': 'classStanding',
   'class_standing': 'classStanding',
+  'class standing': 'classStanding',
   'standing': 'classStanding',
-  'field_of_study': 'major',
-  'major': 'major',
-  'study': 'major',
-  'graduation_year': 'graduationYear',
   
-  // Program Interest
-  'briefly_explain_why_you_are_interested_in_this_program': 'programInterest',
+  // 7. Are you a first generation college student?
+  'are you a first generation college student?': 'firstGenerationStudent',
+  'are_you_a_first_generation_college_student?': 'firstGenerationStudent',
+  'first generation college student': 'firstGenerationStudent',
+  'first_generation_college_student': 'firstGenerationStudent',
+  'first_generation': 'firstGenerationStudent',
+  
+  // 8. Are you Pell Grant Eligible?
+  'are you pell grant eligible?': 'pellGrantEligible',
+  'are_you_pell_grant_eligible?': 'pellGrantEligible',
+  'pell grant eligible': 'pellGrantEligible',
+  'pell_grant_eligible': 'pellGrantEligible',
+  'pell_grant': 'pellGrantEligible',
+  
+  // 9. Briefly explain why you are interested in this program.
+  'briefly explain why you are interested in this program.': 'programInterest',
+  'briefly_explain_why_you_are_interested_in_this_program.': 'programInterest',
+  'briefly explain why you are interested in this program': 'programInterest',
   'why_interested': 'programInterest',
   'program_interest': 'programInterest',
   'interest_reason': 'programInterest',
   
-  // Employment
-  'current_employment/internship_status': 'currentEmployer',
-  'current_employment': 'currentEmployer',
-  'employer': 'currentEmployer',
-  'current_position': 'currentPosition',
-  'position': 'currentPosition',
-  'currently_employed': 'currentlyEmployed',
+  // 10. Are you currently employed or are in an internship? If yes, where are you employed/interning?
+  'are you currently employed or are in an internship? if yes, where are you employed/interning?': 'employmentStatus',
+  'are_you_currently_employed_or_are_in_an_internship?_if_yes,_where_are_you_employed/interning?': 'employmentStatus',
+  'current employment/internship status': 'employmentStatus',
+  'current_employment/internship_status': 'employmentStatus',
+  'employment_status': 'employmentStatus',
+  'current_employment': 'employmentStatus',
   
-  // Program Commitments  
+  // 11. Will you be able to inform UC Investments if you are able to get a related job/internship in the field after completing the program?
+  'will you be able to inform uc investments if you are able to get a related job/internship in the field after completing the program?': 'informFutureJobs',
+  'will_you_be_able_to_inform_uc_investments_if_you_are_able_to_get_a_related_job/internship_in_the_field_after_completing_the_program?': 'informFutureJobs',
+  'will you be able to inform uc investments about future jobs/internships?': 'informFutureJobs',
   'will_you_be_able_to_inform_uc_investments_about_future_jobs/internships?': 'informFutureJobs',
   'inform_future_jobs': 'informFutureJobs',
   'future_jobs': 'informFutureJobs',
+  
+  // 12. Are you currently a member of your campus investment / finance club?
+  'are you currently a member of your campus investment / finance club?': 'investmentClubMember',
+  'are_you_currently_a_member_of_your_campus_investment_/_finance_club?': 'investmentClubMember',
+  'are you currently a member of your campus investment/finance club?': 'investmentClubMember',
   'are_you_currently_a_member_of_your_campus_investment/finance_club?': 'investmentClubMember',
   'investment_club_member': 'investmentClubMember',
   'finance_club': 'investmentClubMember',
+  
+  // 13. Will you be able to complete the all assigned materials including Training The Street, Forage, and Guest Speaker events?
+  'will you be able to complete the all assigned materials including training the street, forage, and guest speaker events?': 'completeAssignments',
+  'will_you_be_able_to_complete_the_all_assigned_materials_including_training_the_street,_forage,_and_guest_speaker_events?': 'completeAssignments',
+  'will you be able to complete all assigned materials?': 'completeAssignments',
   'will_you_be_able_to_complete_all_assigned_materials?': 'completeAssignments',
   'complete_assignments': 'completeAssignments',
   'assigned_materials': 'completeAssignments',
-  'do_you_agree_to_complete_an_exit_survey?': 'completeAssignments',
-  'exit_survey': 'completeAssignments',
   
-  // Demographics
-  'are_you_a_first_generation_college_student?': 'firstGenerationStudent',
-  'first_generation_college_student': 'firstGenerationStudent',
-  'first_generation': 'firstGenerationStudent',
-  'are_you_pell_grant_eligible?': 'pellGrantEligible',
-  'pell_grant_eligible': 'pellGrantEligible',
-  'pell_grant': 'pellGrantEligible',
-  'gender_identity': 'genderIdentity',
-  'gender': 'genderIdentity',
-  'racial_identity': 'racialIdentity',
-  'race': 'racialIdentity',
-  'ethnicity': 'racialIdentity',
-  'sexual_orientation': 'sexualOrientation',
-  'optional_demographic_question': 'genderIdentity',
+  // 14. Do you agree to complete an exit survey at the completion of the program?
+  'do you agree to complete an exit survey at the completion of the program?': 'exitSurveyAgreement',
+  'do_you_agree_to_complete_an_exit_survey_at_the_completion_of_the_program?': 'exitSurveyAgreement',
+  'do you agree to complete an exit survey?': 'exitSurveyAgreement',
+  'do_you_agree_to_complete_an_exit_survey?': 'exitSurveyAgreement',
+  'exit_survey': 'exitSurveyAgreement',
+  'exit survey': 'exitSurveyAgreement',
   
-  // Links/Files
+  // 15. Upload Unofficial Transcript
+  'upload unofficial transcript': 'transcriptFile',
+  'upload_unofficial_transcript': 'transcriptFile',
+  'unofficial_transcript': 'transcriptFile',
+  'transcript': 'transcriptFile',
+  
+  // 16. Upload Consent Form (Template Form Link)
+  'upload consent form (template form link)': 'consentFormFile',
+  'upload_consent_form_(template_form_link)': 'consentFormFile',
+  'upload consent form': 'consentFormFile',
+  'upload_consent_form': 'consentFormFile',
+  'consent_form': 'consentFormFile',
+  'consent': 'consentFormFile',
+  
+  // 17. Please enter your Linkedin profile link (Join UC Investments Academy LinkedIn Group here)
+  'please enter your linkedin profile link (join uc investments academy linkedin group here)': 'linkedinUrl',
+  'please_enter_your_linkedin_profile_link_(join_uc_investments_academy_linkedin_group_here)': 'linkedinUrl',
+  'please enter your linkedin profile link': 'linkedinUrl',
+  'please_enter_your_linkedin_profile_link': 'linkedinUrl',
   'linkedin_profile_link': 'linkedinUrl',
   'linkedin': 'linkedinUrl',
   'linkedin_url': 'linkedinUrl',
-  'unofficial_transcript': 'transcriptFile',
-  'transcript': 'transcriptFile',
-  'consent_form': 'consentFormFile',
-  'consent': 'consentFormFile'
+  
+  // 18. Optional Question 1: Which of the following best describes you?
+  'optional question 1: which of the following best describes you? (for data collection purposes only. this question does not impact your application)': 'optionalQuestion1',
+  'optional_question_1:_which_of_the_following_best_describes_you?_(for_data_collection_purposes_only._this_question_does_not_impact_your_application)': 'optionalQuestion1',
+  'optional question 1': 'optionalQuestion1',
+  'optional_question_1': 'optionalQuestion1',
+  'which of the following best describes you?': 'optionalQuestion1',
+  'which_of_the_following_best_describes_you?': 'optionalQuestion1',
+  
+  // 19. Optional Question 2: I identify as?
+  'optional question 2: i identify as? (for data collection purposes only. this question does not impact your application)': 'optionalQuestion2',
+  'optional_question_2:_i_identify_as?_(for_data_collection_purposes_only._this_question_does_not_impact_your_application)': 'optionalQuestion2',
+  'optional question 2': 'optionalQuestion2',
+  'optional_question_2': 'optionalQuestion2',
+  'i identify as?': 'optionalQuestion2',
+  'i_identify_as?': 'optionalQuestion2',
+  'gender_identity': 'optionalQuestion2',
+  'gender': 'optionalQuestion2',
+  
+  // 20. Optional Question 3: Do you consider yourself to be:
+  'optional question 3: do you consider yourself to be: (for data collection purposes only. this question does not impact your application)': 'optionalQuestion3',
+  'optional_question_3:_do_you_consider_yourself_to_be:_(for_data_collection_purposes_only._this_question_does_not_impact_your_application)': 'optionalQuestion3',
+  'optional question 3': 'optionalQuestion3',
+  'optional_question_3': 'optionalQuestion3',
+  'do you consider yourself to be:': 'optionalQuestion3',
+  'do_you_consider_yourself_to_be:': 'optionalQuestion3',
+  'racial_identity': 'optionalQuestion3',
+  'race': 'optionalQuestion3',
+  'ethnicity': 'optionalQuestion3',
+  
+  // 21. Field of Study
+  'field of study': 'fieldOfStudy',
+  'field_of_study': 'fieldOfStudy',
+  'major': 'fieldOfStudy',
+  'study': 'fieldOfStudy'
 };
 
 export const useBulkUpload = () => {
@@ -235,8 +310,21 @@ export const useBulkUpload = () => {
         if (record[fileColumn] !== undefined && record[fileColumn] !== null && record[fileColumn] !== '') {
           let value = record[fileColumn];
           
-          // Handle boolean fields
-          if (['firstGenerationStudent', 'pellGrantEligible', 'currentlyEmployed'].includes(mappedField)) {
+          // Handle "First and Last Name" combined field
+          if (fileColumn.toLowerCase().includes('first and last name') || (mappedField === 'firstName' && fileColumn.toLowerCase().includes('name') && !fileColumn.toLowerCase().includes('first_name'))) {
+            const fullName = String(value).trim();
+            const nameParts = fullName.split(' ');
+            if (nameParts.length >= 2) {
+              mappedRecord.firstName = nameParts[0];
+              mappedRecord.lastName = nameParts.slice(1).join(' ');
+            } else {
+              mappedRecord.firstName = fullName;
+            }
+            return; // Skip the normal processing for this field
+          }
+          
+          // Handle boolean fields for Yes/No questions
+          if (['firstGenerationStudent', 'pellGrantEligible'].includes(mappedField)) {
             if (typeof value === 'string') {
               value = value.toLowerCase();
               value = value === 'yes' || value === 'true' || value === '1' || value === 'y';
@@ -245,8 +333,13 @@ export const useBulkUpload = () => {
             }
           }
           
+          // Handle string fields for Yes/No answers that should remain as strings
+          if (['informFutureJobs', 'investmentClubMember', 'completeAssignments', 'exitSurveyAgreement'].includes(mappedField)) {
+            value = String(value).trim();
+          }
+          
           // Handle numeric fields
-          if (['gpa', 'graduationYear'].includes(mappedField)) {
+          if (['gpa'].includes(mappedField)) {
             const numValue = parseFloat(value);
             if (!isNaN(numValue)) {
               value = numValue;
@@ -365,7 +458,7 @@ export const useBulkUpload = () => {
         const { error } = await supabase
           .from('applications')
           .insert({
-            // Basic Info
+            // Basic Info (Required)
             first_name: record.firstName,
             last_name: record.lastName,
             email: record.email.toLowerCase(),
@@ -374,31 +467,30 @@ export const useBulkUpload = () => {
             uc_campus: record.campus || null,
             gpa: record.gpa || null,
             student_type: record.classStanding || null,
-            major: record.major || null,
-            graduation_year: record.graduationYear || null,
+            major: record.fieldOfStudy || null,
             
             // Demographics
             first_generation_student: record.firstGenerationStudent || null,
             pell_grant_eligible: record.pellGrantEligible || null,
-            gender_identity: record.genderIdentity || null,
-            racial_identity: record.racialIdentity || null,
-            sexual_orientation: record.sexualOrientation || null,
+            gender_identity: record.optionalQuestion2 || null, // Maps to "I identify as?"
+            racial_identity: record.optionalQuestion3 || null, // Maps to "Do you consider yourself to be:"
+            sexual_orientation: record.optionalQuestion1 || null, // Maps to "Which of the following best describes you?"
             
-            // Employment
-            currently_employed: record.currentlyEmployed || null,
-            current_employer: record.currentEmployer || null,
-            current_position: record.currentPosition || null,
+            // Employment Status
+            current_employer: record.employmentStatus || null,
             
             // Program Questions
-            question_1: record.programInterest || null,
-            question_2: record.informFutureJobs || null,
-            question_3: record.investmentClubMember || null,
-            question_4: record.completeAssignments || null,
+            question_1: record.programInterest || null, // Briefly explain why interested
+            question_2: record.informFutureJobs || null, // Inform UC Investments about future jobs
+            question_3: record.investmentClubMember || null, // Member of investment/finance club
+            question_4: record.completeAssignments || null, // Complete assigned materials
             
-            // Links and Files
-            linkedin_url: record.linkedinUrl || null,
+            // File Uploads
             transcript_file_path: record.transcriptFile || null,
             consent_form_file_path: record.consentFormFile || null,
+            
+            // Contact/Links
+            linkedin_url: record.linkedinUrl || null,
             
             // System fields
             status: 'pending',

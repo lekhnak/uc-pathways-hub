@@ -50,41 +50,43 @@ const BulkUpload: React.FC<BulkUploadProps> = ({ onUploadComplete }) => {
 
   const SUPPORTED_FORMATS = ['csv', 'xlsx', 'xls'];
   const REQUIRED_MAPPINGS = {
-    firstName: 'First Name',
-    lastName: 'Last Name', 
+    firstName: 'First and Last Name (First)',
+    lastName: 'First and Last Name (Last)', 
     email: 'Email Address'
   };
   const OPTIONAL_MAPPINGS = {
+    // Basic Info
+    timestamp: 'Timestamp',
+    
     // Academic Info
-    campus: 'UC Campus',
+    campus: 'Campus Currently Enrolled',
     gpa: 'Overall GPA',
-    classStanding: 'Class Standing',
-    major: 'Field of Study',
-    graduationYear: 'Graduation Year',
-    
-    // Program Interest & Questions
-    programInterest: 'Why Interested in Program',
-    informFutureJobs: 'Inform About Future Jobs',
-    investmentClubMember: 'Investment Club Member', 
-    completeAssignments: 'Complete Assignments/Exit Survey',
-    
-    // Employment
-    currentlyEmployed: 'Currently Employed',
-    currentEmployer: 'Current Employer',
-    currentPosition: 'Current Position',
+    classStanding: 'Class Standing in Fall 2025',
+    fieldOfStudy: 'Field of Study',
     
     // Demographics
-    firstGenerationStudent: 'First Generation Student',
-    pellGrantEligible: 'Pell Grant Eligible',
-    genderIdentity: 'Gender Identity',
-    racialIdentity: 'Racial Identity',
-    sexualOrientation: 'Sexual Orientation',
+    firstGenerationStudent: 'Are you a first generation college student?',
+    pellGrantEligible: 'Are you Pell Grant Eligible?',
     
-    // Contact/Files
-    linkedinUrl: 'LinkedIn Profile',
-    transcriptFile: 'Transcript File',
-    consentFormFile: 'Consent Form',
-    timestamp: 'Application Timestamp'
+    // Program Interest & Questions
+    programInterest: 'Briefly explain why you are interested in this program',
+    employmentStatus: 'Are you currently employed or are in an internship? If yes, where are you employed/interning?',
+    informFutureJobs: 'Will you be able to inform UC Investments if you are able to get a related job/internship in the field after completing the program?',
+    investmentClubMember: 'Are you currently a member of your campus investment / finance club?',
+    completeAssignments: 'Will you be able to complete the all assigned materials including Training The Street, Forage, and Guest Speaker events?',
+    exitSurveyAgreement: 'Do you agree to complete an exit survey at the completion of the program?',
+    
+    // File Uploads
+    transcriptFile: 'Upload Unofficial Transcript',
+    consentFormFile: 'Upload Consent Form (Template Form Link)',
+    
+    // Contact/Links
+    linkedinUrl: 'Please enter your Linkedin profile link (Join UC Investments Academy LinkedIn Group here)',
+    
+    // Optional Demographics
+    optionalQuestion1: 'Optional Question 1: Which of the following best describes you?',
+    optionalQuestion2: 'Optional Question 2: I identify as?',
+    optionalQuestion3: 'Optional Question 3: Do you consider yourself to be:'
   };
 
   const handleDrag = useCallback((e: React.DragEvent) => {
@@ -303,12 +305,14 @@ const BulkUpload: React.FC<BulkUploadProps> = ({ onUploadComplete }) => {
         <Alert className="mt-4">
           <FileText className="h-4 w-4" />
           <AlertDescription>
-            <strong>Required columns:</strong> First Name, Last Name, Email Address
+            <strong>Required columns:</strong> Email Address, First and Last Name
             <br />
-            <strong>Available optional columns:</strong> UC Campus, GPA, Class Standing, Field of Study, 
-            Program Interest, Employment Status, Demographics, LinkedIn Profile, and more
+            <strong>Available columns (21 fields total):</strong> Timestamp, Campus Currently Enrolled, Overall GPA, 
+            Class Standing in Fall 2025, Field of Study, First Generation Student, Pell Grant Eligible, Program Interest, 
+            Employment Status, Investment Club Member, Complete Assignments, Exit Survey Agreement, File Uploads, LinkedIn Profile, 
+            and Optional Demographics Questions
             <br />
-            The system will automatically detect and map common column variations.
+            The system will automatically detect and map common column variations from your Excel template.
           </AlertDescription>
         </Alert>
       </CardContent>
