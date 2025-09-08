@@ -195,16 +195,18 @@ const LandingPage = () => {
             />
           </div>
           <div className="relative container mx-auto px-4 text-center text-white">
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 animate-fade-in">
-              Building the next generation of
-              <span className="block text-academy-accent">finance leaders</span>
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 animate-fade-in text-white">
+              UC Investments Academy
             </h1>
+            <p className="text-2xl md:text-3xl lg:text-4xl font-semibold mb-4 text-academy-accent animate-fade-in" style={{ animationDelay: '0.1s' }}>
+              Building the next generation of finance leaders
+            </p>
             <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto text-white/90 animate-fade-in" style={{ animationDelay: '0.2s' }}>
               Connect UC undergrads with opportunities in the financial industry through free training, tools, and coaching.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in" style={{ animationDelay: '0.4s' }}>
-              <Button size="lg" className="bg-white text-academy-blue hover:bg-white/90" asChild>
-                <NavLink to="/auth">
+              <Button size="lg" className="bg-white text-academy-blue hover:bg-gray-100" asChild>
+                <NavLink to="/apply">
                   Apply Now
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </NavLink>
@@ -212,7 +214,7 @@ const LandingPage = () => {
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="border-white/30 text-white hover:bg-white/10"
+                className="border-white text-white bg-transparent hover:bg-white hover:text-academy-blue transition-colors"
                 onClick={() => scrollToSection('program')}
               >
                 Explore the Program
@@ -608,13 +610,13 @@ const LandingPage = () => {
               Join thousands of UC students building successful careers in finance.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-white text-academy-blue hover:bg-white/90" asChild>
-                <NavLink to="/auth">
+            <Button size="lg" className="bg-white text-academy-blue hover:bg-gray-100" asChild>
+              <NavLink to="/apply">
                   Apply Now
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </NavLink>
               </Button>
-              <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10" asChild>
+              <Button size="lg" variant="outline" className="border-white text-white bg-transparent hover:bg-white hover:text-academy-blue transition-colors" asChild>
                 <NavLink to="/auth">
                   Sign Up Today
                 </NavLink>
@@ -698,7 +700,7 @@ const LandingPage = () => {
             <p className="text-xl mb-8 text-white/90 max-w-2xl mx-auto">
               Build financial literacy and gain real-world investment experience through comprehensive training and virtual work assignments.
             </p>
-            <Button size="lg" className="bg-white text-academy-blue hover:bg-white/90" asChild>
+            <Button size="lg" className="bg-white text-academy-blue hover:bg-gray-100" asChild>
               <NavLink to="/auth">
                 Sign Up Today
                 <ArrowRight className="ml-2 h-5 w-5" />
