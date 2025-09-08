@@ -202,7 +202,7 @@ const LandingPage = () => {
               Building the next generation of finance leaders
             </p>
             <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto text-white/90 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-              Connect UC undergrads with opportunities in the financial industry through free training, tools, and coaching.
+              Connect UC undergraduate and graduate students with opportunities in the financial industry through free training, tools, and coaching.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in" style={{ animationDelay: '0.4s' }}>
               <Button size="lg" className="bg-white text-academy-blue hover:bg-gray-100" asChild>
