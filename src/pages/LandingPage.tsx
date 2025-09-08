@@ -136,7 +136,7 @@ const LandingPage = () => {
                   <NavLink to="/auth">Log in</NavLink>
                 </Button>
                 <Button asChild>
-                  <NavLink to="/auth">Sign up</NavLink>
+                  <NavLink to="/apply">Sign up</NavLink>
                 </Button>
               </div>
 
@@ -175,7 +175,7 @@ const LandingPage = () => {
                       <NavLink to="/auth">Log in</NavLink>
                     </Button>
                     <Button asChild>
-                      <NavLink to="/auth">Sign up</NavLink>
+                      <NavLink to="/apply">Sign up</NavLink>
                     </Button>
                   </div>
                 </div>
@@ -618,7 +618,7 @@ const LandingPage = () => {
               </Button>
               <Button size="lg" variant="outline" className="border-white text-white bg-transparent hover:bg-white hover:text-academy-blue transition-colors" asChild>
                 <NavLink to="/auth">
-                  Sign Up Today
+                  Login to Portal
                 </NavLink>
               </Button>
             </div>
