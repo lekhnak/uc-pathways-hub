@@ -49,8 +49,8 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Routes>
+              <Route path="/" element={<LandingPage />} />
               <Route path="/auth" element={<Auth />} />
-              <Route path="/landing" element={<LandingPage />} />
               <Route path="/apply" element={<Apply />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/set-password" element={<SetPassword />} />
@@ -70,7 +70,7 @@ const App = () => (
             <Route path="chat" element={<div>Admin Chat - Coming Soon</div>} />
             <Route path="profile" element={<AdminProfile />} />
           </Route>
-              <Route path="/*" element={<Layout />}>
+              <Route path="/dashboard/*" element={<Layout />}>
                 <Route path="" element={<Index />} />
                 <Route path="modules" element={<Modules />} />
                 <Route path="pathways" element={<Pathways />} />
