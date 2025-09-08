@@ -35,6 +35,7 @@ import CreateLearnerProfile from "./pages/CreateLearnerProfile";
 import SetPassword from "./pages/SetPassword";
 import ChangePassword from "./pages/ChangePassword";
 import NotFound from "./pages/NotFound";
+import LandingPage from "./pages/LandingPage";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +49,7 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               <Route path="/auth" element={<Auth />} />
+              <Route path="/landing" element={<LandingPage />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/set-password" element={<SetPassword />} />
               <Route path="/change-password" element={<ChangePassword />} />
