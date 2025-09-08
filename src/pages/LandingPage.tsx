@@ -746,6 +746,11 @@ const LandingPage = () => {
                     <MapPin className="h-4 w-4" />
                     <span className="text-white/70">University of California System</span>
                   </div>
+                  <div className="pt-2">
+                    <NavLink to="/admin/auth" className="text-white/70 hover:text-white transition-colors text-sm">
+                      Admin Login
+                    </NavLink>
+                  </div>
                 </div>
               </div>
             </div>
