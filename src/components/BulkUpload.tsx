@@ -55,7 +55,36 @@ const BulkUpload: React.FC<BulkUploadProps> = ({ onUploadComplete }) => {
     email: 'Email Address'
   };
   const OPTIONAL_MAPPINGS = {
-    campus: 'UC Campus'
+    // Academic Info
+    campus: 'UC Campus',
+    gpa: 'Overall GPA',
+    classStanding: 'Class Standing',
+    major: 'Field of Study',
+    graduationYear: 'Graduation Year',
+    
+    // Program Interest & Questions
+    programInterest: 'Why Interested in Program',
+    informFutureJobs: 'Inform About Future Jobs',
+    investmentClubMember: 'Investment Club Member', 
+    completeAssignments: 'Complete Assignments/Exit Survey',
+    
+    // Employment
+    currentlyEmployed: 'Currently Employed',
+    currentEmployer: 'Current Employer',
+    currentPosition: 'Current Position',
+    
+    // Demographics
+    firstGenerationStudent: 'First Generation Student',
+    pellGrantEligible: 'Pell Grant Eligible',
+    genderIdentity: 'Gender Identity',
+    racialIdentity: 'Racial Identity',
+    sexualOrientation: 'Sexual Orientation',
+    
+    // Contact/Files
+    linkedinUrl: 'LinkedIn Profile',
+    transcriptFile: 'Transcript File',
+    consentFormFile: 'Consent Form',
+    timestamp: 'Application Timestamp'
   };
 
   const handleDrag = useCallback((e: React.DragEvent) => {
@@ -276,7 +305,8 @@ const BulkUpload: React.FC<BulkUploadProps> = ({ onUploadComplete }) => {
           <AlertDescription>
             <strong>Required columns:</strong> First Name, Last Name, Email Address
             <br />
-            <strong>Optional columns:</strong> UC Campus
+            <strong>Available optional columns:</strong> UC Campus, GPA, Class Standing, Field of Study, 
+            Program Interest, Employment Status, Demographics, LinkedIn Profile, and more
             <br />
             The system will automatically detect and map common column variations.
           </AlertDescription>

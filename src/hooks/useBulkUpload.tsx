@@ -6,10 +6,48 @@ import * as XLSX from 'xlsx';
 import Papa from 'papaparse';
 
 export interface StudentRecord {
+  // Basic Info (Required)
   firstName: string;
   lastName: string;
   email: string;
+  
+  // Academic Info
   campus?: string;
+  gpa?: number;
+  classStanding?: string; // maps to student_type
+  major?: string;
+  graduationYear?: number;
+  
+  // Program Interest
+  programInterest?: string; // maps to question_1
+  
+  // Employment Status
+  currentlyEmployed?: boolean;
+  currentEmployer?: string;
+  currentPosition?: string;
+  
+  // Program Commitments
+  informFutureJobs?: string; // maps to question_2
+  investmentClubMember?: string; // maps to question_3  
+  completeAssignments?: string; // maps to question_4
+  
+  // Demographics
+  firstGenerationStudent?: boolean;
+  pellGrantEligible?: boolean;
+  genderIdentity?: string;
+  racialIdentity?: string;
+  sexualOrientation?: string;
+  
+  // Contact/Links
+  linkedinUrl?: string;
+  
+  // File Uploads (URLs or references)
+  transcriptFile?: string;
+  consentFormFile?: string;
+  
+  // Timestamp
+  timestamp?: string;
+  
   [key: string]: any;
 }
 
@@ -36,17 +74,86 @@ export interface ColumnMapping {
 
 const REQUIRED_FIELDS = ['firstName', 'lastName', 'email'];
 const VALID_FIELD_MAPPINGS = {
+  // Basic Info
   'first_name': 'firstName',
   'firstname': 'firstName',
   'fname': 'firstName',
+  'first': 'firstName',
   'last_name': 'lastName',
   'lastname': 'lastName',
   'lname': 'lastName',
+  'last': 'lastName',
   'email_address': 'email',
   'email': 'email',
+  'timestamp': 'timestamp',
+  'date': 'timestamp',
+  'submitted': 'timestamp',
+  
+  // Academic Info  
   'uc_campus': 'campus',
   'campus': 'campus',
-  'school': 'campus'
+  'school': 'campus',
+  'campus_currently_enrolled': 'campus',
+  'overall_gpa': 'gpa',
+  'gpa': 'gpa',
+  'class_standing_in_fall_2025': 'classStanding',
+  'class_standing': 'classStanding',
+  'standing': 'classStanding',
+  'field_of_study': 'major',
+  'major': 'major',
+  'study': 'major',
+  'graduation_year': 'graduationYear',
+  
+  // Program Interest
+  'briefly_explain_why_you_are_interested_in_this_program': 'programInterest',
+  'why_interested': 'programInterest',
+  'program_interest': 'programInterest',
+  'interest_reason': 'programInterest',
+  
+  // Employment
+  'current_employment/internship_status': 'currentEmployer',
+  'current_employment': 'currentEmployer',
+  'employer': 'currentEmployer',
+  'current_position': 'currentPosition',
+  'position': 'currentPosition',
+  'currently_employed': 'currentlyEmployed',
+  
+  // Program Commitments  
+  'will_you_be_able_to_inform_uc_investments_about_future_jobs/internships?': 'informFutureJobs',
+  'inform_future_jobs': 'informFutureJobs',
+  'future_jobs': 'informFutureJobs',
+  'are_you_currently_a_member_of_your_campus_investment/finance_club?': 'investmentClubMember',
+  'investment_club_member': 'investmentClubMember',
+  'finance_club': 'investmentClubMember',
+  'will_you_be_able_to_complete_all_assigned_materials?': 'completeAssignments',
+  'complete_assignments': 'completeAssignments',
+  'assigned_materials': 'completeAssignments',
+  'do_you_agree_to_complete_an_exit_survey?': 'completeAssignments',
+  'exit_survey': 'completeAssignments',
+  
+  // Demographics
+  'are_you_a_first_generation_college_student?': 'firstGenerationStudent',
+  'first_generation_college_student': 'firstGenerationStudent',
+  'first_generation': 'firstGenerationStudent',
+  'are_you_pell_grant_eligible?': 'pellGrantEligible',
+  'pell_grant_eligible': 'pellGrantEligible',
+  'pell_grant': 'pellGrantEligible',
+  'gender_identity': 'genderIdentity',
+  'gender': 'genderIdentity',
+  'racial_identity': 'racialIdentity',
+  'race': 'racialIdentity',
+  'ethnicity': 'racialIdentity',
+  'sexual_orientation': 'sexualOrientation',
+  'optional_demographic_question': 'genderIdentity',
+  
+  // Links/Files
+  'linkedin_profile_link': 'linkedinUrl',
+  'linkedin': 'linkedinUrl',
+  'linkedin_url': 'linkedinUrl',
+  'unofficial_transcript': 'transcriptFile',
+  'transcript': 'transcriptFile',
+  'consent_form': 'consentFormFile',
+  'consent': 'consentFormFile'
 };
 
 export const useBulkUpload = () => {
@@ -120,14 +227,38 @@ export const useBulkUpload = () => {
       const mappedRecord: StudentRecord = {
         firstName: '',
         lastName: '',
-        email: '',
-        campus: ''
+        email: ''
       };
 
       // Apply column mapping
       Object.entries(columnMapping).forEach(([fileColumn, mappedField]) => {
-        if (record[fileColumn] !== undefined) {
-          mappedRecord[mappedField] = record[fileColumn];
+        if (record[fileColumn] !== undefined && record[fileColumn] !== null && record[fileColumn] !== '') {
+          let value = record[fileColumn];
+          
+          // Handle boolean fields
+          if (['firstGenerationStudent', 'pellGrantEligible', 'currentlyEmployed'].includes(mappedField)) {
+            if (typeof value === 'string') {
+              value = value.toLowerCase();
+              value = value === 'yes' || value === 'true' || value === '1' || value === 'y';
+            } else {
+              value = Boolean(value);
+            }
+          }
+          
+          // Handle numeric fields
+          if (['gpa', 'graduationYear'].includes(mappedField)) {
+            const numValue = parseFloat(value);
+            if (!isNaN(numValue)) {
+              value = numValue;
+            }
+          }
+          
+          // Handle string fields - trim whitespace
+          if (typeof value === 'string') {
+            value = value.trim();
+          }
+          
+          mappedRecord[mappedField] = value;
         }
       });
 
@@ -151,6 +282,26 @@ export const useBulkUpload = () => {
           field: 'email',
           value: mappedRecord.email,
           message: 'Invalid email format'
+        });
+      }
+      
+      // Validate GPA range
+      if (mappedRecord.gpa !== undefined && (mappedRecord.gpa < 0 || mappedRecord.gpa > 4.0)) {
+        errors.push({
+          row: index + 2,
+          field: 'gpa',
+          value: mappedRecord.gpa,
+          message: 'GPA must be between 0.0 and 4.0'
+        });
+      }
+      
+      // Validate LinkedIn URL format
+      if (mappedRecord.linkedinUrl && !mappedRecord.linkedinUrl.includes('linkedin.com')) {
+        errors.push({
+          row: index + 2,
+          field: 'linkedinUrl',
+          value: mappedRecord.linkedinUrl,
+          message: 'LinkedIn URL must be a valid LinkedIn profile link'
         });
       }
 
@@ -214,12 +365,45 @@ export const useBulkUpload = () => {
         const { error } = await supabase
           .from('applications')
           .insert({
+            // Basic Info
             first_name: record.firstName,
             last_name: record.lastName,
             email: record.email.toLowerCase(),
+            
+            // Academic Info
             uc_campus: record.campus || null,
+            gpa: record.gpa || null,
+            student_type: record.classStanding || null,
+            major: record.major || null,
+            graduation_year: record.graduationYear || null,
+            
+            // Demographics
+            first_generation_student: record.firstGenerationStudent || null,
+            pell_grant_eligible: record.pellGrantEligible || null,
+            gender_identity: record.genderIdentity || null,
+            racial_identity: record.racialIdentity || null,
+            sexual_orientation: record.sexualOrientation || null,
+            
+            // Employment
+            currently_employed: record.currentlyEmployed || null,
+            current_employer: record.currentEmployer || null,
+            current_position: record.currentPosition || null,
+            
+            // Program Questions
+            question_1: record.programInterest || null,
+            question_2: record.informFutureJobs || null,
+            question_3: record.investmentClubMember || null,
+            question_4: record.completeAssignments || null,
+            
+            // Links and Files
+            linkedin_url: record.linkedinUrl || null,
+            transcript_file_path: record.transcriptFile || null,
+            consent_form_file_path: record.consentFormFile || null,
+            
+            // System fields
             status: 'pending',
-            created_by_admin: true
+            created_by_admin: true,
+            submitted_at: record.timestamp ? new Date(record.timestamp).toISOString() : new Date().toISOString()
           });
 
         if (error) {
