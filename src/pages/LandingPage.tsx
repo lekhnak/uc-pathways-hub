@@ -8,24 +8,19 @@ import {
   BookOpen, 
   TrendingUp, 
   Award, 
-  Clock, 
   Target, 
-  Lightbulb,
   GraduationCap,
   Building,
   Network,
-  Calendar,
   CheckCircle,
   ArrowRight,
   Menu,
   X,
   Star,
-  ChevronRight,
-  MapPin,
   Mail,
-  Phone
+  MapPin
 } from "lucide-react"
-import uciaLogo from "@/assets/ucia-logo.png"
+// Using the UC logo lockup directly
 import uciaHero from "@/assets/ucia-hero.jpg"
 
 const CountUpNumber = ({ end, duration = 2000, suffix = "" }: { end: number; duration?: number; suffix?: string }) => {
@@ -83,9 +78,6 @@ const ProcessStage = ({
         </li>
       ))}
     </ul>
-    {index < 6 && (
-      <ChevronRight className="absolute -right-4 top-1/2 -translate-y-1/2 text-academy-blue h-6 w-6 hidden lg:block" />
-    )}
   </div>
 )
 
@@ -116,8 +108,7 @@ const LandingPage = () => {
             <nav className="flex items-center justify-between">
               {/* Logo */}
               <div className="flex items-center gap-3">
-                <img src={uciaLogo} alt="UC Investments Academy" className="h-10 w-10" />
-                <span className="text-xl font-bold text-academy-blue">UC Investments Academy</span>
+                <img src="/lovable-uploads/d65dcac9-d2c0-458f-ac7b-ec24f7e5d7b5.png" alt="UC Investments Academy" className="h-10" />
               </div>
 
               {/* Desktop Navigation */}
@@ -130,9 +121,6 @@ const LandingPage = () => {
                 </button>
                 <button onClick={() => scrollToSection('benefits')} className="text-foreground hover:text-academy-blue transition-colors">
                   Benefits
-                </button>
-                <button onClick={() => scrollToSection('mentorship')} className="text-foreground hover:text-academy-blue transition-colors">
-                  Mentorship
                 </button>
                 <button onClick={() => scrollToSection('faq')} className="text-foreground hover:text-academy-blue transition-colors">
                   FAQ
@@ -175,9 +163,6 @@ const LandingPage = () => {
                   </button>
                   <button onClick={() => scrollToSection('benefits')} className="text-left text-foreground hover:text-academy-blue transition-colors">
                     Benefits
-                  </button>
-                  <button onClick={() => scrollToSection('mentorship')} className="text-left text-foreground hover:text-academy-blue transition-colors">
-                    Mentorship
                   </button>
                   <button onClick={() => scrollToSection('faq')} className="text-left text-foreground hover:text-academy-blue transition-colors">
                     FAQ
@@ -292,24 +277,6 @@ const LandingPage = () => {
                     The UC Investments Academy, which we created to connect UC undergrads with opportunities in the financial industry, has engaged 3000+ students across 9 UC campuses. The Academy provides free training, tools and coaching to all interested UC students.
                   </p>
                 </div>
-                
-                {/* Timeline */}
-                <div className="mt-8 bg-academy-grey-light p-6 rounded-2xl">
-                  <h3 className="font-semibold text-academy-blue mb-4">Our Growth</h3>
-                  <div className="flex items-center gap-4">
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-academy-blue">2022</div>
-                      <div className="text-sm text-muted-foreground">100 students</div>
-                      <div className="text-xs text-muted-foreground">UC Merced</div>
-                    </div>
-                    <ArrowRight className="text-academy-blue h-5 w-5" />
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-academy-blue">2024</div>
-                      <div className="text-sm text-muted-foreground">3000+ students</div>
-                      <div className="text-xs text-muted-foreground">9 UC campuses</div>
-                    </div>
-                  </div>
-                </div>
               </div>
               <div className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
                 <img 
@@ -407,7 +374,7 @@ const LandingPage = () => {
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground">
-                    Build financial literacy and apply it by contributing to UC's multi-billion-dollar portfolio projects.
+                    Build financial literacy through comprehensive training and real-world investment experience.
                   </p>
                 </CardContent>
               </Card>
@@ -472,7 +439,7 @@ const LandingPage = () => {
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground">
-                    Work on real portfolio management projects managing UC's multi-billion-dollar investments.
+                    Work on real investment analysis projects and virtual work experiences with leading firms.
                   </p>
                 </CardContent>
               </Card>
@@ -539,49 +506,96 @@ const LandingPage = () => {
         <section className="py-20 bg-academy-grey-light">
           <div className="container mx-auto px-4">
             <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold mb-6 text-academy-blue">How It Works</h2>
+              <h2 className="text-3xl md:text-4xl font-bold mb-6 text-academy-blue">How the Program Works</h2>
               <p className="text-xl text-muted-foreground">
-                Your journey to a finance career in four simple steps.
+                The program consists of online classes and guest speakers from diverse backgrounds in the investment field.
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-              <div className="text-center animate-slide-up">
-                <div className="w-20 h-20 bg-academy-blue rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">
-                  1
-                </div>
-                <h3 className="text-xl font-semibold mb-4 text-academy-blue">Sign Up</h3>
-                <p className="text-muted-foreground">
-                  Create your account and join the UC Investments Academy community.
-                </p>
-              </div>
-              <div className="text-center animate-slide-up" style={{ animationDelay: '0.1s' }}>
-                <div className="w-20 h-20 bg-academy-blue rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">
-                  2
-                </div>
-                <h3 className="text-xl font-semibold mb-4 text-academy-blue">Complete Training</h3>
-                <p className="text-muted-foreground">
-                  Work through our comprehensive training modules and earn certifications.
-                </p>
-              </div>
-              <div className="text-center animate-slide-up" style={{ animationDelay: '0.2s' }}>
-                <div className="w-20 h-20 bg-academy-blue rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">
-                  3
-                </div>
-                <h3 className="text-xl font-semibold mb-4 text-academy-blue">Join Projects & Mentorship</h3>
-                <p className="text-muted-foreground">
-                  Participate in real portfolio projects and connect with industry mentors.
-                </p>
-              </div>
-              <div className="text-center animate-slide-up" style={{ animationDelay: '0.3s' }}>
-                <div className="w-20 h-20 bg-academy-blue rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">
-                  4
-                </div>
-                <h3 className="text-xl font-semibold mb-4 text-academy-blue">Launch Your Career</h3>
-                <p className="text-muted-foreground">
-                  Showcase your experience and apply to internships and full-time roles.
-                </p>
-              </div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <Card className="shadow-card animate-fade-in">
+                <CardHeader>
+                  <BookOpen className="h-10 w-10 text-academy-blue mb-2" />
+                  <CardTitle>Investment Analysis Curriculum</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="text-muted-foreground space-y-2">
+                    <li>• Online self-study materials (20-30 hours per quarter)</li>
+                    <li>• 2 live instructor-led Zoom training sessions (6 hours total)</li>
+                    <li>• Provided by Training The Street</li>
+                  </ul>
+                </CardContent>
+              </Card>
+              
+              <Card className="shadow-card animate-fade-in" style={{ animationDelay: '0.1s' }}>
+                <CardHeader>
+                  <Users className="h-10 w-10 text-academy-blue mb-2" />
+                  <CardTitle>Live Guest Speaker Sessions</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="text-muted-foreground space-y-2">
+                    <li>• 2-3 Wednesday evening Zoom sessions per semester</li>
+                    <li>• Optional access to ~20 previously recorded sessions</li>
+                    <li>• Insider views into the investment arena</li>
+                  </ul>
+                </CardContent>
+              </Card>
+              
+              <Card className="shadow-card animate-fade-in" style={{ animationDelay: '0.2s' }}>
+                <CardHeader>
+                  <Building className="h-10 w-10 text-academy-blue mb-2" />
+                  <CardTitle>Virtual Work Experience</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="text-muted-foreground space-y-2">
+                    <li>• 2+ virtual work assignments with investment firms</li>
+                    <li>• 10-25 hours per semester</li>
+                    <li>• Provided by The Forage</li>
+                  </ul>
+                </CardContent>
+              </Card>
+              
+              <Card className="shadow-card animate-fade-in" style={{ animationDelay: '0.3s' }}>
+                <CardHeader>
+                  <Network className="h-10 w-10 text-academy-blue mb-2" />
+                  <CardTitle>Investment Community & Network</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="text-muted-foreground space-y-2">
+                    <li>• Interact with investors and like-minded UC students</li>
+                    <li>• Connect with firms recruiting Academy students</li>
+                    <li>• Access career opportunities</li>
+                  </ul>
+                </CardContent>
+              </Card>
+              
+              <Card className="shadow-card animate-fade-in" style={{ animationDelay: '0.4s' }}>
+                <CardHeader>
+                  <TrendingUp className="h-10 w-10 text-academy-blue mb-2" />
+                  <CardTitle>Financial Literacy Programming</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="text-muted-foreground space-y-2">
+                    <li>• Learn how to create wealth for your future</li>
+                    <li>• Personal financial literacy programming</li>
+                    <li>• 1-2 hours of focused content</li>
+                  </ul>
+                </CardContent>
+              </Card>
+              
+              <Card className="shadow-card animate-fade-in" style={{ animationDelay: '0.5s' }}>
+                <CardHeader>
+                  <Target className="h-10 w-10 text-academy-blue mb-2" />
+                  <CardTitle>Career Strategy Sessions</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="text-muted-foreground space-y-2">
+                    <li>• Access to UC investments team members</li>
+                    <li>• Network of professionals for advice</li>
+                    <li>• Investment strategy guidance</li>
+                  </ul>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </section>
@@ -609,78 +623,6 @@ const LandingPage = () => {
           </div>
         </section>
 
-        {/* Mentorship & Partners */}
-        <section id="mentorship" className="py-20">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold mb-6 text-academy-blue">Mentorship & Partners</h2>
-              <p className="text-xl text-muted-foreground">
-                Learn from industry leaders and connect with top organizations.
-              </p>
-            </div>
-
-            {/* Partner Logos Placeholder */}
-            <div className="bg-academy-grey-light p-8 rounded-2xl mb-16">
-              <h3 className="text-center text-lg font-semibold text-academy-blue mb-6">Our Partners</h3>
-              <div className="flex flex-wrap justify-center items-center gap-8 opacity-60">
-                <div className="text-2xl font-bold text-academy-blue">UC INVESTMENTS</div>
-                <div className="text-xl text-muted-foreground">+ Partner Organizations</div>
-              </div>
-            </div>
-
-            {/* Testimonials */}
-            <div className="grid md:grid-cols-3 gap-8">
-              <Card className="shadow-card">
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-1 mb-4">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="h-4 w-4 fill-current text-yellow-400" />
-                    ))}
-                  </div>
-                  <p className="text-muted-foreground mb-4">
-                    "The UC Investments Academy gave me the practical skills and network I needed to land my dream internship in asset management."
-                  </p>
-                  <div>
-                    <div className="font-semibold">Sarah Chen</div>
-                    <div className="text-sm text-muted-foreground">UC Berkeley, Class of 2024</div>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="shadow-card">
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-1 mb-4">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="h-4 w-4 fill-current text-yellow-400" />
-                    ))}
-                  </div>
-                  <p className="text-muted-foreground mb-4">
-                    "Working on real portfolio projects with UC's investments was an incredible learning experience that set me apart from other candidates."
-                  </p>
-                  <div>
-                    <div className="font-semibold">Marcus Rodriguez</div>
-                    <div className="text-sm text-muted-foreground">UCLA, Class of 2023</div>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="shadow-card">
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-1 mb-4">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="h-4 w-4 fill-current text-yellow-400" />
-                    ))}
-                  </div>
-                  <p className="text-muted-foreground mb-4">
-                    "The mentorship program connected me with industry professionals who guided my career path and helped me secure a full-time offer."
-                  </p>
-                  <div>
-                    <div className="font-semibold">Emily Park</div>
-                    <div className="text-sm text-muted-foreground">UC San Diego, Class of 2024</div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </section>
 
         {/* FAQ Section */}
         <section id="faq" className="py-20 bg-academy-grey-light">
@@ -754,7 +696,7 @@ const LandingPage = () => {
               Join 3000+ UC students building careers in finance
             </h2>
             <p className="text-xl mb-8 text-white/90 max-w-2xl mx-auto">
-              Participants will build financial literacy in investing and apply their knowledge through projects managing UC's multi-billion-dollar portfolio.
+              Build financial literacy and gain real-world investment experience through comprehensive training and virtual work assignments.
             </p>
             <Button size="lg" className="bg-white text-academy-blue hover:bg-white/90" asChild>
               <NavLink to="/auth">
@@ -771,8 +713,7 @@ const LandingPage = () => {
             <div className="grid md:grid-cols-4 gap-8">
               <div>
                 <div className="flex items-center gap-3 mb-4">
-                  <img src={uciaLogo} alt="UC Investments Academy" className="h-8 w-8" />
-                  <span className="text-lg font-bold">UC Investments Academy</span>
+                  <img src="/lovable-uploads/d65dcac9-d2c0-458f-ac7b-ec24f7e5d7b5.png" alt="UC Investments Academy" className="h-8" />
                 </div>
                 <p className="text-white/70 mb-4">
                   Building the next generation of finance leaders through free, comprehensive training and real-world experience.
@@ -790,26 +731,6 @@ const LandingPage = () => {
                   <button onClick={() => scrollToSection('benefits')} className="block text-white/70 hover:text-white transition-colors">
                     Benefits
                   </button>
-                  <button onClick={() => scrollToSection('mentorship')} className="block text-white/70 hover:text-white transition-colors">
-                    Mentorship
-                  </button>
-                </div>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-4">Support</h3>
-                <div className="space-y-2">
-                  <button onClick={() => scrollToSection('faq')} className="block text-white/70 hover:text-white transition-colors">
-                    FAQ
-                  </button>
-                  <NavLink to="/contact" className="block text-white/70 hover:text-white transition-colors">
-                    Contact
-                  </NavLink>
-                  <a href="#" className="block text-white/70 hover:text-white transition-colors">
-                    Privacy Policy
-                  </a>
-                  <a href="#" className="block text-white/70 hover:text-white transition-colors">
-                    Terms of Service
-                  </a>
                 </div>
               </div>
               <div>
@@ -817,11 +738,7 @@ const LandingPage = () => {
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
                     <Mail className="h-4 w-4" />
-                    <span className="text-white/70">info@ucinvestments.edu</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Phone className="h-4 w-4" />
-                    <span className="text-white/70">(510) 123-4567</span>
+                    <span className="text-white/70">UCinvestmentsacademy@ucop.edu</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <MapPin className="h-4 w-4" />
@@ -829,11 +746,6 @@ const LandingPage = () => {
                   </div>
                 </div>
               </div>
-            </div>
-            <div className="border-t border-white/20 mt-12 pt-8 text-center">
-              <p className="text-white/70">
-                © {new Date().getFullYear()} UC Investments Academy. All rights reserved.
-              </p>
             </div>
           </div>
         </footer>
