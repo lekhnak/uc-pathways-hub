@@ -135,9 +135,6 @@ const LandingPage = () => {
                 <Button variant="ghost" asChild>
                   <NavLink to="/auth">Log in</NavLink>
                 </Button>
-                <Button asChild>
-                  <NavLink to="/apply">Sign up</NavLink>
-                </Button>
               </div>
 
               {/* Mobile menu button */}
@@ -174,9 +171,6 @@ const LandingPage = () => {
                     <Button variant="ghost" asChild>
                       <NavLink to="/auth">Log in</NavLink>
                     </Button>
-                    <Button asChild>
-                      <NavLink to="/apply">Sign up</NavLink>
-                    </Button>
                   </div>
                 </div>
               </div>
@@ -206,8 +200,8 @@ const LandingPage = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in" style={{ animationDelay: '0.4s' }}>
               <Button size="lg" className="bg-white text-academy-blue hover:bg-gray-100" asChild>
-                <NavLink to="/apply">
-                  Apply Now
+                <NavLink to="/auth">
+                  Login to Portal
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </NavLink>
               </Button>
@@ -611,8 +605,8 @@ const LandingPage = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" className="bg-white text-academy-blue hover:bg-gray-100" asChild>
-              <NavLink to="/apply">
-                  Apply Now
+              <NavLink to="/auth">
+                  Login to Portal
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </NavLink>
               </Button>
@@ -675,7 +669,7 @@ const LandingPage = () => {
                     How do I apply?
                   </AccordionTrigger>
                   <AccordionContent>
-                    Simply click the "Apply Now" or "Sign up" button to create your account. You'll complete a brief application form and can start accessing training materials immediately upon approval.
+                    Access to the UC Investments Academy is invitation-only. Students are selected and enrolled by our administrative team based on academic achievement and career goals.
                   </AccordionContent>
                 </AccordionItem>
                 <AccordionItem value="contact" className="bg-white shadow-card rounded-2xl border-0 px-6">
@@ -702,7 +696,7 @@ const LandingPage = () => {
             </p>
             <Button size="lg" className="bg-white text-academy-blue hover:bg-gray-100" asChild>
               <NavLink to="/auth">
-                Sign Up Today
+                Login to Portal
                 <ArrowRight className="ml-2 h-5 w-5" />
               </NavLink>
             </Button>

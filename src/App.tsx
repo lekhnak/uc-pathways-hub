@@ -36,8 +36,6 @@ import SetPassword from "./pages/SetPassword";
 import ChangePassword from "./pages/ChangePassword";
 import NotFound from "./pages/NotFound";
 import LandingPage from "./pages/LandingPage";
-import Apply from "./pages/Apply";
-
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -51,7 +49,6 @@ const App = () => (
             <Routes>
               <Route path="/" element={<LandingPage />} />
               <Route path="/auth" element={<Auth />} />
-              <Route path="/apply" element={<Apply />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/set-password" element={<SetPassword />} />
               <Route path="/change-password" element={<ChangePassword />} />
