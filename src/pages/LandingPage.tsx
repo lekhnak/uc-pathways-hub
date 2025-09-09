@@ -317,123 +317,52 @@ const LandingPage = () => {
               </p>
             </div>
 
-            {/* Process Flow - based on uploaded image */}
+            {/* Process Flow - Dynamic from database */}
             <div className="grid lg:grid-cols-7 gap-4 mb-16">
-              <ProcessStage
-                title="AWARENESS"
-                items={[
-                  "Provide exposure to different areas of asset management",
-                  "Clarify options for investment careers"
-                ]}
-                color="border-blue-500 bg-blue-50"
-                index={0}
-              />
-              <ProcessStage
-                title="ACCESS"
-                items={[
-                  "Intentional approach to create a diverse and inclusive participant base"
-                ]}
-                color="border-cyan-500 bg-cyan-50"
-                index={1}
-              />
-              <ProcessStage
-                title="EDUCATION"
-                items={[
-                  "Foundational personal finance concepts",
-                  "Investment analysis and portfolio management education"
-                ]}
-                color="border-green-500 bg-green-50"
-                index={2}
-              />
-              <ProcessStage
-                title="TRAINING"
-                items={[
-                  "Practical investment analysis and experience",
-                  "'Soft skills' for professional success"
-                ]}
-                color="border-gray-500 bg-gray-50"
-                index={3}
-              />
-              <ProcessStage
-                title="NETWORK"
-                items={[
-                  "Provide exposure to investment professionals within and outside UC network",
-                  "Create an investment and entrepreneurship community"
-                ]}
-                color="border-orange-500 bg-orange-50"
-                index={4}
-              />
-              <ProcessStage
-                title="MENTORSHIP"
-                items={[
-                  "Mentors students can see as role models",
-                  "Guidance on investing and career management"
-                ]}
-                color="border-blue-600 bg-blue-100"
-                index={5}
-              />
-              <ProcessStage
-                title="CAREER"
-                items={[
-                  "Internships",
-                  "Full-time job opportunities"
-                ]}
-                color="border-sky-500 bg-sky-50"
-                index={6}
-              />
+              {(getSectionMetadata('program', 'process_stages') || []).map((stage: any, index: number) => (
+                <ProcessStage
+                  key={stage.title}
+                  title={stage.title}
+                  items={stage.items || []}
+                  color={stage.color}
+                  index={index}
+                />
+              ))}
             </div>
 
-            {/* Program Features */}
+            {/* Program Features - Dynamic from database */}
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <Card className="shadow-card animate-fade-in">
-                <CardHeader>
-                  <TrendingUp className="h-10 w-10 text-academy-blue mb-2" />
-                  <CardTitle>Real-World Experience</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Build financial literacy through comprehensive training and real-world investment experience.
-                  </p>
-                </CardContent>
-              </Card>
-              <Card className="shadow-card animate-fade-in" style={{ animationDelay: '0.1s' }}>
-                <CardHeader>
-                  <BookOpen className="h-10 w-10 text-academy-blue mb-2" />
-                  <CardTitle>Free Training</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Free asset management training and professional development at no cost to students.
-                  </p>
-                </CardContent>
-              </Card>
-              <Card className="shadow-card animate-fade-in" style={{ animationDelay: '0.2s' }}>
-                <CardHeader>
-                  <Network className="h-10 w-10 text-academy-blue mb-2" />
-                  <CardTitle>Professional Network</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Connect with professionals across investments and wealth management industries.
-                  </p>
-                </CardContent>
-              </Card>
-              <Card className="shadow-card animate-fade-in" style={{ animationDelay: '0.3s' }}>
-                <CardHeader>
-                  <Users className="h-10 w-10 text-academy-blue mb-2" />
-                  <CardTitle>Mentorship Access</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Access mentorship and internship opportunities with industry leaders.
-                  </p>
-                </CardContent>
-              </Card>
+              {(getSectionMetadata('program', 'features') || []).map((feature: any, index: number) => {
+                const IconComponent = {
+                  TrendingUp,
+                  BookOpen,
+                  Network,
+                  Users,
+                  Target,
+                  Award,
+                  Building,
+                  GraduationCap
+                }[feature.icon] || TrendingUp;
+
+                return (
+                  <Card key={feature.title} className="shadow-card animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+                    <CardHeader>
+                      <IconComponent className="h-10 w-10 text-academy-blue mb-2" />
+                      <CardTitle>{feature.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-muted-foreground">
+                        {feature.description}
+                      </p>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
 
             <div className="text-center mt-12">
               <p className="text-lg text-muted-foreground mb-6">
-                By the end of the program, participants are motivated and equipped with foundational knowledge to pursue a career in investments.
+                {getSectionMetadata('program', 'closing_text', 'By the end of the program, participants are motivated and equipped with foundational knowledge to pursue a career in investments.')}
               </p>
             </div>
           </div>
@@ -452,72 +381,32 @@ const LandingPage = () => {
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              <Card className="shadow-card hover:shadow-elevated transition-shadow animate-fade-in">
-                <CardHeader>
-                  <Target className="h-10 w-10 text-academy-blue mb-2" />
-                  <CardTitle>Hands-on Portfolio Projects</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Work on real investment analysis projects and virtual work experiences with leading firms.
-                  </p>
-                </CardContent>
-              </Card>
-              <Card className="shadow-card hover:shadow-elevated transition-shadow animate-fade-in" style={{ animationDelay: '0.1s' }}>
-                <CardHeader>
-                  <Users className="h-10 w-10 text-academy-blue mb-2" />
-                  <CardTitle>Mentorship & Career Coaching</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Get paired with industry professionals for personalized guidance and career development.
-                  </p>
-                </CardContent>
-              </Card>
-              <Card className="shadow-card hover:shadow-elevated transition-shadow animate-fade-in" style={{ animationDelay: '0.2s' }}>
-                <CardHeader>
-                  <Award className="h-10 w-10 text-academy-blue mb-2" />
-                  <CardTitle>Resume-Ready Certifications</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Earn industry-recognized certifications and badges that strengthen your resume.
-                  </p>
-                </CardContent>
-              </Card>
-              <Card className="shadow-card hover:shadow-elevated transition-shadow animate-fade-in" style={{ animationDelay: '0.3s' }}>
-                <CardHeader>
-                  <Building className="h-10 w-10 text-academy-blue mb-2" />
-                  <CardTitle>Industry Professional Workshops</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Learn directly from leading professionals in asset management and finance.
-                  </p>
-                </CardContent>
-              </Card>
-              <Card className="shadow-card hover:shadow-elevated transition-shadow animate-fade-in" style={{ animationDelay: '0.4s' }}>
-                <CardHeader>
-                  <GraduationCap className="h-10 w-10 text-academy-blue mb-2" />
-                  <CardTitle>Interview Prep & Recruiting</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Get comprehensive interview preparation and recruiting insights for finance roles.
-                  </p>
-                </CardContent>
-              </Card>
-              <Card className="shadow-card hover:shadow-elevated transition-shadow animate-fade-in" style={{ animationDelay: '0.5s' }}>
-                <CardHeader>
-                  <Network className="h-10 w-10 text-academy-blue mb-2" />
-                  <CardTitle>Alumni & Community Network</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Join a thriving community of 3000+ students and growing alumni network.
-                  </p>
-                </CardContent>
-              </Card>
+              {(getSectionMetadata('benefits', 'benefits') || []).map((benefit: any, index: number) => {
+                const IconComponent = {
+                  Target,
+                  Users,
+                  Award,
+                  Building,
+                  GraduationCap,
+                  Network,
+                  TrendingUp,
+                  BookOpen
+                }[benefit.icon] || Target;
+
+                return (
+                  <Card key={benefit.title} className="shadow-card hover:shadow-elevated transition-shadow animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+                    <CardHeader>
+                      <IconComponent className="h-10 w-10 text-academy-blue mb-2" />
+                      <CardTitle>{benefit.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-muted-foreground">
+                        {benefit.description}
+                      </p>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -535,89 +424,34 @@ const LandingPage = () => {
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              <Card className="shadow-card animate-fade-in">
-                <CardHeader>
-                  <BookOpen className="h-10 w-10 text-academy-blue mb-2" />
-                  <CardTitle>Investment Analysis Curriculum</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ul className="text-muted-foreground space-y-2">
-                    <li>• Online self-study materials (20-30 hours per quarter)</li>
-                    <li>• 2 live instructor-led Zoom training sessions (6 hours total)</li>
-                    <li>• Provided by Training The Street</li>
-                  </ul>
-                </CardContent>
-              </Card>
-              
-              <Card className="shadow-card animate-fade-in" style={{ animationDelay: '0.1s' }}>
-                <CardHeader>
-                  <Users className="h-10 w-10 text-academy-blue mb-2" />
-                  <CardTitle>Live Guest Speaker Sessions</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ul className="text-muted-foreground space-y-2">
-                    <li>• 2-3 Wednesday evening Zoom sessions per semester</li>
-                    <li>• Optional access to ~20 previously recorded sessions</li>
-                    <li>• Insider views into the investment arena</li>
-                  </ul>
-                </CardContent>
-              </Card>
-              
-              <Card className="shadow-card animate-fade-in" style={{ animationDelay: '0.2s' }}>
-                <CardHeader>
-                  <Building className="h-10 w-10 text-academy-blue mb-2" />
-                  <CardTitle>Virtual Work Experience</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ul className="text-muted-foreground space-y-2">
-                    <li>• 2+ virtual work assignments with investment firms</li>
-                    <li>• 10-25 hours per semester</li>
-                    <li>• Provided by The Forage</li>
-                  </ul>
-                </CardContent>
-              </Card>
-              
-              <Card className="shadow-card animate-fade-in" style={{ animationDelay: '0.3s' }}>
-                <CardHeader>
-                  <Network className="h-10 w-10 text-academy-blue mb-2" />
-                  <CardTitle>Investment Community & Network</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ul className="text-muted-foreground space-y-2">
-                    <li>• Interact with investors and like-minded UC students</li>
-                    <li>• Connect with firms recruiting Academy students</li>
-                    <li>• Access career opportunities</li>
-                  </ul>
-                </CardContent>
-              </Card>
-              
-              <Card className="shadow-card animate-fade-in" style={{ animationDelay: '0.4s' }}>
-                <CardHeader>
-                  <TrendingUp className="h-10 w-10 text-academy-blue mb-2" />
-                  <CardTitle>Financial Literacy Programming</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ul className="text-muted-foreground space-y-2">
-                    <li>• Learn how to create wealth for your future</li>
-                    <li>• Personal financial literacy programming</li>
-                    <li>• 1-2 hours of focused content</li>
-                  </ul>
-                </CardContent>
-              </Card>
-              
-              <Card className="shadow-card animate-fade-in" style={{ animationDelay: '0.5s' }}>
-                <CardHeader>
-                  <Target className="h-10 w-10 text-academy-blue mb-2" />
-                  <CardTitle>Career Strategy Sessions</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ul className="text-muted-foreground space-y-2">
-                    <li>• Access to UC investments team members</li>
-                    <li>• Network of professionals for advice</li>
-                    <li>• Investment strategy guidance</li>
-                  </ul>
-                </CardContent>
-              </Card>
+              {(getSectionMetadata('how-it-works', 'components') || []).map((component: any, index: number) => {
+                const IconComponent = {
+                  BookOpen,
+                  Users,
+                  Building,
+                  Network,
+                  TrendingUp,
+                  Target,
+                  Award,
+                  GraduationCap
+                }[component.icon] || BookOpen;
+
+                return (
+                  <Card key={component.title} className="shadow-card animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+                    <CardHeader>
+                      <IconComponent className="h-10 w-10 text-academy-blue mb-2" />
+                      <CardTitle>{component.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="text-muted-foreground space-y-2">
+                        {(component.items || []).map((item: string, itemIndex: number) => (
+                          <li key={itemIndex}>• {item}</li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -660,54 +494,16 @@ const LandingPage = () => {
 
             <div className="max-w-3xl mx-auto">
               <Accordion type="single" collapsible className="space-y-4">
-                <AccordionItem value="eligibility" className="bg-white shadow-card rounded-2xl border-0 px-6">
-                  <AccordionTrigger className="text-left">
-                    Who is eligible to join the UC Investments Academy?
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    The program is open to all UC undergraduate students across all 9 UC campuses. No prior finance experience is required - we welcome students from all majors and backgrounds.
-                  </AccordionContent>
-                </AccordionItem>
-                <AccordionItem value="cost" className="bg-white shadow-card rounded-2xl border-0 px-6">
-                  <AccordionTrigger className="text-left">
-                    How much does the program cost?
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    The UC Investments Academy is completely free for all UC students. This includes training materials, mentorship, certifications, and access to portfolio projects.
-                  </AccordionContent>
-                </AccordionItem>
-                <AccordionItem value="time" className="bg-white shadow-card rounded-2xl border-0 px-6">
-                  <AccordionTrigger className="text-left">
-                    What is the time commitment?
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    The program is designed to be flexible around your academic schedule. Most students spend 5-10 hours per week on training modules and projects, with additional time for mentorship meetings and workshops.
-                  </AccordionContent>
-                </AccordionItem>
-                <AccordionItem value="campuses" className="bg-white shadow-card rounded-2xl border-0 px-6">
-                  <AccordionTrigger className="text-left">
-                    Which UC campuses participate?
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    All 9 UC campuses participate: UC Berkeley, UCLA, UC San Diego, UC Davis, UC Irvine, UC Santa Barbara, UC Santa Cruz, UC Riverside, and UC Merced.
-                  </AccordionContent>
-                </AccordionItem>
-                <AccordionItem value="application" className="bg-white shadow-card rounded-2xl border-0 px-6">
-                  <AccordionTrigger className="text-left">
-                    How do I apply?
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    Simply click the "Apply Now" or "Sign up" button to create your account. You'll complete a brief application form and can start accessing training materials immediately upon approval.
-                  </AccordionContent>
-                </AccordionItem>
-                <AccordionItem value="contact" className="bg-white shadow-card rounded-2xl border-0 px-6">
-                  <AccordionTrigger className="text-left">
-                    How can I get more information?
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    For additional questions, please reach out to our team using the contact information below or email us directly. We're here to help you succeed!
-                  </AccordionContent>
-                </AccordionItem>
+                {(getSectionMetadata('faq', 'faqs') || []).map((faq: any, index: number) => (
+                  <AccordionItem key={index} value={`faq-${index}`} className="bg-white shadow-card rounded-2xl border-0 px-6">
+                    <AccordionTrigger className="text-left">
+                      {faq.question}
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      {faq.answer}
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
               </Accordion>
             </div>
           </div>

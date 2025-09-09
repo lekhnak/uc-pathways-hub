@@ -15,10 +15,10 @@ import '../styles/editor.css';
 const SECTIONS = [
   { id: 'hero', name: 'Hero Section', description: 'Main landing section with title and call-to-action' },
   { id: 'about', name: 'About Section', description: 'What is UC Investments Academy section' },
-  { id: 'program', name: 'Program Section', description: 'Our Complete Program section' },
-  { id: 'benefits', name: 'Benefits Section', description: 'Why Choose UC Investments Academy section' },
-  { id: 'how-it-works', name: 'How It Works', description: 'How the Program Works section' },
-  { id: 'faq', name: 'FAQ Section', description: 'Frequently Asked Questions section' },
+  { id: 'program', name: 'Program Section', description: 'Our Complete Program section with process stages and features' },
+  { id: 'benefits', name: 'Benefits Section', description: 'Why Choose UC Investments Academy section with benefit cards' },
+  { id: 'how-it-works', name: 'How It Works', description: 'How the Program Works section with program components' },
+  { id: 'faq', name: 'FAQ Section', description: 'Frequently Asked Questions section with Q&A pairs' },
 ];
 
 const AdminEditWebsite = () => {
@@ -236,7 +236,7 @@ const AdminEditWebsite = () => {
                   )}
                 </div>
 
-                {/* Hero Section Specific Fields */}
+                {/* Section-Specific Fields */}
                 {section.id === 'hero' && (
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
@@ -257,6 +257,20 @@ const AdminEditWebsite = () => {
                         placeholder="Explore the Program"
                       />
                     </div>
+                  </div>
+                )}
+
+                {/* Complex Structured Content Info */}
+                {(section.id === 'program' || section.id === 'benefits' || section.id === 'how-it-works' || section.id === 'faq') && (
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <p className="text-sm text-blue-800">
+                      <span className="font-semibold">Note:</span> This section contains structured content (
+                      {section.id === 'program' && 'process stages and feature cards'}
+                      {section.id === 'benefits' && 'benefit cards with icons and descriptions'}
+                      {section.id === 'how-it-works' && 'program components with detailed items'}
+                      {section.id === 'faq' && 'question and answer pairs'}
+                      ) that can be edited through the database or by contacting your developer for custom modifications.
+                    </p>
                   </div>
                 )}
 
