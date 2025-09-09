@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { NavLink } from "react-router-dom"
+import { usePublicWebsiteContent } from "@/hooks/usePublicWebsiteContent"
 import { 
   Users, 
   BookOpen, 
@@ -83,6 +84,14 @@ const ProcessStage = ({
 
 const LandingPage = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const { 
+    getSectionTitle, 
+    getSectionSubtitle, 
+    getSectionContent, 
+    getSectionImage, 
+    getSectionMetadata,
+    loading: contentLoading 
+  } = usePublicWebsiteContent()
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId)
@@ -196,18 +205,22 @@ const LandingPage = () => {
           </div>
           <div className="relative container mx-auto px-4 text-center text-white">
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 animate-fade-in text-white">
-              UC Investments Academy
+              {getSectionTitle('hero', 'UC Investments Academy')}
             </h1>
             <p className="text-2xl md:text-3xl lg:text-4xl font-semibold mb-4 text-academy-accent animate-fade-in" style={{ animationDelay: '0.1s' }}>
-              Building the next generation of finance leaders
+              {getSectionSubtitle('hero', 'Building the next generation of finance leaders')}
             </p>
-            <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto text-white/90 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-              Connect UC undergraduate and graduate students with opportunities in the financial industry through free training, tools, and coaching.
-            </p>
+            <div 
+              className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto text-white/90 animate-fade-in" 
+              style={{ animationDelay: '0.2s' }}
+              dangerouslySetInnerHTML={{ 
+                __html: getSectionContent('hero', 'Connect UC undergraduate and graduate students with opportunities in the financial industry through free training, tools, and coaching.') 
+              }}
+            />
             <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in" style={{ animationDelay: '0.4s' }}>
               <Button size="lg" className="bg-white text-academy-blue hover:bg-gray-100" asChild>
                 <NavLink to="/auth">
-                  Access Portal
+                  {getSectionMetadata('hero', 'cta_primary', 'Access Portal')}
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </NavLink>
               </Button>
@@ -217,7 +230,7 @@ const LandingPage = () => {
                 className="border-white text-white bg-transparent hover:bg-white hover:text-academy-blue transition-colors"
                 onClick={() => scrollToSection('program')}
               >
-                Explore the Program
+                {getSectionMetadata('hero', 'cta_secondary', 'Explore the Program')}
               </Button>
             </div>
           </div>
@@ -269,20 +282,21 @@ const LandingPage = () => {
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <div className="animate-fade-in">
                 <h2 className="text-3xl md:text-4xl font-bold mb-6 text-academy-blue">
-                  What is the UC Investments Academy?
+                  {getSectionTitle('about', 'What is the UC Investments Academy?')}
                 </h2>
-                <div className="space-y-4 text-lg text-muted-foreground">
-                  <p>
-                    Launched by UC Investments and UC Office of the President in 2022, this program prepares UC students for careers in finance and asset management. Initially starting with just 100 students at UC Merced, the program has expanded to multiple UC campuses and provides the one-stop UC destination for preparing for careers in finance.
-                  </p>
-                  <p>
-                    The UC Investments Academy, which we created to connect UC undergrads with opportunities in the financial industry, has engaged 3000+ students across 9 UC campuses. The Academy provides free training, tools and coaching to all interested UC students.
-                  </p>
-                </div>
+                <div 
+                  className="space-y-4 text-lg text-muted-foreground"
+                  dangerouslySetInnerHTML={{ 
+                    __html: getSectionContent('about', `
+                      <p>Launched by UC Investments and UC Office of the President in 2022, this program prepares UC students for careers in finance and asset management. Initially starting with just 100 students at UC Merced, the program has expanded to multiple UC campuses and provides the one-stop UC destination for preparing for careers in finance.</p>
+                      <p>The UC Investments Academy, which we created to connect UC undergrads with opportunities in the financial industry, has engaged 3000+ students across 9 UC campuses. The Academy provides free training, tools and coaching to all interested UC students.</p>
+                    `) 
+                  }}
+                />
               </div>
               <div className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
                 <img 
-                  src="/lovable-uploads/afe88b15-8d39-4a7f-a2a8-0c78244c5ba0.png" 
+                  src={getSectionImage('about', '/lovable-uploads/afe88b15-8d39-4a7f-a2a8-0c78244c5ba0.png')} 
                   alt="UC Investments Academy Program Flow" 
                   className="w-full rounded-2xl shadow-elevated"
                 />
@@ -295,9 +309,11 @@ const LandingPage = () => {
         <section id="program" className="py-20 bg-academy-grey-light">
           <div className="container mx-auto px-4">
             <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold mb-6 text-academy-blue">Our Complete Program</h2>
+              <h2 className="text-3xl md:text-4xl font-bold mb-6 text-academy-blue">
+                {getSectionTitle('program', 'Our Complete Program')}
+              </h2>
               <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-                A comprehensive pathway designed to take you from awareness to career success in finance and asset management.
+                {getSectionSubtitle('program', 'A comprehensive pathway designed to take you from awareness to career success in finance and asset management.')}
               </p>
             </div>
 
@@ -427,9 +443,11 @@ const LandingPage = () => {
         <section id="benefits" className="py-20">
           <div className="container mx-auto px-4">
             <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold mb-6 text-academy-blue">Why Choose UC Investments Academy?</h2>
+              <h2 className="text-3xl md:text-4xl font-bold mb-6 text-academy-blue">
+                {getSectionTitle('benefits', 'Why Choose UC Investments Academy?')}
+              </h2>
               <p className="text-xl text-muted-foreground">
-                Everything you need to launch your finance career.
+                {getSectionSubtitle('benefits', 'Everything you need to launch your finance career.')}
               </p>
             </div>
 
@@ -508,9 +526,11 @@ const LandingPage = () => {
         <section className="py-20 bg-academy-grey-light">
           <div className="container mx-auto px-4">
             <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold mb-6 text-academy-blue">How the Program Works</h2>
+              <h2 className="text-3xl md:text-4xl font-bold mb-6 text-academy-blue">
+                {getSectionTitle('how-it-works', 'How the Program Works')}
+              </h2>
               <p className="text-xl text-muted-foreground">
-                The program consists of online classes and guest speakers from diverse backgrounds in the investment field.
+                {getSectionSubtitle('how-it-works', 'The program consists of online classes and guest speakers from diverse backgrounds in the investment field.')}
               </p>
             </div>
 
@@ -630,9 +650,11 @@ const LandingPage = () => {
         <section id="faq" className="py-20 bg-academy-grey-light">
           <div className="container mx-auto px-4">
             <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold mb-6 text-academy-blue">Frequently Asked Questions</h2>
+              <h2 className="text-3xl md:text-4xl font-bold mb-6 text-academy-blue">
+                {getSectionTitle('faq', 'Frequently Asked Questions')}
+              </h2>
               <p className="text-xl text-muted-foreground">
-                Everything you need to know about the UC Investments Academy.
+                {getSectionSubtitle('faq', 'Everything you need to know about the UC Investments Academy.')}
               </p>
             </div>
 

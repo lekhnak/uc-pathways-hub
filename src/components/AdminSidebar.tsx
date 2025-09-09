@@ -23,6 +23,7 @@ import {
   UserCog,
   Settings,
   Shield,
+  Edit3,
 } from 'lucide-react'
 
 const navigationItems = [
@@ -80,6 +81,11 @@ const navigationItems = [
     title: 'Student Chat',
     url: '/admin/chat',
     icon: MessageSquare,
+  },
+  {
+    title: 'Edit Website',
+    url: '/admin/edit-website',
+    icon: Edit3,
   },
   {
     title: 'Profile',

@@ -36,6 +36,7 @@ import SetPassword from "./pages/SetPassword";
 import ChangePassword from "./pages/ChangePassword";
 import NotFound from "./pages/NotFound";
 import LandingPage from "./pages/LandingPage";
+import AdminEditWebsite from "./pages/AdminEditWebsite";
 import Apply from "./pages/Apply";
 
 const queryClient = new QueryClient();
@@ -68,6 +69,7 @@ const App = () => (
             <Route path="calendar" element={<AdminCalendarEvents />} />
             <Route path="resumes" element={<div>Admin Resume Review - Coming Soon</div>} />
             <Route path="chat" element={<div>Admin Chat - Coming Soon</div>} />
+            <Route path="edit-website" element={<AdminEditWebsite />} />
             <Route path="profile" element={<AdminProfile />} />
           </Route>
               <Route path="/dashboard/*" element={<Layout />}>
