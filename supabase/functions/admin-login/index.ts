@@ -11,8 +11,143 @@ interface LoginRequest {
   password: string;
 }
 
+// Rate limiting store (in production, use Redis or database)
+const rateLimitStore = new Map<string, { attempts: number; lastAttempt: number }>();
+
+// Security constants
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOCKOUT_DURATION = 15 * 60 * 1000; // 15 minutes
+const MAX_INPUT_LENGTH = 128;
+const BCRYPT_ROUNDS = parseInt(Deno.env.get('BCRYPT_ROUNDS') ?? '12');
+
+// Dummy hash for timing attack protection
+const DUMMY_HASH = '$2b$12$dummyhashfortimingatttackprotection123456789';
+
+// Secure password hashing using Web Crypto API
+async function hashPassword(password: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(password),
+    { name: 'PBKDF2' },
+    false,
+    ['deriveBits']
+  );
+  
+  const hashBuffer = await crypto.subtle.deriveBits(
+    {
+      name: 'PBKDF2',
+      salt: salt,
+      iterations: 100000,
+      hash: 'SHA-256'
+    },
+    keyMaterial,
+    256
+  );
+  
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const saltArray = Array.from(salt);
+  const combined = saltArray.concat(hashArray);
+  return btoa(String.fromCharCode.apply(null, combined));
+}
+
+// Secure password verification
+async function verifyPassword(password: string, hash: string): Promise<boolean> {
+  try {
+    if (hash.startsWith('$2')) {
+      // Legacy bcrypt hash - use scrypt for Deno compatibility
+      const scrypt = await import("https://deno.land/x/scrypt@v4.4.4/mod.ts");
+      return await scrypt.verify(password, hash);
+    } else if (hash.length > 20) {
+      // Web Crypto hash
+      const encoder = new TextEncoder();
+      const combined = Uint8Array.from(atob(hash), c => c.charCodeAt(0));
+      const salt = combined.slice(0, 16);
+      const storedHash = combined.slice(16);
+      
+      const keyMaterial = await crypto.subtle.importKey(
+        'raw',
+        encoder.encode(password),
+        { name: 'PBKDF2' },
+        false,
+        ['deriveBits']
+      );
+      
+      const hashBuffer = await crypto.subtle.deriveBits(
+        {
+          name: 'PBKDF2',
+          salt: salt,
+          iterations: 100000,
+          hash: 'SHA-256'
+        },
+        keyMaterial,
+        256
+      );
+      
+      const hashArray = new Uint8Array(hashBuffer);
+      return hashArray.every((byte, index) => byte === storedHash[index]);
+    } else {
+      // Plain text - direct comparison (for migration only)
+      return password === hash;
+    }
+  } catch (error) {
+    console.error('Password verification error:', error);
+    return false;
+  }
+}
+
+// Input validation and sanitization
+function validateInput(username: string, password: string): { isValid: boolean; error?: string } {
+  if (!username || !password) {
+    return { isValid: false, error: 'Username and password are required' };
+  }
+  
+  if (username.length > MAX_INPUT_LENGTH || password.length > MAX_INPUT_LENGTH) {
+    return { isValid: false, error: 'Input too long' };
+  }
+  
+  // Sanitize username (trim whitespace)
+  const sanitizedUsername = username.trim();
+  if (sanitizedUsername.length === 0) {
+    return { isValid: false, error: 'Invalid username' };
+  }
+  
+  return { isValid: true };
+}
+
+// Rate limiting check
+function checkRateLimit(identifier: string): { allowed: boolean; retryAfter?: number } {
+  const now = Date.now();
+  const record = rateLimitStore.get(identifier);
+  
+  if (!record) {
+    rateLimitStore.set(identifier, { attempts: 1, lastAttempt: now });
+    return { allowed: true };
+  }
+  
+  // Reset if lockout period has passed
+  if (now - record.lastAttempt > LOCKOUT_DURATION) {
+    rateLimitStore.set(identifier, { attempts: 1, lastAttempt: now });
+    return { allowed: true };
+  }
+  
+  // Check if locked out
+  if (record.attempts >= MAX_LOGIN_ATTEMPTS) {
+    const retryAfter = Math.ceil((LOCKOUT_DURATION - (now - record.lastAttempt)) / 1000);
+    return { allowed: false, retryAfter };
+  }
+  
+  // Increment attempts
+  record.attempts++;
+  record.lastAttempt = now;
+  rateLimitStore.set(identifier, record);
+  
+  return { allowed: true };
+}
+
 const handler = async (req: Request): Promise<Response> => {
-  console.log('Admin login function called - v2.0');
+  console.log('Admin login function called - v3.0 (security hardened)');
   
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -29,6 +164,9 @@ const handler = async (req: Request): Promise<Response> => {
     );
   }
 
+  // Get client IP for rate limiting
+  const clientIP = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
+  
   try {
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -37,9 +175,11 @@ const handler = async (req: Request): Promise<Response> => {
 
     const { username, password }: LoginRequest = await req.json();
 
-    if (!username || !password) {
+    // Input validation
+    const validation = validateInput(username, password);
+    if (!validation.isValid) {
       return new Response(
-        JSON.stringify({ error: 'Username and password are required' }),
+        JSON.stringify({ error: validation.error }),
         { 
           status: 400, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -47,67 +187,62 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    console.log(`Admin login attempt for username: ${username}`);
-    console.log('Password received:', password);
+    const sanitizedUsername = username.trim();
+
+    // Rate limiting check
+    const rateLimit = checkRateLimit(`${clientIP}:${sanitizedUsername}`);
+    if (!rateLimit.allowed) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Too many login attempts. Try again later.',
+          retryAfter: rateLimit.retryAfter 
+        }),
+        { 
+          status: 429, 
+          headers: { 
+            ...corsHeaders, 
+            'Content-Type': 'application/json',
+            'Retry-After': rateLimit.retryAfter?.toString() ?? '900'
+          } 
+        }
+      );
+    }
+
+    console.log(`Admin login attempt for username: ${sanitizedUsername}`);
+    // SECURITY: Never log passwords or hashes
 
     // Fetch admin user from database
     const { data: adminUser, error: fetchError } = await supabaseClient
       .from('admin_users')
       .select('*')
-      .eq('username', username)
+      .eq('username', sanitizedUsername)
       .single();
 
-    if (fetchError || !adminUser) {
-      console.log('Admin user not found:', fetchError);
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'Invalid credentials' 
-        }),
-        { 
-          status: 401, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
-    }
-
-    console.log('Admin user found:', adminUser.username);
-    console.log('Stored password hash:', adminUser.password_hash);
-
-    console.log('Attempting password verification...');
-    
     let isValidPassword = false;
-    const bcrypt = await import("https://deno.land/x/bcrypt@v0.4.1/mod.ts");
-    
-    // Check if password is already hashed (starts with $2b$ or $2a$) or plain text
-    if (adminUser.password_hash.startsWith('$2b$') || adminUser.password_hash.startsWith('$2a$')) {
-      console.log('Verifying against bcrypt hash...');
-      // Use async compare function correctly
-      isValidPassword = await bcrypt.compare(password, adminUser.password_hash);
-    } else {
-      console.log('Plain text password detected, verifying and will hash...');
-      // Plain text password - verify and then hash it
-      isValidPassword = password === adminUser.password_hash;
+    let userFound = !fetchError && adminUser;
+
+    if (userFound) {
+      // User exists - verify password
+      isValidPassword = await verifyPassword(password, adminUser.password_hash);
       
-      if (isValidPassword) {
-        console.log('Password verified, hashing for future use...');
-        // Hash the password for future use
-        const hashedPassword = await bcrypt.hash(password, 10);
+      // If plain text password was verified, hash it for future use
+      if (isValidPassword && !adminUser.password_hash.startsWith('$') && adminUser.password_hash.length < 50) {
+        console.log('Upgrading plain text password to secure hash');
+        const hashedPassword = await hashPassword(password);
         
-        // Update the password in database
         await supabaseClient
           .from('admin_users')
           .update({ password_hash: hashedPassword })
-          .eq('username', username);
-          
-        console.log('Password hashed and updated in database');
+          .eq('username', sanitizedUsername);
       }
+    } else {
+      // User doesn't exist - perform dummy verification to prevent timing attacks
+      console.log('User not found - performing dummy verification');
+      await verifyPassword(password, DUMMY_HASH);
     }
-    
-    console.log('Password verification result:', isValidPassword);
 
-    if (!isValidPassword) {
-      console.log('Invalid password for admin user:', username);
+    if (!isValidPassword || !userFound) {
+      console.log(`Authentication failed for: ${sanitizedUsername}`);
       return new Response(
         JSON.stringify({ 
           success: false, 
@@ -120,9 +255,12 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    console.log('Admin login successful for:', username);
+    console.log(`Admin login successful for: ${sanitizedUsername}`);
+    
+    // Reset rate limit on successful login
+    rateLimitStore.delete(`${clientIP}:${sanitizedUsername}`);
 
-    // Return successful authentication with user data (excluding password hash)
+    // Return successful authentication with user data (excluding sensitive fields)
     const { password_hash, password_salt, ...safeAdminUser } = adminUser;
     
     return new Response(
@@ -137,7 +275,7 @@ const handler = async (req: Request): Promise<Response> => {
     );
 
   } catch (error: any) {
-    console.error('Error in admin-login function:', error);
+    console.error('Error in admin-login function:', error.message);
     return new Response(
       JSON.stringify({ 
         success: false, 
