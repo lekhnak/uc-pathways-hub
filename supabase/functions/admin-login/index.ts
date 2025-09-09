@@ -74,14 +74,33 @@ const handler = async (req: Request): Promise<Response> => {
     console.log('Admin user found:', adminUser.username);
     console.log('Stored password hash:', adminUser.password_hash);
 
-    // Password verification using scrypt hash
     console.log('Attempting password verification against stored hash...');
     
-    // Import bcrypt for password verification
-    const bcrypt = await import("https://deno.land/x/bcrypt@v0.4.1/mod.ts");
+    let isValidPassword = false;
     
-    // Verify the password against the stored hash
-    const isValidPassword = await bcrypt.compareSync(password, adminUser.password_hash);
+    // Check password format and use appropriate verification method
+    if (adminUser.password_hash.startsWith('$scrypt$')) {
+      // Handle scrypt hashed passwords
+      console.log('Using scrypt verification');
+      const crypto = await import("https://deno.land/std@0.190.0/node/crypto.ts");
+      try {
+        isValidPassword = crypto.scryptSync(password, '', 64).toString('base64') === adminUser.password_hash.split('$').pop();
+      } catch (error) {
+        // If scrypt fails, this might be a complex scrypt format, skip for now
+        console.log('Scrypt verification failed, trying direct comparison');
+        isValidPassword = false;
+      }
+    } else if (adminUser.password_hash.startsWith('$2b$') || adminUser.password_hash.startsWith('$2a$')) {
+      // Handle bcrypt hashed passwords
+      console.log('Using bcrypt verification');
+      const bcrypt = await import("https://deno.land/x/bcrypt@v0.4.1/mod.ts");
+      isValidPassword = await bcrypt.compareSync(password, adminUser.password_hash);
+    } else {
+      // Handle plain text passwords (legacy)
+      console.log('Using plain text comparison');
+      isValidPassword = password === adminUser.password_hash;
+    }
+    
     console.log('Password verification result:', isValidPassword);
 
     if (!isValidPassword) {
