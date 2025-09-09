@@ -327,9 +327,13 @@ export const useBulkUpload = () => {
           
           // Handle numeric fields
           if (['gpa'].includes(mappedField)) {
+            // Allow text placeholders for GPA - set to null if not a valid number
             const numValue = parseFloat(value);
             if (!isNaN(numValue)) {
               value = numValue;
+            } else {
+              // If it's not a valid number, set to null to allow text placeholders
+              value = null;
             }
           }
           
@@ -365,8 +369,8 @@ export const useBulkUpload = () => {
         });
       }
       
-      // Validate GPA range
-      if (mappedRecord.gpa !== undefined && (mappedRecord.gpa < 0 || mappedRecord.gpa > 4.0)) {
+      // Validate GPA range (only if it's a valid number)
+      if (mappedRecord.gpa !== undefined && mappedRecord.gpa !== null && (mappedRecord.gpa < 0 || mappedRecord.gpa > 4.0)) {
         errors.push({
           row: index + 2,
           field: 'gpa',
@@ -375,13 +379,15 @@ export const useBulkUpload = () => {
         });
       }
       
-      // Validate LinkedIn URL format
-      if (mappedRecord.linkedinUrl && !mappedRecord.linkedinUrl.includes('linkedin.com')) {
+      // Validate LinkedIn URL format (allow placeholder values)
+      if (mappedRecord.linkedinUrl && 
+          !['n/a', 'not provided', 'none', ''].includes(mappedRecord.linkedinUrl.toLowerCase()) &&
+          !mappedRecord.linkedinUrl.includes('linkedin.com')) {
         errors.push({
           row: index + 2,
           field: 'linkedinUrl',
           value: mappedRecord.linkedinUrl,
-          message: 'LinkedIn URL must be a valid LinkedIn profile link'
+          message: 'LinkedIn URL must be a valid LinkedIn profile link or placeholder value (N/A, Not Provided, etc.)'
         });
       }
 
@@ -447,6 +453,40 @@ export const useBulkUpload = () => {
         const firstName = nameParts[0] || '';
         const lastName = nameParts.slice(1).join(' ') || '';
         
+        // Normalize student type to common values
+        let studentType = record.classStanding || 'Other';
+        if (typeof studentType === 'string') {
+          const normalized = studentType.toLowerCase().trim();
+          const typeMap: { [key: string]: string } = {
+            'freshman': 'Freshman',
+            'freshmen': 'Freshman', 
+            'sophomore': 'Sophomore',
+            'junior': 'Junior',
+            'senior': 'Senior',
+            'graduate': 'Graduate',
+            'grad': 'Graduate',
+            'masters': 'Graduate',
+            'phd': 'Graduate',
+            'doctoral': 'Graduate',
+            'undergrad': 'Undergraduate',
+            'undergraduate': 'Undergraduate',
+            'transfer': 'Transfer',
+            'continuing': 'Continuing',
+            '1st year': 'Freshman',
+            '2nd year': 'Sophomore', 
+            '3rd year': 'Junior',
+            '4th year': 'Senior',
+            '5th year': 'Senior'
+          };
+          
+          if (typeMap[normalized]) {
+            studentType = typeMap[normalized];
+          } else if (normalized && normalized !== '') {
+            studentType = 'Other';
+          }
+        }
+        
+        
         const { error } = await supabase
           .from('applications')
           .insert({
@@ -458,7 +498,7 @@ export const useBulkUpload = () => {
             // Academic Info
             uc_campus: record.campus || null,
             gpa: record.gpa || null,
-            student_type: record.classStanding || null,
+            student_type: studentType,
             major: record.fieldOfStudy || null,
             
             // Demographics
