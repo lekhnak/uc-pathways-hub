@@ -74,11 +74,35 @@ const handler = async (req: Request): Promise<Response> => {
     console.log('Admin user found:', adminUser.username);
     console.log('Stored password hash:', adminUser.password_hash);
 
-    console.log('Attempting bcrypt password verification...');
+    console.log('Attempting password verification...');
     
-    // All admin passwords are now standardized to use bcrypt
+    let isValidPassword = false;
     const bcrypt = await import("https://deno.land/x/bcrypt@v0.4.1/mod.ts");
-    const isValidPassword = await bcrypt.compareSync(password, adminUser.password_hash);
+    
+    // Check if password is already hashed (starts with $2b$ or $2a$) or plain text
+    if (adminUser.password_hash.startsWith('$2b$') || adminUser.password_hash.startsWith('$2a$')) {
+      console.log('Verifying against bcrypt hash...');
+      // Use async compare function correctly
+      isValidPassword = await bcrypt.compare(password, adminUser.password_hash);
+    } else {
+      console.log('Plain text password detected, verifying and will hash...');
+      // Plain text password - verify and then hash it
+      isValidPassword = password === adminUser.password_hash;
+      
+      if (isValidPassword) {
+        console.log('Password verified, hashing for future use...');
+        // Hash the password for future use
+        const hashedPassword = await bcrypt.hash(password, 10);
+        
+        // Update the password in database
+        await supabaseClient
+          .from('admin_users')
+          .update({ password_hash: hashedPassword })
+          .eq('username', username);
+          
+        console.log('Password hashed and updated in database');
+      }
+    }
     
     console.log('Password verification result:', isValidPassword);
 
