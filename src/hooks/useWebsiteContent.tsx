@@ -42,17 +42,31 @@ export const useWebsiteContent = () => {
 
   const updateContent = async (sectionId: string, updates: Partial<WebsiteContent>) => {
     try {
-      const { data, error } = await supabase
-        .from('website_content')
-        .update(updates)
-        .eq('section_id', sectionId)
-        .select()
-        .single();
+      // Get admin user from localStorage
+      const adminUser = localStorage.getItem('admin_user');
+      if (!adminUser) {
+        throw new Error('Admin authentication required');
+      }
+
+      const parsedAdmin = JSON.parse(adminUser);
+      
+      // Use edge function for admin content updates
+      const { data, error } = await supabase.functions.invoke('update-website-content', {
+        body: { sectionId, updates },
+        headers: {
+          'x-admin-user-id': parsedAdmin.id
+        }
+      });
 
       if (error) throw error;
 
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to update content');
+      }
+
+      // Update local state
       setContent(prev => prev.map(item => 
-        item.section_id === sectionId ? { ...item, ...data } : item
+        item.section_id === sectionId ? { ...item, ...data.data } : item
       ));
 
       toast({
@@ -60,12 +74,12 @@ export const useWebsiteContent = () => {
         description: "Content updated successfully",
       });
 
-      return data;
+      return data.data;
     } catch (error) {
       console.error('Error updating content:', error);
       toast({
         title: "Error",
-        description: "Failed to update content",
+        description: error instanceof Error ? error.message : "Failed to update content",
         variant: "destructive",
       });
       throw error;
