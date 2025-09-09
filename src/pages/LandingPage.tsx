@@ -90,6 +90,7 @@ const LandingPage = () => {
     getSectionContent, 
     getSectionImage, 
     getSectionMetadata,
+    getContentBySection,
     loading: contentLoading 
   } = usePublicWebsiteContent()
 
@@ -319,7 +320,7 @@ const LandingPage = () => {
 
             {/* Process Flow - Dynamic from database */}
             <div className="grid lg:grid-cols-7 gap-4 mb-16">
-              {(getSectionMetadata('program', 'process_stages', []) as any[]).map((stage: any, index: number) => (
+              {(getContentBySection('program')?.metadata?.process_stages || []).map((stage: any, index: number) => (
                 <ProcessStage
                   key={stage.title}
                   title={stage.title}
@@ -332,7 +333,7 @@ const LandingPage = () => {
 
             {/* Program Features - Dynamic from database */}
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {(getSectionMetadata('program', 'features', []) as any[]).map((feature: any, index: number) => {
+              {(getContentBySection('program')?.metadata?.features || []).map((feature: any, index: number) => {
                 const IconComponent = {
                   TrendingUp,
                   BookOpen,
@@ -381,7 +382,7 @@ const LandingPage = () => {
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {(getSectionMetadata('benefits', 'benefits', []) as any[]).map((benefit: any, index: number) => {
+              {(getContentBySection('benefits')?.metadata?.benefits || []).map((benefit: any, index: number) => {
                 const IconComponent = {
                   Target,
                   Users,
@@ -424,7 +425,7 @@ const LandingPage = () => {
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {(getSectionMetadata('how-it-works', 'components', []) as any[]).map((component: any, index: number) => {
+              {(getContentBySection('how-it-works')?.metadata?.components || []).map((component: any, index: number) => {
                 const IconComponent = {
                   BookOpen,
                   Users,
@@ -494,7 +495,7 @@ const LandingPage = () => {
 
             <div className="max-w-3xl mx-auto">
               <Accordion type="single" collapsible className="space-y-4">
-                {(getSectionMetadata('faq', 'faqs', []) as any[]).map((faq: any, index: number) => (
+                {(getContentBySection('faq')?.metadata?.faqs || []).map((faq: any, index: number) => (
                   <AccordionItem key={index} value={`faq-${index}`} className="bg-white shadow-card rounded-2xl border-0 px-6">
                     <AccordionTrigger className="text-left">
                       {faq.question}
