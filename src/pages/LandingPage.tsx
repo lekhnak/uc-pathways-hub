@@ -319,11 +319,11 @@ const LandingPage = () => {
 
             {/* Process Flow - Dynamic from database */}
             <div className="grid lg:grid-cols-7 gap-4 mb-16">
-              {(getSectionMetadata('program', 'process_stages') || []).map((stage: any, index: number) => (
+              {(getSectionMetadata('program', 'process_stages', []) as any[]).map((stage: any, index: number) => (
                 <ProcessStage
                   key={stage.title}
                   title={stage.title}
-                  items={stage.items || []}
+                  items={stage.items}
                   color={stage.color}
                   index={index}
                 />
@@ -332,16 +332,16 @@ const LandingPage = () => {
 
             {/* Program Features - Dynamic from database */}
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {(getSectionMetadata('program', 'features') || []).map((feature: any, index: number) => {
+              {(getSectionMetadata('program', 'features', []) as any[]).map((feature: any, index: number) => {
                 const IconComponent = {
                   TrendingUp,
                   BookOpen,
                   Network,
                   Users,
                   Target,
-                  Award,
+                  GraduationCap,
                   Building,
-                  GraduationCap
+                  Award
                 }[feature.icon] || TrendingUp;
 
                 return (
@@ -381,7 +381,7 @@ const LandingPage = () => {
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {(getSectionMetadata('benefits', 'benefits') || []).map((benefit: any, index: number) => {
+              {(getSectionMetadata('benefits', 'benefits', []) as any[]).map((benefit: any, index: number) => {
                 const IconComponent = {
                   Target,
                   Users,
@@ -424,7 +424,7 @@ const LandingPage = () => {
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {(getSectionMetadata('how-it-works', 'components') || []).map((component: any, index: number) => {
+              {(getSectionMetadata('how-it-works', 'components', []) as any[]).map((component: any, index: number) => {
                 const IconComponent = {
                   BookOpen,
                   Users,
@@ -444,7 +444,7 @@ const LandingPage = () => {
                     </CardHeader>
                     <CardContent>
                       <ul className="text-muted-foreground space-y-2">
-                        {(component.items || []).map((item: string, itemIndex: number) => (
+                        {component.items?.map((item: string, itemIndex: number) => (
                           <li key={itemIndex}>• {item}</li>
                         ))}
                       </ul>
@@ -494,7 +494,7 @@ const LandingPage = () => {
 
             <div className="max-w-3xl mx-auto">
               <Accordion type="single" collapsible className="space-y-4">
-                {(getSectionMetadata('faq', 'faqs') || []).map((faq: any, index: number) => (
+                {(getSectionMetadata('faq', 'faqs', []) as any[]).map((faq: any, index: number) => (
                   <AccordionItem key={index} value={`faq-${index}`} className="bg-white shadow-card rounded-2xl border-0 px-6">
                     <AccordionTrigger className="text-left">
                       {faq.question}
@@ -551,26 +551,38 @@ const LandingPage = () => {
                   <button onClick={() => scrollToSection('benefits')} className="block text-white/70 hover:text-white transition-colors">
                     Benefits
                   </button>
+                  <button onClick={() => scrollToSection('faq')} className="block text-white/70 hover:text-white transition-colors">
+                    FAQ
+                  </button>
                 </div>
               </div>
               <div>
-                <h3 className="font-semibold mb-4">Contact Info</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3">
+                <h3 className="font-semibold mb-4">Get Started</h3>
+                <div className="space-y-2">
+                  <NavLink to="/apply" className="block text-white/70 hover:text-white transition-colors">
+                    Apply Now
+                  </NavLink>
+                  <NavLink to="/auth" className="block text-white/70 hover:text-white transition-colors">
+                    Student Portal
+                  </NavLink>
+                </div>
+              </div>
+              <div>
+                <h3 className="font-semibold mb-4">Contact</h3>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-white/70">
                     <Mail className="h-4 w-4" />
-                    <span className="text-white/70">UCinvestmentsacademy@ucop.edu</span>
+                    <span>ucinvestments@ucop.edu</span>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 text-white/70">
                     <MapPin className="h-4 w-4" />
-                    <span className="text-white/70">University of California System</span>
-                  </div>
-                  <div className="pt-2">
-                    <NavLink to="/admin/auth" className="text-white/70 hover:text-white transition-colors text-sm">
-                      Admin Login
-                    </NavLink>
+                    <span>University of California</span>
                   </div>
                 </div>
               </div>
+            </div>
+            <div className="border-t border-white/20 mt-12 pt-8 text-center text-white/70">
+              <p>&copy; 2024 UC Investments Academy. All rights reserved.</p>
             </div>
           </div>
         </footer>
