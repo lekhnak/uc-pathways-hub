@@ -24,7 +24,7 @@ const SECTIONS = [
 const AdminEditWebsite = () => {
   const { content, loading, updateContent, uploadImage, getContentBySection } = useWebsiteContent();
   const [activeSection, setActiveSection] = useState('hero');
-  const [editingData, setEditingData] = useState<any>({});
+  const [editingData, setEditingData] = useState<Record<string, any>>({});
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -33,18 +33,24 @@ const AdminEditWebsite = () => {
   const currentContent = getContentBySection(activeSection);
 
   const handleInputChange = (field: string, value: string) => {
-    setEditingData((prev: any) => ({
+    setEditingData((prev: Record<string, any>) => ({
       ...prev,
-      [field]: value,
+      [activeSection]: {
+        ...prev[activeSection],
+        [field]: value,
+      },
     }));
   };
 
   const handleMetadataChange = (key: string, value: string) => {
-    setEditingData((prev: any) => ({
+    setEditingData((prev: Record<string, any>) => ({
       ...prev,
-      metadata: {
-        ...prev.metadata,
-        [key]: value,
+      [activeSection]: {
+        ...prev[activeSection],
+        metadata: {
+          ...prev[activeSection]?.metadata,
+          [key]: value,
+        },
       },
     }));
   };
@@ -71,8 +77,11 @@ const AdminEditWebsite = () => {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await updateContent(activeSection, editingData);
-      setEditingData({});
+      await updateContent(activeSection, editingData[activeSection] || {});
+      setEditingData((prev) => ({
+        ...prev,
+        [activeSection]: {},
+      }));
     } catch (error) {
       // Error is handled in the hook
     } finally {
@@ -81,15 +90,18 @@ const AdminEditWebsite = () => {
   };
 
   const resetForm = () => {
-    setEditingData({});
+    setEditingData((prev) => ({
+      ...prev,
+      [activeSection]: {},
+    }));
   };
 
   const getCurrentValue = (field: string) => {
-    return editingData[field] ?? currentContent?.[field] ?? '';
+    return editingData[activeSection]?.[field] ?? currentContent?.[field] ?? '';
   };
 
   const getCurrentMetadata = (key: string) => {
-    return editingData.metadata?.[key] ?? currentContent?.metadata?.[key] ?? '';
+    return editingData[activeSection]?.metadata?.[key] ?? currentContent?.metadata?.[key] ?? '';
   };
 
   if (loading) {
