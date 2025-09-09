@@ -9,8 +9,7 @@ export interface StudentRecord {
   // Required Fields
   timestamp?: string; // 1. Timestamp
   email: string; // 2. Email Address
-  firstName: string; // 3. First and Last Name (first part)
-  lastName: string; // 3. First and Last Name (last part)
+  fullName: string; // 3. Full Name
   
   // Academic Info
   campus?: string; // 4. Campus Currently Enrolled
@@ -66,7 +65,7 @@ export interface ColumnMapping {
   [fileColumn: string]: string;
 }
 
-const REQUIRED_FIELDS = ['firstName', 'lastName', 'email'];
+const REQUIRED_FIELDS = ['fullName', 'email'];
 const VALID_FIELD_MAPPINGS = {
   // 1. Timestamp
   'timestamp': 'timestamp',
@@ -78,18 +77,14 @@ const VALID_FIELD_MAPPINGS = {
   'email_address': 'email',
   'email': 'email',
   
-  // 3. First and Last Name
-  'first and last name': 'firstName', // Will need special handling for combined name
-  'first_and_last_name': 'firstName',
-  'first_name': 'firstName',
-  'firstname': 'firstName',
-  'fname': 'firstName',
-  'first': 'firstName',
-  'last_name': 'lastName',
-  'lastname': 'lastName',
-  'lname': 'lastName',
-  'last': 'lastName',
-  'name': 'firstName', // Will split if contains space
+  // 3. Full Name
+  'full name': 'fullName',
+  'full_name': 'fullName',
+  'first and last name': 'fullName',
+  'first_and_last_name': 'fullName',
+  'name': 'fullName',
+  'student_name': 'fullName',
+  'student name': 'fullName',
   
   // 4. Campus Currently Enrolled
   'campus currently enrolled': 'campus',
@@ -300,8 +295,7 @@ export const useBulkUpload = () => {
 
     records.forEach((record, index) => {
       const mappedRecord: StudentRecord = {
-        firstName: '',
-        lastName: '',
+        fullName: '',
         email: ''
       };
 
@@ -310,16 +304,9 @@ export const useBulkUpload = () => {
         if (record[fileColumn] !== undefined && record[fileColumn] !== null && record[fileColumn] !== '') {
           let value = record[fileColumn];
           
-          // Handle "First and Last Name" combined field
-          if (fileColumn.toLowerCase().includes('first and last name') || (mappedField === 'firstName' && fileColumn.toLowerCase().includes('name') && !fileColumn.toLowerCase().includes('first_name'))) {
-            const fullName = String(value).trim();
-            const nameParts = fullName.split(' ');
-            if (nameParts.length >= 2) {
-              mappedRecord.firstName = nameParts[0];
-              mappedRecord.lastName = nameParts.slice(1).join(' ');
-            } else {
-              mappedRecord.firstName = fullName;
-            }
+          // Handle Full Name field
+          if (mappedField === 'fullName') {
+            mappedRecord.fullName = String(value).trim();
             return; // Skip the normal processing for this field
           }
           
@@ -455,12 +442,17 @@ export const useBulkUpload = () => {
       setCurrentStep(`Creating application ${i + 1} of ${records.length}`);
 
       try {
+        // Split full name into first and last for database storage
+        const nameParts = record.fullName.trim().split(' ');
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts.slice(1).join(' ') || '';
+        
         const { error } = await supabase
           .from('applications')
           .insert({
             // Basic Info (Required)
-            first_name: record.firstName,
-            last_name: record.lastName,
+            first_name: firstName,
+            last_name: lastName,
             email: record.email.toLowerCase(),
             
             // Academic Info

@@ -50,8 +50,7 @@ const BulkUpload: React.FC<BulkUploadProps> = ({ onUploadComplete }) => {
 
   const SUPPORTED_FORMATS = ['csv', 'xlsx', 'xls'];
   const REQUIRED_MAPPINGS = {
-    firstName: 'First and Last Name (First)',
-    lastName: 'First and Last Name (Last)', 
+    fullName: 'Full Name',
     email: 'Email Address'
   };
   const OPTIONAL_MAPPINGS = {
@@ -305,7 +304,7 @@ const BulkUpload: React.FC<BulkUploadProps> = ({ onUploadComplete }) => {
         <Alert className="mt-4">
           <FileText className="h-4 w-4" />
           <AlertDescription>
-            <strong>Required columns:</strong> Email Address, First and Last Name
+            <strong>Required columns:</strong> Email Address, Full Name
             <br />
             <strong>Available columns (21 fields total):</strong> Timestamp, Campus Currently Enrolled, Overall GPA, 
             Class Standing in Fall 2025, Field of Study, First Generation Student, Pell Grant Eligible, Program Interest, 
