@@ -100,7 +100,7 @@ const Auth = () => {
     // Check if user is already logged in via localStorage
     const userData = localStorage.getItem('user')
     if (userData) {
-      navigate("/")
+      navigate("/dashboard")
     }
   }, [navigate])
 
@@ -131,7 +131,7 @@ const Auth = () => {
         title: "Welcome back!",
         description: "You have successfully signed in.",
       })
-      navigate("/")
+      navigate("/dashboard")
     } catch (err: any) {
       setError(err.message || "An unexpected error occurred")
     } finally {
@@ -380,7 +380,7 @@ const Auth = () => {
       })
 
       // Redirect to main dashboard after successful password change
-      navigate('/')
+      navigate('/dashboard')
 
     } catch (error: any) {
       console.error('Error changing password:', error)
