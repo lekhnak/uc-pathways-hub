@@ -136,7 +136,7 @@ const LandingPage = () => {
                   <NavLink to="/auth">Log in</NavLink>
                 </Button>
                 <Button asChild>
-                  <NavLink to="/auth">Access Portal</NavLink>
+                  <NavLink to="/apply">Apply Now</NavLink>
                 </Button>
               </div>
 
@@ -175,7 +175,7 @@ const LandingPage = () => {
                       <NavLink to="/auth">Log in</NavLink>
                     </Button>
                     <Button asChild>
-                      <NavLink to="/auth">Access Portal</NavLink>
+                      <NavLink to="/apply">Apply Now</NavLink>
                     </Button>
                   </div>
                 </div>
