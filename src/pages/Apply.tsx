@@ -23,7 +23,7 @@ const Apply = () => {
                 <img src="/lovable-uploads/d65dcac9-d2c0-458f-ac7b-ec24f7e5d7b5.png" alt="UC Investments Academy" className="h-10" />
               </div>
               <Button variant="outline" asChild>
-                <NavLink to="/landing" className="flex items-center gap-2">
+                <NavLink to="/" className="flex items-center gap-2">
                   <ArrowLeft className="h-4 w-4" />
                   Back to Home
                 </NavLink>
@@ -64,7 +64,7 @@ const Apply = () => {
               {/* Return Navigation */}
               <div className="text-center mt-8">
                 <Button asChild>
-                  <NavLink to="/landing" className="flex items-center gap-2 mx-auto">
+                  <NavLink to="/" className="flex items-center gap-2 mx-auto">
                     <ArrowLeft className="h-4 w-4" />
                     Return to Homepage
                   </NavLink>
