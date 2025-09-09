@@ -136,7 +136,7 @@ const LandingPage = () => {
                   <NavLink to="/auth">Log in</NavLink>
                 </Button>
                 <Button asChild>
-                  <NavLink to="/apply">Sign up</NavLink>
+                  <NavLink to="/auth">Access Portal</NavLink>
                 </Button>
               </div>
 
@@ -175,7 +175,7 @@ const LandingPage = () => {
                       <NavLink to="/auth">Log in</NavLink>
                     </Button>
                     <Button asChild>
-                      <NavLink to="/apply">Sign up</NavLink>
+                      <NavLink to="/auth">Access Portal</NavLink>
                     </Button>
                   </div>
                 </div>
@@ -206,8 +206,8 @@ const LandingPage = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in" style={{ animationDelay: '0.4s' }}>
               <Button size="lg" className="bg-white text-academy-blue hover:bg-gray-100" asChild>
-                <NavLink to="/apply">
-                  Apply Now
+                <NavLink to="/auth">
+                  Access Portal
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </NavLink>
               </Button>
