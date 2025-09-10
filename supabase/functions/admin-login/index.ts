@@ -1,6 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.56.0";
+import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -20,16 +21,15 @@ const MAX_LOGIN_ATTEMPTS = 5;
 const LOCKOUT_DURATION = 15 * 60 * 1000; // 15 minutes
 const MAX_INPUT_LENGTH = 128;
 
-// Secure password verification using bcryptjs (more reliable for PostgreSQL hashes)
+// Secure password verification using bcrypt
 async function verifyPassword(password: string, hash: string): Promise<boolean> {
   try {
     console.log(`Attempting to verify password for hash starting with: ${hash.substring(0, 10)}...`);
     
     // Check if it's a bcrypt hash (PostgreSQL format)
     if (hash.startsWith('$2a$') || hash.startsWith('$2b$') || hash.startsWith('$2y$')) {
-      // Use bcryptjs which is more compatible with PostgreSQL bcrypt hashes
-      const { compare } = await import("https://esm.sh/bcryptjs@2.4.3");
-      const result = await compare(password, hash);
+      // Use bcrypt directly (imported at top)
+      const result = await bcrypt.compare(password, hash);
       console.log(`Bcrypt verification result: ${result}`);
       return result;
     } else {
