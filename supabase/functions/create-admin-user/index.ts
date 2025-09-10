@@ -1,11 +1,39 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.56.0';
-import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Crypto utilities for password hashing - matching admin-login function
+async function hashPassword(password: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(password),
+    { name: 'PBKDF2' },
+    false,
+    ['deriveBits']
+  );
+  
+  const hashBuffer = await crypto.subtle.deriveBits(
+    {
+      name: 'PBKDF2',
+      salt: salt,
+      iterations: 100000,
+      hash: 'SHA-256'
+    },
+    keyMaterial,
+    256
+  );
+  
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const saltArray = Array.from(salt);
+  const combined = saltArray.concat(hashArray);
+  return btoa(String.fromCharCode.apply(null, combined));
+}
 
 interface CreateAdminRequest {
   username: string;
@@ -31,8 +59,8 @@ const handler = async (req: Request): Promise<Response> => {
     const { username, full_name, email, password }: CreateAdminRequest = await req.json();
     console.log('Creating admin user:', { username, full_name, email });
 
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // Hash the password using the same method as admin-login
+    const hashedPassword = await hashPassword(password);
 
     // Insert new admin user
     const { data, error } = await supabase

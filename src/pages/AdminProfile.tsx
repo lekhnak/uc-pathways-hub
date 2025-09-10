@@ -77,42 +77,49 @@ const AdminProfile = () => {
 
     setLoading(true)
     try {
-      const { error } = await supabase
-        .from('admin_users')
-        .update({
+      // Use edge function to update profile (bypasses RLS)
+      const { data, error } = await supabase.functions.invoke('update-admin-profile', {
+        body: {
+          adminId: adminUser.id,
           email: formData.email,
-          full_name: formData.full_name,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', adminUser.id)
+          full_name: formData.full_name
+        }
+      });
 
-      if (error) throw error
+      if (error) {
+        console.error('Edge function error:', error);
+        throw new Error('Failed to update profile');
+      }
 
-      // Update the admin user in localStorage and state
+      if (!data?.success) {
+        throw new Error(data?.error || 'Failed to update profile');
+      }
+
+      console.log('Profile updated successfully');
+
+      // Update the admin user in localStorage
       const updatedAdminUser = {
         ...adminUser,
         email: formData.email,
         full_name: formData.full_name
       }
       
-      // Update localStorage
       localStorage.setItem('admin_user', JSON.stringify(updatedAdminUser))
-      
-      // Force a refresh of admin auth context by signing out and back in
-      // This ensures the updated data is reflected everywhere
-      setTimeout(() => {
-        window.location.reload()
-      }, 1000)
 
       toast({
         title: "Profile updated",
         description: "Your profile has been successfully updated.",
       })
-    } catch (error) {
+
+      // Reload to reflect changes
+      setTimeout(() => {
+        window.location.reload()
+      }, 1000)
+    } catch (error: any) {
       console.error('Error updating profile:', error)
       toast({
         title: "Error",
-        description: "Failed to update profile",
+        description: error.message || "Failed to update profile. Please try again.",
         variant: "destructive",
       })
     } finally {
