@@ -47,3 +47,12 @@ verify_jwt = false
 
 [functions.revoke-application-access]
 verify_jwt = false
+
+[functions.change-admin-password]
+verify_jwt = false
+
+[functions.create-admin-user]
+verify_jwt = false
+
+[functions.send-admin-invite]
+verify_jwt = false

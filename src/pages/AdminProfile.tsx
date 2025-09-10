@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { useToast } from '@/components/ui/use-toast'
+import { useToast } from '@/hooks/use-toast'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { UserCog, Mail, User, Save, Key, Plus, Shield, Eye, EyeOff } from 'lucide-react'
 
@@ -128,38 +128,22 @@ const AdminProfile = () => {
 
     setPasswordLoading(true)
     try {
-      // First verify current password
-      const bcrypt = await import('bcrypt')
-      const { data: currentUser, error: fetchError } = await supabase
-        .from('admin_users')
-        .select('password_hash')
-        .eq('id', adminUser.id)
-        .single()
+      const { data, error } = await supabase.functions.invoke('change-admin-password', {
+        body: {
+          adminId: adminUser.id,
+          currentPassword: passwordData.currentPassword,
+          newPassword: passwordData.newPassword
+        }
+      });
 
-      if (fetchError) throw fetchError
-
-      const isCurrentPasswordValid = await bcrypt.compare(passwordData.currentPassword, currentUser.password_hash)
-      
-      if (!isCurrentPasswordValid) {
-        toast({
-          title: "Error",
-          description: "Current password is incorrect",
-          variant: "destructive",
-        })
-        return
+      if (error) {
+        console.error('Password change error:', error);
+        throw new Error('Failed to change password');
       }
 
-      // Hash new password and update
-      const hashedPassword = await bcrypt.hash(passwordData.newPassword, 10)
-      const { error } = await supabase
-        .from('admin_users')
-        .update({
-          password_hash: hashedPassword,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', adminUser.id)
-
-      if (error) throw error
+      if (!data?.success) {
+        throw new Error(data?.error || 'Failed to change password');
+      }
 
       toast({
         title: "Password updated",
@@ -168,11 +152,11 @@ const AdminProfile = () => {
 
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' })
       setIsChangePasswordOpen(false)
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error changing password:', error)
       toast({
         title: "Error",
-        description: "Failed to change password",
+        description: error.message || "Failed to change password",
         variant: "destructive",
       })
     } finally {
@@ -185,20 +169,23 @@ const AdminProfile = () => {
     setAdminSubmitLoading(true)
 
     try {
-      // Hash the password
-      const bcrypt = await import('bcrypt')
-      const hashedPassword = await bcrypt.hash(adminFormData.password, 10)
-
-      const { error } = await supabase
-        .from('admin_users')
-        .insert({
+      const { data, error } = await supabase.functions.invoke('create-admin-user', {
+        body: {
           username: adminFormData.username,
           full_name: adminFormData.full_name,
           email: adminFormData.email,
-          password_hash: hashedPassword
-        })
+          password: adminFormData.password
+        }
+      });
 
-      if (error) throw error
+      if (error) {
+        console.error('Create admin error:', error);
+        throw new Error('Failed to create administrator');
+      }
+
+      if (!data?.success) {
+        throw new Error(data?.error || 'Failed to create administrator');
+      }
 
       // Send invitation email
       try {
@@ -225,7 +212,7 @@ const AdminProfile = () => {
       console.error('Error creating admin:', error)
       toast({
         title: "Error",
-        description: `Failed to create administrator: ${error.message}`,
+        description: error.message || "Failed to create administrator",
         variant: "destructive",
       })
     } finally {
@@ -430,17 +417,16 @@ const AdminProfile = () => {
       </div>
 
       {/* Admin Management */}
-      {adminUser?.username === 'admin' && (
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Shield className="h-5 w-5" />
-              <CardTitle>Admin Management</CardTitle>
-            </div>
-            <CardDescription>
-              Create new administrator accounts (Super Admin only)
-            </CardDescription>
-          </CardHeader>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Shield className="h-5 w-5" />
+            <CardTitle>Admin Management</CardTitle>
+          </div>
+          <CardDescription>
+            Create new administrator accounts
+          </CardDescription>
+        </CardHeader>
           <CardContent>
             <Dialog open={isAddAdminOpen} onOpenChange={setIsAddAdminOpen}>
               <DialogTrigger asChild>
@@ -510,7 +496,6 @@ const AdminProfile = () => {
             </Dialog>
           </CardContent>
         </Card>
-      )}
     </div>
   )
 }
