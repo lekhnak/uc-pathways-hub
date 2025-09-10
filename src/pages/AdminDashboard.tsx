@@ -88,6 +88,10 @@ const CalendarEventsManagement = () => {
     try {
       const eventData = {
         ...formData,
+        rsvp_enabled: false,
+        event_capacity: null,
+        rsvp_deadline: null,
+        allow_waitlist: true,
         speakers: formData.speakers ? formData.speakers.split(',').map(s => s.trim()) : null
       }
 

@@ -261,93 +261,150 @@ const Calendar = () => {
             </CardContent>
           </Card>
         ) : (
-          upcomingEvents.map((event) => (
-            <Card key={event.id} className="bg-white shadow-card border-academy-grey-light hover:shadow-elevated transition-all">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <CardTitle className="text-xl text-academy-blue">{event.title}</CardTitle>
-                      <Badge className={getTypeColor(event.event_type)}>{formatEventType(event.event_type)}</Badge>
-                      <Badge className={getStatusColor(event.status)}>
-                        {formatStatus(event.status)}
-                      </Badge>
-                    </div>
-                    <CardDescription className="text-lg font-medium text-academy-blue mb-2">
-                      {event.speakers && event.speakers.length > 0 ? event.speakers.join(', ') : 'TBA'}
-                    </CardDescription>
-                    <CardDescription className="text-base line-clamp-3">{event.description}</CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-              
-              <CardContent className="space-y-4">
-                {/* Event Details */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-4 bg-academy-grey-light rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <CalendarIcon className="h-4 w-4 text-academy-blue" />
-                    <div>
-                      <p className="text-sm font-medium">Date</p>
-                      <p className="text-sm text-academy-grey">
-                        {format(new Date(event.event_date), 'PPP')}
-                      </p>
+          <div className="space-y-4">
+            {upcomingEvents.map((event) => (
+              <Card key={event.id} className="bg-white shadow-card border-academy-grey-light hover:shadow-elevated transition-all">
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <CardTitle className="text-xl text-academy-blue">{event.title}</CardTitle>
+                        <Badge className={getTypeColor(event.event_type)}>{formatEventType(event.event_type)}</Badge>
+                        <Badge className={getStatusColor(event.status)}>
+                          {formatStatus(event.status)}
+                        </Badge>
+                        {event.rsvp_enabled && (
+                          <Badge variant="secondary" className="bg-green-100 text-green-800">
+                            RSVP Open
+                          </Badge>
+                        )}
+                      </div>
+                      <CardDescription className="text-lg font-medium text-academy-blue mb-2">
+                        {event.speakers && event.speakers.length > 0 ? event.speakers.join(', ') : 'TBA'}
+                      </CardDescription>
+                      <CardDescription className="text-base line-clamp-3">{event.description}</CardDescription>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-academy-blue" />
-                    <div>
-                      <p className="text-sm font-medium">Time</p>
-                      <p className="text-sm text-academy-grey">
-                        {event.event_time ? format(new Date(`2000-01-01T${event.event_time}`), 'p') : 'TBA'}
-                      </p>
+                </CardHeader>
+                
+                <CardContent className="space-y-4">
+                  {/* RSVP Stats */}
+                  {event.rsvp_enabled && eventRsvpStats[event.id] && (
+                    <div className="bg-blue-50 p-3 rounded-lg">
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="font-medium">RSVPs:</span>
+                        <span>{eventRsvpStats[event.id].confirmed} confirmed</span>
+                      </div>
+                      {event.event_capacity && (
+                        <div className="flex justify-between items-center text-sm">
+                          <span>Capacity:</span>
+                          <span>{eventRsvpStats[event.id].confirmed}/{event.event_capacity}</span>
+                        </div>
+                      )}
+                      {eventRsvpStats[event.id].waitlisted > 0 && (
+                        <div className="flex justify-between items-center text-sm text-yellow-600">
+                          <span>Waitlisted:</span>
+                          <span>{eventRsvpStats[event.id].waitlisted}</span>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {event.location === 'Virtual' ? (
-                      <Video className="h-4 w-4 text-academy-blue" />
-                    ) : (
-                      <MapPin className="h-4 w-4 text-academy-blue" />
-                    )}
-                    <div>
-                      <p className="text-sm font-medium">Location</p>
-                      <p className="text-sm text-academy-grey">{event.location || 'TBA'}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4 text-academy-blue" />
-                    <div>
-                      <p className="text-sm font-medium">Status</p>
-                      <p className="text-sm text-academy-grey capitalize">{event.status}</p>
-                    </div>
-                  </div>
-                </div>
+                  )}
 
-                {/* Action Buttons */}
-                <div className="flex gap-3 pt-2">
-                  <Button 
-                    className="flex-1 bg-academy-blue hover:bg-academy-blue-dark"
-                    disabled={event.status === 'full' || event.status === 'cancelled' || !event.signup_url}
-                    onClick={() => {
-                      if (event.signup_url) {
-                        window.open(event.signup_url, '_blank');
-                      }
-                    }}
-                  >
-                    {event.status === 'full' ? 'Event Full' : 
-                     event.status === 'cancelled' ? 'Cancelled' :
-                     !event.signup_url ? 'Info Only' : 'Register Now'}
-                  </Button>
-                  <Button variant="outline" className="border-academy-blue text-academy-blue hover:bg-academy-blue-light">
-                    <Bell className="h-4 w-4 mr-2" />
-                    Remind Me
-                  </Button>
-                  <Button variant="outline" className="border-academy-blue text-academy-blue hover:bg-academy-blue-light">
-                    Share
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))
+                  {/* Event Details */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-4 bg-academy-grey-light rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <CalendarIcon className="h-4 w-4 text-academy-blue" />
+                      <div>
+                        <p className="text-sm font-medium">Date</p>
+                        <p className="text-sm text-academy-grey">
+                          {format(new Date(event.event_date), 'PPP')}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-academy-blue" />
+                      <div>
+                        <p className="text-sm font-medium">Time</p>
+                        <p className="text-sm text-academy-grey">
+                          {event.event_time ? format(new Date(`2000-01-01T${event.event_time}`), 'p') : 'TBA'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {event.location === 'Virtual' ? (
+                        <Video className="h-4 w-4 text-academy-blue" />
+                      ) : (
+                        <MapPin className="h-4 w-4 text-academy-blue" />
+                      )}
+                      <div>
+                        <p className="text-sm font-medium">Location</p>
+                        <p className="text-sm text-academy-grey">{event.location || 'TBA'}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Users className="h-4 w-4 text-academy-blue" />
+                      <div>
+                        <p className="text-sm font-medium">Status</p>
+                        <p className="text-sm text-academy-grey capitalize">{event.status}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-3 pt-2">
+                    {event.rsvp_enabled ? (
+                      <Button 
+                        className="flex-1 bg-academy-blue hover:bg-academy-blue-dark"
+                        disabled={isEventDisabled(event)}
+                        onClick={() => handleRsvpClick(event)}
+                      >
+                        {getRsvpButtonText(event)}
+                      </Button>
+                    ) : (
+                      <Button 
+                        className="flex-1 bg-academy-blue hover:bg-academy-blue-dark"
+                        disabled={event.status === 'full' || event.status === 'cancelled' || !event.signup_url}
+                        onClick={() => {
+                          if (event.signup_url) {
+                            window.open(event.signup_url, '_blank');
+                          }
+                        }}
+                      >
+                        {event.status === 'full' ? 'Event Full' : 
+                         event.status === 'cancelled' ? 'Cancelled' :
+                         !event.signup_url ? 'Info Only' : 'Register Now'}
+                      </Button>
+                    )}
+                    <Button 
+                      variant="outline" 
+                      className="border-academy-blue text-academy-blue hover:bg-academy-blue-light"
+                      onClick={() => downloadCalendarFile(event)}
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Calendar
+                    </Button>
+                    <Button variant="outline" className="border-academy-blue text-academy-blue hover:bg-academy-blue-light">
+                      <Bell className="h-4 w-4 mr-2" />
+                      Remind Me
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        {/* RSVP Modal */}
+        {selectedEvent && (
+          <RSVPModal
+            isOpen={rsvpModalOpen}
+            onClose={() => {
+              setRsvpModalOpen(false)
+              setSelectedEvent(null)
+            }}
+            event={selectedEvent}
+            rsvpStats={eventRsvpStats[selectedEvent.id] || { confirmed: 0, waitlisted: 0, total: 0 }}
+          />
         )}
       </div>
 

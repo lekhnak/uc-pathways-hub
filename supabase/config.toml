@@ -59,3 +59,12 @@ verify_jwt = false
 
 [functions.update-admin-profile]
 verify_jwt = false
+
+[functions.send-rsvp-confirmation]
+verify_jwt = false
+
+[functions.generate-ics-file]
+verify_jwt = false
+
+[functions.send-event-notifications]
+verify_jwt = false
