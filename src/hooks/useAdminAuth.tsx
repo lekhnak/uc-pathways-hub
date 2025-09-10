@@ -54,10 +54,20 @@ export const AdminAuthProvider = ({ children }: { children: React.ReactNode }) =
 
   const signIn = async (username: string, password: string) => {
     try {
+      // First test the password verification
+      console.log('Testing password verification...');
+      const testResponse = await supabase.functions.invoke('test-password', {
+        body: { username, password }
+      });
+      
+      console.log('Password test result:', testResponse);
+
       // Call the secure admin authentication edge function
       const { data, error } = await supabase.functions.invoke('admin-login', {
         body: { username, password }
       })
+
+      console.log('Admin login response:', { data, error });
 
       if (error) {
         console.error('Authentication error:', error)

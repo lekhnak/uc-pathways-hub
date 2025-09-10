@@ -75,5 +75,8 @@ verify_jwt = false
 [functions.update-calendar-event]
 verify_jwt = false
 
+[functions.test-password]
+verify_jwt = false
+
 [functions.delete-calendar-event]
 verify_jwt = false
