@@ -6,6 +6,66 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Gmail access token retrieval
+async function getGmailAccessToken(): Promise<string> {
+  const clientId = Deno.env.get('GMAIL_CLIENT_ID');
+  const clientSecret = Deno.env.get('GMAIL_CLIENT_SECRET');
+  const refreshToken = Deno.env.get('GMAIL_REFRESH_TOKEN');
+
+  const response = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      client_id: clientId!,
+      client_secret: clientSecret!,
+      refresh_token: refreshToken!,
+      grant_type: 'refresh_token',
+    }),
+  });
+
+  const data = await response.json();
+  return data.access_token;
+}
+
+// Gmail email sending function
+async function sendGmailEmail(
+  accessToken: string,
+  to: string,
+  subject: string,
+  htmlContent: string
+): Promise<any> {
+  const emailContent = [
+    `To: ${to}`,
+    `Subject: ${subject}`,
+    'Content-Type: text/html; charset=utf-8',
+    '',
+    htmlContent,
+  ].join('\n');
+
+  const encodedEmail = btoa(emailContent)
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
+
+  const response = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      raw: encodedEmail,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.text();
+    throw new Error(`Gmail API error: ${response.status} ${errorData}`);
+  }
+
+  return response.json();
+}
+
 // Crypto utilities for password hashing - matching admin-login function
 async function hashPassword(password: string): Promise<string> {
   const encoder = new TextEncoder();
@@ -91,6 +151,90 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     console.log('Admin user created successfully:', data.id);
+
+    // Send admin invitation email using Gmail
+    try {
+      console.log('Sending admin invite email to:', email);
+      const accessToken = await getGmailAccessToken();
+      
+      // Generate temporary password for the new admin
+      const tempPassword = Math.random().toString(36).slice(-8);
+      
+      // Update the admin user with temporary password
+      await supabase
+        .from('admin_users')
+        .update({ temp_password: tempPassword })
+        .eq('id', data.id);
+
+      // Construct login URL
+      const loginUrl = `${Deno.env.get('SUPABASE_URL')?.replace('/supabase', '')}/admin/auth`;
+
+      const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Administrator Account Created</title>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+            .content { background: #f8f9fa; padding: 30px; border-radius: 0 0 10px 10px; }
+            .credentials { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #667eea; }
+            .login-button { display: inline-block; background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0; }
+            .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>🎉 Welcome to UC Investment Academy</h1>
+              <p>Your administrator account has been created!</p>
+            </div>
+            <div class="content">
+              <h2>Hello ${full_name}!</h2>
+              <p>You have been added as an administrator for the UC Investment Academy platform. Below are your login credentials:</p>
+              
+              <div class="credentials">
+                <h3>📋 Your Login Details</h3>
+                <p><strong>Username:</strong> ${username}</p>
+                <p><strong>Email:</strong> ${email}</p>
+                <p><strong>Temporary Password:</strong> ${tempPassword}</p>
+              </div>
+
+              <p>🔐 <strong>Important:</strong> Please change your password immediately after logging in for security purposes.</p>
+
+              <div style="text-align: center;">
+                <a href="${loginUrl}" class="login-button">🚀 Login to Admin Dashboard</a>
+              </div>
+
+              <h3>🎯 What you can do as an administrator:</h3>
+              <ul>
+                <li>✅ Manage user applications and approvals</li>
+                <li>📊 Access comprehensive analytics and reports</li>
+                <li>🎓 Manage certification programs</li>
+                <li>📅 Oversee calendar events and scheduling</li>
+                <li>👥 Handle user management and permissions</li>
+                <li>🌐 Update website content and settings</li>
+              </ul>
+
+              <div class="footer">
+                <p>If you have any questions or need assistance, please don't hesitate to reach out.</p>
+                <p><strong>UC Investment Academy Team</strong><br>
+                Building the future of financial education</p>
+              </div>
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+
+      await sendGmailEmail(accessToken, email, 'UC Investment Academy - Administrator Access Granted', htmlContent);
+      console.log('Admin invitation email sent successfully');
+    } catch (emailError) {
+      console.error('Error sending admin invitation email:', emailError);
+      // Don't fail the entire request if email fails
+    }
 
     return new Response(
       JSON.stringify({ success: true, adminUser: data }),
