@@ -595,6 +595,69 @@ export type Database = {
         }
         Relationships: []
       }
+      uc_internships: {
+        Row: {
+          application_deadline: string | null
+          apply_url: string | null
+          available_positions: number | null
+          company: string
+          company_logo_url: string | null
+          compensation: string | null
+          contact_email: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          is_uc_partner: boolean
+          location: string
+          position_type: string
+          requirements: Json | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          application_deadline?: string | null
+          apply_url?: string | null
+          available_positions?: number | null
+          company: string
+          company_logo_url?: string | null
+          compensation?: string | null
+          contact_email?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          is_uc_partner?: boolean
+          location: string
+          position_type?: string
+          requirements?: Json | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          application_deadline?: string | null
+          apply_url?: string | null
+          available_positions?: number | null
+          company?: string
+          company_logo_url?: string | null
+          compensation?: string | null
+          contact_email?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          is_uc_partner?: boolean
+          location?: string
+          position_type?: string
+          requirements?: Json | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       website_content: {
         Row: {
           content: string | null

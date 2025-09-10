@@ -30,6 +30,7 @@ import AdminCertifications from "./pages/AdminCertifications";
 import AdminCalendarEvents from "./pages/AdminCalendarEvents";
 import AdminProfile from "./pages/AdminProfile";
 import AdminUserManagement from "./pages/AdminUserManagement";
+import AdminInternships from "./pages/AdminInternships";
 
 import CreateLearnerProfile from "./pages/CreateLearnerProfile";
 import SetPassword from "./pages/SetPassword";
@@ -65,7 +66,7 @@ const App = () => (
             <Route path="create-learner" element={<CreateLearnerProfile />} />
             <Route path="pathways" element={<div>Admin Pathways - Coming Soon</div>} />
             <Route path="certifications" element={<AdminCertifications />} />
-            <Route path="internships" element={<div>Admin Internships - Coming Soon</div>} />
+            <Route path="internships" element={<AdminInternships />} />
             <Route path="calendar" element={<AdminCalendarEvents />} />
             <Route path="edit-website" element={<AdminEditWebsite />} />
             <Route path="profile" element={<AdminProfile />} />
