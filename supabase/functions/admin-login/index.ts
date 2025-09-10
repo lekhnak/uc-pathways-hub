@@ -28,8 +28,8 @@ async function verifyPassword(password: string, hash: string): Promise<boolean> 
     // Check if it's a bcrypt hash (PostgreSQL format)
     if (hash.startsWith('$2a$') || hash.startsWith('$2b$') || hash.startsWith('$2y$')) {
       // Use bcryptjs which is more compatible with PostgreSQL bcrypt hashes
-      const bcrypt = await import("https://esm.sh/bcryptjs@2.4.3");
-      const result = await bcrypt.compare(password, hash);
+      const { compare } = await import("https://esm.sh/bcryptjs@2.4.3");
+      const result = await compare(password, hash);
       console.log(`Bcrypt verification result: ${result}`);
       return result;
     } else {
