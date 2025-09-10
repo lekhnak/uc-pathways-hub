@@ -20,6 +20,8 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  console.log('create-admin-user function called');
+
   try {
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -27,6 +29,7 @@ const handler = async (req: Request): Promise<Response> => {
     );
 
     const { username, full_name, email, password }: CreateAdminRequest = await req.json();
+    console.log('Creating admin user:', { username, full_name, email });
 
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);

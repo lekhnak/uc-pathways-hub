@@ -18,7 +18,7 @@ interface AdminForm {
 }
 
 const AdminProfile = () => {
-  const { adminUser } = useAdminAuth()
+  const { adminUser, signOut } = useAdminAuth()
   const { toast } = useToast()
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
@@ -87,6 +87,22 @@ const AdminProfile = () => {
         .eq('id', adminUser.id)
 
       if (error) throw error
+
+      // Update the admin user in localStorage and state
+      const updatedAdminUser = {
+        ...adminUser,
+        email: formData.email,
+        full_name: formData.full_name
+      }
+      
+      // Update localStorage
+      localStorage.setItem('admin_user', JSON.stringify(updatedAdminUser))
+      
+      // Force a refresh of admin auth context by signing out and back in
+      // This ensures the updated data is reflected everywhere
+      setTimeout(() => {
+        window.location.reload()
+      }, 1000)
 
       toast({
         title: "Profile updated",

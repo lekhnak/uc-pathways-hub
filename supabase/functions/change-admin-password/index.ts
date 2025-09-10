@@ -19,6 +19,8 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  console.log('change-admin-password function called');
+  
   try {
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -26,6 +28,7 @@ const handler = async (req: Request): Promise<Response> => {
     );
 
     const { adminId, currentPassword, newPassword }: ChangePasswordRequest = await req.json();
+    console.log('Password change request for admin:', adminId);
 
     // Get current admin user
     const { data: adminUser, error: fetchError } = await supabase
@@ -43,6 +46,7 @@ const handler = async (req: Request): Promise<Response> => {
     const isCurrentPasswordValid = await bcrypt.compare(currentPassword, adminUser.password_hash);
     
     if (!isCurrentPasswordValid) {
+      console.log('Current password verification failed for admin:', adminId);
       return new Response(
         JSON.stringify({ success: false, error: 'Current password is incorrect' }),
         {

@@ -22,10 +22,12 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  console.log('send-admin-invite function called');
+
   try {
     const { email, full_name, username, tempPassword }: AdminInviteRequest = await req.json();
 
-    console.log('Sending admin invite to:', email);
+    console.log('Sending admin invite to:', email, 'for user:', username);
 
     const loginUrl = `${Deno.env.get('SUPABASE_URL')?.replace('.supabase.co', '.lovable.app') || 'https://your-app.lovable.app'}/admin/auth`;
 
@@ -106,7 +108,7 @@ const handler = async (req: Request): Promise<Response> => {
   } catch (error: any) {
     console.error("Error in send-admin-invite function:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ success: false, error: error.message }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },
