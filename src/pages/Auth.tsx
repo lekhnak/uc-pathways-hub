@@ -459,7 +459,7 @@ const Auth = () => {
                     {isLoading ? "Signing in..." : "Sign In"}
                   </Button>
 
-                  <div className="text-center mt-4">
+                  <div className="flex flex-col items-center gap-3 mt-4">
                     <button
                       type="button"
                       onClick={() => navigate('/forgot-password')}
@@ -467,6 +467,14 @@ const Auth = () => {
                     >
                       Setup your password here
                     </button>
+                    
+                    <Button 
+                      variant="outline" 
+                      onClick={() => navigate('/')}
+                      className="w-full border-academy-grey text-academy-grey hover:bg-academy-grey-light"
+                    >
+                      Return to Homepage
+                    </Button>
                   </div>
                 </form>
           </CardContent>
