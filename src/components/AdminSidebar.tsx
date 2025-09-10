@@ -43,11 +43,6 @@ const navigationItems = [
     icon: UserCog,
   },
   {
-    title: 'Admin Management',
-    url: '/admin/admin-management',
-    icon: Shield,
-  },
-  {
     title: 'Create Learner',
     url: '/admin/create-learner',
     icon: UserPlus,

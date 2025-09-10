@@ -7,7 +7,15 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/components/ui/use-toast'
-import { UserCog, Mail, User, Save } from 'lucide-react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { UserCog, Mail, User, Save, Key, Plus, Shield, Eye, EyeOff } from 'lucide-react'
+
+interface AdminForm {
+  username: string
+  full_name: string
+  email: string
+  password: string
+}
 
 const AdminProfile = () => {
   const { adminUser } = useAdminAuth()
@@ -19,6 +27,30 @@ const AdminProfile = () => {
     full_name: '',
     bio: '',
   })
+
+  // Password change states
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false)
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  })
+  const [showPasswords, setShowPasswords] = useState({
+    current: false,
+    new: false,
+    confirm: false
+  })
+  const [passwordLoading, setPasswordLoading] = useState(false)
+
+  // Admin creation states
+  const [isAddAdminOpen, setIsAddAdminOpen] = useState(false)
+  const [adminFormData, setAdminFormData] = useState<AdminForm>({
+    username: '',
+    full_name: '',
+    email: '',
+    password: ''
+  })
+  const [adminSubmitLoading, setAdminSubmitLoading] = useState(false)
 
   useEffect(() => {
     if (adminUser) {
@@ -70,6 +102,144 @@ const AdminProfile = () => {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!adminUser) return
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast({
+        title: "Error",
+        description: "New passwords do not match",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (passwordData.newPassword.length < 8) {
+      toast({
+        title: "Error",
+        description: "Password must be at least 8 characters long",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setPasswordLoading(true)
+    try {
+      // First verify current password
+      const bcrypt = await import('bcrypt')
+      const { data: currentUser, error: fetchError } = await supabase
+        .from('admin_users')
+        .select('password_hash')
+        .eq('id', adminUser.id)
+        .single()
+
+      if (fetchError) throw fetchError
+
+      const isCurrentPasswordValid = await bcrypt.compare(passwordData.currentPassword, currentUser.password_hash)
+      
+      if (!isCurrentPasswordValid) {
+        toast({
+          title: "Error",
+          description: "Current password is incorrect",
+          variant: "destructive",
+        })
+        return
+      }
+
+      // Hash new password and update
+      const hashedPassword = await bcrypt.hash(passwordData.newPassword, 10)
+      const { error } = await supabase
+        .from('admin_users')
+        .update({
+          password_hash: hashedPassword,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', adminUser.id)
+
+      if (error) throw error
+
+      toast({
+        title: "Password updated",
+        description: "Your password has been successfully changed.",
+      })
+
+      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' })
+      setIsChangePasswordOpen(false)
+    } catch (error) {
+      console.error('Error changing password:', error)
+      toast({
+        title: "Error",
+        description: "Failed to change password",
+        variant: "destructive",
+      })
+    } finally {
+      setPasswordLoading(false)
+    }
+  }
+
+  const handleCreateAdmin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setAdminSubmitLoading(true)
+
+    try {
+      // Hash the password
+      const bcrypt = await import('bcrypt')
+      const hashedPassword = await bcrypt.hash(adminFormData.password, 10)
+
+      const { error } = await supabase
+        .from('admin_users')
+        .insert({
+          username: adminFormData.username,
+          full_name: adminFormData.full_name,
+          email: adminFormData.email,
+          password_hash: hashedPassword
+        })
+
+      if (error) throw error
+
+      // Send invitation email
+      try {
+        await supabase.functions.invoke('send-admin-invite', {
+          body: {
+            email: adminFormData.email,
+            full_name: adminFormData.full_name,
+            username: adminFormData.username,
+            tempPassword: adminFormData.password
+          }
+        })
+      } catch (emailError) {
+        console.warn('Failed to send invitation email:', emailError)
+      }
+
+      toast({
+        title: "Administrator Created",
+        description: `${adminFormData.full_name} has been added as an administrator and invitation sent.`,
+      })
+
+      setAdminFormData({ username: '', full_name: '', email: '', password: '' })
+      setIsAddAdminOpen(false)
+    } catch (error: any) {
+      console.error('Error creating admin:', error)
+      toast({
+        title: "Error",
+        description: `Failed to create administrator: ${error.message}`,
+        variant: "destructive",
+      })
+    } finally {
+      setAdminSubmitLoading(false)
+    }
+  }
+
+  const generatePassword = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*'
+    let password = ''
+    for (let i = 0; i < 12; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length))
+    }
+    setAdminFormData({ ...adminFormData, password })
   }
 
   return (
@@ -157,86 +327,190 @@ const AdminProfile = () => {
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
-              <UserCog className="h-5 w-5" />
-              <CardTitle>Account Security</CardTitle>
+              <Key className="h-5 w-5" />
+              <CardTitle>Change Password</CardTitle>
             </div>
             <CardDescription>
-              Manage your account security settings
+              Update your account password
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label>Current Password</Label>
-              <div className="flex gap-2">
-                <Input type="password" placeholder="••••••••" disabled />
-                <Button variant="outline" size="sm">
-                  Change
+          <CardContent>
+            <Dialog open={isChangePasswordOpen} onOpenChange={setIsChangePasswordOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="w-full">
+                  <Key className="w-4 h-4 mr-2" />
+                  Change Password
                 </Button>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Two-Factor Authentication</Label>
-              <div className="flex items-center justify-between p-3 border rounded-lg">
-                <div>
-                  <p className="text-sm font-medium">2FA Status</p>
-                  <p className="text-xs text-muted-foreground">Not enabled</p>
-                </div>
-                <Button variant="outline" size="sm">
-                  Enable
-                </Button>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Login Sessions</Label>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between p-3 border rounded-lg">
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Change Password</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handlePasswordChange} className="space-y-4">
                   <div>
-                    <p className="text-sm font-medium">Current Session</p>
-                    <p className="text-xs text-muted-foreground">
-                      Last active: {new Date().toLocaleString()}
+                    <Label htmlFor="current_password">Current Password</Label>
+                    <div className="relative">
+                      <Input
+                        id="current_password"
+                        type={showPasswords.current ? "text" : "password"}
+                        value={passwordData.currentPassword}
+                        onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                        required
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                        onClick={() => setShowPasswords(prev => ({ ...prev, current: !prev.current }))}
+                      >
+                        {showPasswords.current ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="new_password">New Password</Label>
+                    <div className="relative">
+                      <Input
+                        id="new_password"
+                        type={showPasswords.new ? "text" : "password"}
+                        value={passwordData.newPassword}
+                        onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                        required
+                        minLength={8}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                        onClick={() => setShowPasswords(prev => ({ ...prev, new: !prev.new }))}
+                      >
+                        {showPasswords.new ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Password must be at least 8 characters long
                     </p>
                   </div>
-                  <Button variant="outline" size="sm">
-                    Revoke
-                  </Button>
-                </div>
-              </div>
-            </div>
+                  <div>
+                    <Label htmlFor="confirm_password">Confirm New Password</Label>
+                    <div className="relative">
+                      <Input
+                        id="confirm_password"
+                        type={showPasswords.confirm ? "text" : "password"}
+                        value={passwordData.confirmPassword}
+                        onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                        required
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                        onClick={() => setShowPasswords(prev => ({ ...prev, confirm: !prev.confirm }))}
+                      >
+                        {showPasswords.confirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-2 pt-4">
+                    <Button type="button" variant="outline" onClick={() => setIsChangePasswordOpen(false)}>
+                      Cancel
+                    </Button>
+                    <Button type="submit" disabled={passwordLoading}>
+                      {passwordLoading ? 'Changing...' : 'Change Password'}
+                    </Button>
+                  </div>
+                </form>
+              </DialogContent>
+            </Dialog>
           </CardContent>
         </Card>
       </div>
 
-      {/* System Information */}
-      <Card>
-        <CardHeader>
-          <CardTitle>System Information</CardTitle>
-          <CardDescription>
-            Information about your admin account and system access
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="space-y-1">
-              <p className="text-sm font-medium">Account Created</p>
-              <p className="text-sm text-muted-foreground">
-                {adminUser ? new Date().toLocaleDateString() : 'N/A'}
-              </p>
+      {/* Admin Management */}
+      {adminUser?.username === 'admin' && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Shield className="h-5 w-5" />
+              <CardTitle>Admin Management</CardTitle>
             </div>
-            <div className="space-y-1">
-              <p className="text-sm font-medium">Last Login</p>
-              <p className="text-sm text-muted-foreground">
-                {new Date().toLocaleString()}
-              </p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm font-medium">Admin Level</p>
-              <p className="text-sm text-muted-foreground">Super Admin</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+            <CardDescription>
+              Create new administrator accounts (Super Admin only)
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Dialog open={isAddAdminOpen} onOpenChange={setIsAddAdminOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create New Admin
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Create New Administrator</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleCreateAdmin} className="space-y-4">
+                  <div>
+                    <Label htmlFor="admin_full_name">Full Name *</Label>
+                    <Input
+                      id="admin_full_name"
+                      value={adminFormData.full_name}
+                      onChange={(e) => setAdminFormData({ ...adminFormData, full_name: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="admin_username">Username *</Label>
+                    <Input
+                      id="admin_username"
+                      value={adminFormData.username}
+                      onChange={(e) => setAdminFormData({ ...adminFormData, username: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="admin_email">Email *</Label>
+                    <Input
+                      id="admin_email"
+                      type="email"
+                      value={adminFormData.email}
+                      onChange={(e) => setAdminFormData({ ...adminFormData, email: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="admin_password">Password *</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="admin_password"
+                        type="text"
+                        value={adminFormData.password}
+                        onChange={(e) => setAdminFormData({ ...adminFormData, password: e.target.value })}
+                        required
+                      />
+                      <Button type="button" variant="outline" onClick={generatePassword}>
+                        Generate
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-2 pt-4">
+                    <Button type="button" variant="outline" onClick={() => setIsAddAdminOpen(false)}>
+                      Cancel
+                    </Button>
+                    <Button type="submit" disabled={adminSubmitLoading}>
+                      {adminSubmitLoading ? 'Creating...' : 'Create Administrator'}
+                    </Button>
+                  </div>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }
