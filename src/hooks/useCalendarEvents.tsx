@@ -45,14 +45,14 @@ export const useCalendarEvents = () => {
 
   const createEvent = async (eventData: Omit<CalendarEvent, 'id' | 'created_at' | 'updated_at'>) => {
     try {
-      const { data, error } = await supabase
-        .from('calendar_events')
-        .insert([eventData])
-        .select()
+      // For admin operations, use the service role via edge function
+      const { data, error } = await supabase.functions.invoke('create-calendar-event', {
+        body: eventData
+      })
 
       if (error) throw error
       await fetchEvents() // Refresh the list
-      return data?.[0] || null
+      return data
     } catch (err: any) {
       setError(err.message)
       throw err
@@ -61,15 +61,14 @@ export const useCalendarEvents = () => {
 
   const updateEvent = async (id: string, eventData: Partial<CalendarEvent>) => {
     try {
-      const { data, error } = await supabase
-        .from('calendar_events')
-        .update(eventData)
-        .eq('id', id)
-        .select()
+      // For admin operations, use the service role via edge function
+      const { data, error } = await supabase.functions.invoke('update-calendar-event', {
+        body: { id, ...eventData }
+      })
 
       if (error) throw error
       await fetchEvents() // Refresh the list
-      return data?.[0] || null
+      return data
     } catch (err: any) {
       setError(err.message)
       throw err
@@ -78,10 +77,10 @@ export const useCalendarEvents = () => {
 
   const deleteEvent = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from('calendar_events')
-        .delete()
-        .eq('id', id)
+      // For admin operations, use the service role via edge function
+      const { data, error } = await supabase.functions.invoke('delete-calendar-event', {
+        body: { id }
+      })
 
       if (error) throw error
       await fetchEvents() // Refresh the list
