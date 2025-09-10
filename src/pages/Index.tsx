@@ -313,23 +313,17 @@ const Index = () => {
       {/* Footer */}
       <footer className="text-center py-8 border-t border-academy-grey-light mt-8">
         <div className="space-y-4">
-          <p className="text-academy-grey">&copy; 2024 UC Investments Academy. All rights reserved.</p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-sm">
-            <span className="text-academy-grey">Get Started:</span>
-            <div className="flex flex-wrap items-center justify-center gap-4">
-              <NavLink 
-                to="/auth" 
-                className="text-academy-blue hover:text-academy-blue-dark underline"
-              >
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 text-base">
+            <Button variant="outline" className="border-academy-blue text-academy-blue hover:bg-academy-blue-light" asChild>
+              <NavLink to="/auth">
                 Student Login
               </NavLink>
-              <NavLink 
-                to="/admin/auth" 
-                className="text-academy-blue hover:text-academy-blue-dark underline"
-              >
+            </Button>
+            <Button variant="outline" className="border-academy-blue text-academy-blue hover:bg-academy-blue-light" asChild>
+              <NavLink to="/admin/auth">
                 Admin Dashboard
               </NavLink>
-            </div>
+            </Button>
           </div>
         </div>
       </footer>
