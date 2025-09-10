@@ -6,65 +6,92 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Gmail access token retrieval
-async function getGmailAccessToken(): Promise<string> {
-  const clientId = Deno.env.get('GMAIL_CLIENT_ID');
-  const clientSecret = Deno.env.get('GMAIL_CLIENT_SECRET');
-  const refreshToken = Deno.env.get('GMAIL_REFRESH_TOKEN');
+// Gmail access token retrieval - matching other functions
+const getGmailAccessToken = async () => {
+  const clientId = Deno.env.get("GMAIL_CLIENT_ID");
+  const clientSecret = Deno.env.get("GMAIL_CLIENT_SECRET");
+  const refreshToken = Deno.env.get("GMAIL_REFRESH_TOKEN");
 
-  const response = await fetch('https://oauth2.googleapis.com/token', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({
-      client_id: clientId!,
-      client_secret: clientSecret!,
-      refresh_token: refreshToken!,
-      grant_type: 'refresh_token',
-    }),
-  });
+  console.log('Attempting to get Gmail access token...');
 
-  const data = await response.json();
-  return data.access_token;
-}
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
-// Gmail email sending function
-async function sendGmailEmail(
-  accessToken: string,
-  to: string,
-  subject: string,
-  htmlContent: string
-): Promise<any> {
+  try {
+    const response = await fetch("https://oauth2.googleapis.com/token", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        client_id: clientId!,
+        client_secret: clientSecret!,
+        refresh_token: refreshToken!,
+        grant_type: "refresh_token",
+      }),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+    const data = await response.json();
+    console.log('Gmail access token retrieved successfully');
+    return data.access_token;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    console.error('Failed to get Gmail access token:', error);
+    throw new Error(`Failed to get Gmail access token: ${error.message}`);
+  }
+};
+
+// Gmail email sending function - matching other functions
+const sendGmailEmail = async (accessToken: string, to: string, subject: string, htmlContent: string) => {
+  const fromEmail = Deno.env.get("GMAIL_USER") || "noreply@ucinvestmentacademy.com";
+  
+  console.log(`Preparing to send email to: ${to} from: ${fromEmail}`);
+
   const emailContent = [
+    `From: ${fromEmail}`,
     `To: ${to}`,
     `Subject: ${subject}`,
-    'Content-Type: text/html; charset=utf-8',
-    '',
+    "MIME-Version: 1.0",
+    "Content-Type: text/html; charset=utf-8",
+    "",
     htmlContent,
-  ].join('\n');
+  ].join("\n");
 
-  const encodedEmail = btoa(emailContent)
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '');
+  const encodedEmail = btoa(unescape(encodeURIComponent(emailContent)))
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
 
-  const response = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${accessToken}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      raw: encodedEmail,
-    }),
-  });
+  console.log('Sending email via Gmail API...');
 
-  if (!response.ok) {
-    const errorData = await response.text();
-    throw new Error(`Gmail API error: ${response.status} ${errorData}`);
+  try {
+    const response = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        raw: encodedEmail,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Gmail API error: ${response.status} - ${errorText}`);
+      throw new Error(`Gmail API error: ${response.status} - ${errorText}`);
+    }
+
+    const result = await response.json();
+    console.log('Email sent successfully via Gmail API:', result);
+    return result;
+  } catch (error) {
+    console.error('Error sending email via Gmail API:', error);
+    throw error;
   }
-
-  return response.json();
-}
+};
 
 // Crypto utilities for password hashing - matching admin-login function
 async function hashPassword(password: string): Promise<string> {
@@ -166,8 +193,12 @@ const handler = async (req: Request): Promise<Response> => {
         .update({ temp_password: tempPassword })
         .eq('id', data.id);
 
-      // Construct login URL
-      const loginUrl = `${Deno.env.get('SUPABASE_URL')?.replace('/supabase', '')}/admin/auth`;
+      // Construct login URL - use proper domain construction
+      const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
+      const baseUrl = supabaseUrl.includes('supabase.co') 
+        ? `https://${supabaseUrl.split('.supabase.co')[0].split('://')[1]}.lovableproject.com`
+        : supabaseUrl.replace('/supabase', '');
+      const loginUrl = `${baseUrl}/admin/auth`;
 
       const htmlContent = `
         <!DOCTYPE html>
