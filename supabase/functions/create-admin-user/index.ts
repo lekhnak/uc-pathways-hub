@@ -6,91 +6,63 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Gmail access token retrieval - matching other functions
+// Gmail access token retrieval - simplified version
 const getGmailAccessToken = async () => {
   const clientId = Deno.env.get("GMAIL_CLIENT_ID");
   const clientSecret = Deno.env.get("GMAIL_CLIENT_SECRET");
   const refreshToken = Deno.env.get("GMAIL_REFRESH_TOKEN");
 
-  console.log('Attempting to get Gmail access token...');
+  console.log('Getting Gmail access token...');
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+  const response = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: new URLSearchParams({
+      client_id: clientId!,
+      client_secret: clientSecret!,
+      refresh_token: refreshToken!,
+      grant_type: "refresh_token",
+    }),
+  });
 
-  try {
-    const response = await fetch("https://oauth2.googleapis.com/token", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: new URLSearchParams({
-        client_id: clientId!,
-        client_secret: clientSecret!,
-        refresh_token: refreshToken!,
-        grant_type: "refresh_token",
-      }),
-      signal: controller.signal,
-    });
-
-    clearTimeout(timeoutId);
-    const data = await response.json();
-    console.log('Gmail access token retrieved successfully');
-    return data.access_token;
-  } catch (error) {
-    clearTimeout(timeoutId);
-    console.error('Failed to get Gmail access token:', error);
-    throw new Error(`Failed to get Gmail access token: ${error.message}`);
-  }
+  const data = await response.json();
+  console.log('Access token obtained');
+  return data.access_token;
 };
 
-// Gmail email sending function - matching other functions
 const sendGmailEmail = async (accessToken: string, to: string, subject: string, htmlContent: string) => {
   const fromEmail = Deno.env.get("GMAIL_USER") || "noreply@ucinvestmentacademy.com";
   
-  console.log(`Preparing to send email to: ${to} from: ${fromEmail}`);
-
+  console.log(`Sending email from ${fromEmail} to ${to}`);
+  
   const emailContent = [
-    `From: ${fromEmail}`,
+    `From: UC Investment Academy <${fromEmail}>`,
     `To: ${to}`,
     `Subject: ${subject}`,
-    "MIME-Version: 1.0",
-    "Content-Type: text/html; charset=utf-8",
-    "",
+    `MIME-Version: 1.0`,
+    `Content-Type: text/html; charset=utf-8`,
+    ``,
     htmlContent,
-  ].join("\n");
+  ].join("\r\n");
 
-  const encodedEmail = btoa(unescape(encodeURIComponent(emailContent)))
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/, "");
+  const encodedEmail = btoa(emailContent).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 
-  console.log('Sending email via Gmail API...');
+  const response = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      raw: encodedEmail,
+    }),
+  });
 
-  try {
-    const response = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        raw: encodedEmail,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`Gmail API error: ${response.status} - ${errorText}`);
-      throw new Error(`Gmail API error: ${response.status} - ${errorText}`);
-    }
-
-    const result = await response.json();
-    console.log('Email sent successfully via Gmail API:', result);
-    return result;
-  } catch (error) {
-    console.error('Error sending email via Gmail API:', error);
-    throw error;
-  }
+  const result = await response.json();
+  console.log('Gmail API response:', result);
+  return result;
 };
 
 // Crypto utilities for password hashing - matching admin-login function
@@ -181,17 +153,28 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send admin invitation email using Gmail
     try {
-      console.log('Sending admin invite email to:', email);
+      console.log('Starting Gmail email process for:', email);
+      
+      // Get Gmail access token
       const accessToken = await getGmailAccessToken();
+      console.log('Access token obtained successfully');
       
       // Generate temporary password for the new admin
-      const tempPassword = Math.random().toString(36).slice(-8);
+      const tempPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8).toUpperCase();
+      console.log('Generated temporary password for new admin');
       
       // Update the admin user with temporary password
-      await supabase
+      const { error: updateError } = await supabase
         .from('admin_users')
         .update({ temp_password: tempPassword })
         .eq('id', data.id);
+        
+      if (updateError) {
+        console.error('Error updating admin with temp password:', updateError);
+        throw new Error('Failed to set temporary password');
+      }
+      
+      console.log('Temporary password set successfully');
 
       // Construct login URL - use proper domain construction
       const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
@@ -199,6 +182,8 @@ const handler = async (req: Request): Promise<Response> => {
         ? `https://${supabaseUrl.split('.supabase.co')[0].split('://')[1]}.lovableproject.com`
         : supabaseUrl.replace('/supabase', '');
       const loginUrl = `${baseUrl}/admin/auth`;
+      
+      console.log('Constructed login URL:', loginUrl);
 
       const htmlContent = `
         <!DOCTYPE html>
@@ -260,11 +245,20 @@ const handler = async (req: Request): Promise<Response> => {
         </html>
       `;
 
-      await sendGmailEmail(accessToken, email, 'UC Investment Academy - Administrator Access Granted', htmlContent);
-      console.log('Admin invitation email sent successfully');
+      console.log('About to send Gmail email...');
+      const emailResult = await sendGmailEmail(
+        accessToken, 
+        email, 
+        'UC Investment Academy - Administrator Access Granted', 
+        htmlContent
+      );
+      
+      console.log('Admin invitation email sent successfully:', emailResult);
+      
     } catch (emailError) {
-      console.error('Error sending admin invitation email:', emailError);
-      // Don't fail the entire request if email fails
+      console.error('Detailed error sending admin invitation email:', emailError);
+      console.error('Email error stack:', emailError.stack);
+      // Don't fail the entire request if email fails, but log extensively
     }
 
     return new Response(
