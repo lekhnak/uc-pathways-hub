@@ -40,13 +40,30 @@ export const useInternships = (adminView = false) => {
 
   const createInternship = async (internship: InternshipInsert) => {
     try {
-      const { data, error } = await supabase
-        .from('uc_internships')
-        .insert(internship)
-        .select()
-        .single();
+      // Get admin user from localStorage
+      const userData = localStorage.getItem('user');
+      if (!userData) {
+        throw new Error('Admin authentication required');
+      }
+      
+      const user = JSON.parse(userData);
+      
+      const response = await fetch(`https://wotqxwqlmjcnrckfjgno.supabase.co/functions/v1/create-internship`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndvdHF4d3FsbWpjbnJja2ZqZ25vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYyMzE2NzAsImV4cCI6MjA3MTgwNzY3MH0.LB8FET8JRZ-1hxToBoQE-EoJ4Cri-xNqmFRZNRR2ke4`,
+          'x-admin-user-id': user.id
+        },
+        body: JSON.stringify(internship)
+      });
 
-      if (error) throw error;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create internship');
+      }
+
+      const { data } = await response.json();
       
       setInternships(prev => [data, ...prev]);
       toast({
@@ -59,7 +76,7 @@ export const useInternships = (adminView = false) => {
       console.error('Error creating internship:', error);
       toast({
         title: "Error",
-        description: "Failed to create internship",
+        description: error.message || "Failed to create internship",
         variant: "destructive",
       });
       throw error;
