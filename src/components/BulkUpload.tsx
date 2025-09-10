@@ -20,7 +20,7 @@ import {
   Download,
   Mail
 } from 'lucide-react';
-import { useBulkUpload, type StudentRecord, type ValidationError, type ColumnMapping, type UploadResult } from '@/hooks/useBulkUpload';
+import { useBulkUpload, type StudentRecord, type ValidationError, type DataCorrection, type ColumnMapping, type UploadResult } from '@/hooks/useBulkUpload';
 import { useToast } from '@/hooks/use-toast';
 
 interface BulkUploadProps {
@@ -204,11 +204,11 @@ const BulkUpload: React.FC<BulkUploadProps> = ({ onUploadComplete }) => {
       onUploadComplete?.(result);
       
       toast({
-        title: result.success ? "Upload Successful" : "Upload Completed with Issues",
+        title: result.success ? "Upload Successful" : "Upload Completed",
         description: result.success 
           ? `Successfully created ${result.successfulRecords} applications.`
-          : `Created ${result.successfulRecords} applications with ${result.failedRecords} errors.`,
-        variant: result.success ? "default" : "destructive"
+          : `Created ${result.successfulRecords} applications with ${result.warnings.length} warnings and ${result.corrections.length} auto-corrections.`,
+        variant: result.success ? "default" : (result.errors.length > 0 ? "destructive" : "default")
       });
     } catch (error: any) {
       toast({
@@ -229,16 +229,37 @@ const BulkUpload: React.FC<BulkUploadProps> = ({ onUploadComplete }) => {
     setStep('upload');
   };
 
-  const exportErrorReport = () => {
-    if (!uploadResult?.errors.length) return;
+  const exportDetailedReport = () => {
+    if (!uploadResult) return;
     
     const csvContent = [
-      ['Row', 'Field', 'Value', 'Error Message'],
+      ['Type', 'Row', 'Field', 'Original Value', 'Corrected Value', 'Message/Reason'],
+      // Include errors
       ...uploadResult.errors.map(error => [
+        'Error',
         error.row.toString(),
         error.field,
         error.value?.toString() || '',
+        '',
         error.message
+      ]),
+      // Include warnings  
+      ...uploadResult.warnings.map(warning => [
+        'Warning',
+        warning.row.toString(),
+        warning.field,
+        warning.value?.toString() || '',
+        '',
+        warning.message
+      ]),
+      // Include corrections
+      ...uploadResult.corrections.map(correction => [
+        'Correction',
+        correction.row.toString(),
+        correction.field,
+        correction.originalValue?.toString() || '',
+        correction.correctedValue?.toString() || '',
+        correction.reason
       ])
     ].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
     
@@ -246,7 +267,7 @@ const BulkUpload: React.FC<BulkUploadProps> = ({ onUploadComplete }) => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `bulk-upload-errors-${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `bulk-upload-report-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -471,9 +492,9 @@ const BulkUpload: React.FC<BulkUploadProps> = ({ onUploadComplete }) => {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <h4 className="font-medium text-destructive">Errors Found</h4>
-                  <Button variant="outline" size="sm" onClick={exportErrorReport}>
+                  <Button variant="outline" size="sm" onClick={exportDetailedReport}>
                     <Download className="h-4 w-4 mr-2" />
-                    Export Errors
+                    Export Detailed Report
                   </Button>
                 </div>
                 <div className="max-h-48 overflow-y-auto border rounded-lg">
@@ -498,6 +519,73 @@ const BulkUpload: React.FC<BulkUploadProps> = ({ onUploadComplete }) => {
               </div>
             )}
 
+            {(uploadResult.warnings.length > 0 || uploadResult.corrections.length > 0) && (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-medium text-orange-600">Data Corrections & Warnings</h4>
+                  <Button variant="outline" size="sm" onClick={exportDetailedReport}>
+                    <Download className="h-4 w-4 mr-2" />
+                    Export Full Report
+                  </Button>
+                </div>
+                
+                {uploadResult.corrections.length > 0 && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="p-3 border-b bg-blue-100">
+                      <h5 className="font-medium text-blue-800">Auto-Corrections Applied ({uploadResult.corrections.length})</h5>
+                      <p className="text-xs text-blue-600">The following data was automatically corrected to ensure profiles were created:</p>
+                    </div>
+                    <div className="max-h-32 overflow-y-auto">
+                      {uploadResult.corrections.slice(0, 5).map((correction, index) => (
+                        <div key={index} className="p-3 border-b last:border-b-0">
+                          <div className="text-sm">
+                            <span className="font-medium">Row {correction.row}, {correction.field}:</span> 
+                            <span className="text-muted-foreground"> "{correction.originalValue}" → "{correction.correctedValue}"</span>
+                          </div>
+                          <div className="text-xs text-muted-foreground mt-1">
+                            {correction.reason}
+                          </div>
+                        </div>
+                      ))}
+                      {uploadResult.corrections.length > 5 && (
+                        <div className="p-2 text-sm text-muted-foreground text-center">
+                          ... and {uploadResult.corrections.length - 5} more corrections
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {uploadResult.warnings.length > 0 && (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <div className="p-3 border-b bg-yellow-100">
+                      <h5 className="font-medium text-yellow-800">Warnings - Manual Review Recommended ({uploadResult.warnings.length})</h5>
+                      <p className="text-xs text-yellow-600">These records were created but may need manual review:</p>
+                    </div>
+                    <div className="max-h-32 overflow-y-auto">
+                      {uploadResult.warnings.slice(0, 5).map((warning, index) => (
+                        <div key={index} className="p-3 border-b last:border-b-0">
+                          <div className="text-sm">
+                            <span className="font-medium">Row {warning.row}:</span> {warning.message}
+                          </div>
+                          {warning.field !== 'general' && (
+                            <div className="text-xs text-muted-foreground mt-1">
+                              Field: {warning.field}, Value: {warning.value}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                      {uploadResult.warnings.length > 5 && (
+                        <div className="p-2 text-sm text-muted-foreground text-center">
+                          ... and {uploadResult.warnings.length - 5} more warnings
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {uploadResult.duplicates.length > 0 && (
               <div className="space-y-3">
                 <h4 className="font-medium text-yellow-600">Duplicate Emails Skipped</h4>
@@ -517,8 +605,16 @@ const BulkUpload: React.FC<BulkUploadProps> = ({ onUploadComplete }) => {
             )}
 
             <Alert>
-              <Mail className="h-4 w-4" />
+              <CheckCircle className="h-4 w-4" />
               <AlertDescription>
+                <strong>Upload Complete!</strong> All {uploadResult.successfulRecords} profiles were created successfully.
+                {uploadResult.corrections.length > 0 && (
+                  <span> {uploadResult.corrections.length} auto-corrections were applied to ensure data consistency.</span>
+                )}
+                {uploadResult.warnings.length > 0 && (
+                  <span> {uploadResult.warnings.length} records may need manual review (see warnings above).</span>
+                )}
+                <br />
                 A detailed summary has been sent to your email address with the complete upload report.
               </AlertDescription>
             </Alert>

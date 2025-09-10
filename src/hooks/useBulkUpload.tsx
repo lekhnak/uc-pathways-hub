@@ -49,6 +49,15 @@ export interface ValidationError {
   field: string;
   value: any;
   message: string;
+  severity: 'error' | 'warning' | 'info'; // Add severity levels
+}
+
+export interface DataCorrection {
+  row: number;
+  field: string;
+  originalValue: any;
+  correctedValue: any;
+  reason: string;
 }
 
 export interface UploadResult {
@@ -57,6 +66,8 @@ export interface UploadResult {
   successfulRecords: number;
   failedRecords: number;
   errors: ValidationError[];
+  warnings: ValidationError[]; // Add warnings array
+  corrections: DataCorrection[]; // Add corrections array
   duplicates: StudentRecord[];
   uploadId?: string;
 }
@@ -287,11 +298,15 @@ export const useBulkUpload = () => {
   }, []);
 
   const validateRecords = useCallback((records: any[], columnMapping: ColumnMapping): { 
-    validRecords: StudentRecord[], 
-    errors: ValidationError[] 
+    processedRecords: StudentRecord[], 
+    errors: ValidationError[],
+    warnings: ValidationError[],
+    corrections: DataCorrection[]
   } => {
-    const validRecords: StudentRecord[] = [];
+    const processedRecords: StudentRecord[] = [];
     const errors: ValidationError[] = [];
+    const warnings: ValidationError[] = [];
+    const corrections: DataCorrection[] = [];
 
     records.forEach((record, index) => {
       const mappedRecord: StudentRecord = {
@@ -299,22 +314,45 @@ export const useBulkUpload = () => {
         email: ''
       };
 
-      // Apply column mapping
+      // Apply column mapping with corrections and warnings
       Object.entries(columnMapping).forEach(([fileColumn, mappedField]) => {
         if (record[fileColumn] !== undefined && record[fileColumn] !== null && record[fileColumn] !== '') {
           let value = record[fileColumn];
+          const originalValue = value;
           
           // Handle Full Name field
           if (mappedField === 'fullName') {
-            mappedRecord.fullName = String(value).trim();
-            return; // Skip the normal processing for this field
+            mappedRecord.fullName = String(value).trim() || 'Unknown';
+            if (!String(value).trim()) {
+              corrections.push({
+                row: index + 2,
+                field: 'fullName',
+                originalValue: originalValue,
+                correctedValue: 'Unknown',
+                reason: 'Empty name replaced with default'
+              });
+            }
+            return;
           }
           
           // Handle boolean fields for Yes/No questions
           if (['firstGenerationStudent', 'pellGrantEligible'].includes(mappedField)) {
             if (typeof value === 'string') {
-              value = value.toLowerCase();
-              value = value === 'yes' || value === 'true' || value === '1' || value === 'y';
+              const lowerValue = value.toLowerCase().trim();
+              if (['yes', 'true', '1', 'y'].includes(lowerValue)) {
+                value = true;
+              } else if (['no', 'false', '0', 'n'].includes(lowerValue)) {
+                value = false;
+              } else {
+                value = null; // Unknown response
+                corrections.push({
+                  row: index + 2,
+                  field: mappedField,
+                  originalValue: originalValue,
+                  correctedValue: null,
+                  reason: 'Unrecognized yes/no response set to null'
+                });
+              }
             } else {
               value = Boolean(value);
             }
@@ -322,18 +360,73 @@ export const useBulkUpload = () => {
           
           // Handle string fields for Yes/No answers that should remain as strings
           if (['informFutureJobs', 'investmentClubMember', 'completeAssignments', 'exitSurveyAgreement'].includes(mappedField)) {
-            value = String(value).trim();
+            value = String(value).trim() || 'N/A';
+            if (!String(originalValue).trim()) {
+              corrections.push({
+                row: index + 2,
+                field: mappedField,
+                originalValue: originalValue,
+                correctedValue: 'N/A',
+                reason: 'Empty response replaced with N/A'
+              });
+            }
           }
           
-          // Handle numeric fields
+          // Handle numeric fields (GPA)
           if (['gpa'].includes(mappedField)) {
-            // Allow text placeholders for GPA - set to null if not a valid number
-            const numValue = parseFloat(value);
+            const numValue = parseFloat(String(value));
             if (!isNaN(numValue)) {
+              if (numValue < 0 || numValue > 4.0) {
+                warnings.push({
+                  row: index + 2,
+                  field: 'gpa',
+                  value: numValue,
+                  message: `GPA ${numValue} is outside normal range (0.0-4.0) but kept as-is`,
+                  severity: 'warning'
+                });
+              }
               value = numValue;
             } else {
-              // If it's not a valid number, set to null to allow text placeholders
+              // Invalid number, keep as string for manual review
+              value = String(originalValue).trim() || null;
+              if (String(originalValue).trim()) {
+                warnings.push({
+                  row: index + 2,
+                  field: 'gpa',
+                  value: originalValue,
+                  message: `Non-numeric GPA value "${originalValue}" stored for review`,
+                  severity: 'warning'
+                });
+              }
+            }
+          }
+          
+          // Handle LinkedIn URL with automatic correction
+          if (mappedField === 'linkedinUrl') {
+            value = String(value).trim();
+            const lowerValue = value.toLowerCase();
+            
+            // Check for placeholder values
+            if (!value || ['n/a', 'not provided', 'none', 'no', 'null', 'na', 'don\'t use linkedin', 'dont use linkedin'].includes(lowerValue)) {
               value = null;
+              if (originalValue && String(originalValue).trim()) {
+                corrections.push({
+                  row: index + 2,
+                  field: 'linkedinUrl',
+                  originalValue: originalValue,
+                  correctedValue: null,
+                  reason: 'Placeholder LinkedIn value set to null'
+                });
+              }
+            } else if (!value.includes('linkedin.com')) {
+              // Invalid LinkedIn URL, but keep as-is for review
+              warnings.push({
+                row: index + 2,
+                field: 'linkedinUrl',
+                value: originalValue,
+                message: `LinkedIn URL "${originalValue}" doesn't appear to be valid but stored for review`,
+                severity: 'warning'
+              });
             }
           }
           
@@ -346,59 +439,86 @@ export const useBulkUpload = () => {
         }
       });
 
-      // Validate required fields
+      // Handle required fields with soft validation
       REQUIRED_FIELDS.forEach(field => {
         const value = mappedRecord[field];
         if (!value || (typeof value === 'string' && value.trim() === '')) {
-          errors.push({
-            row: index + 2, // +2 because of header row and 0-based index
-            field,
-            value,
-            message: `${field} is required`
-          });
+          if (field === 'fullName') {
+            mappedRecord.fullName = 'Unknown';
+            corrections.push({
+              row: index + 2,
+              field: 'fullName',
+              originalValue: value,
+              correctedValue: 'Unknown',
+              reason: 'Missing name replaced with default'
+            });
+          } else if (field === 'email') {
+            // This is a hard error - we need an email to create the record
+            errors.push({
+              row: index + 2,
+              field: 'email',
+              value: value,
+              message: 'Email is required and cannot be auto-corrected',
+              severity: 'error'
+            });
+          }
         }
       });
 
-      // Validate email format
+      // Validate email format with correction attempt
       if (mappedRecord.email && !validateEmail(mappedRecord.email)) {
-        errors.push({
-          row: index + 2,
-          field: 'email',
-          value: mappedRecord.email,
-          message: 'Invalid email format'
-        });
-      }
-      
-      // Validate GPA range (only if it's a valid number)
-      if (mappedRecord.gpa !== undefined && mappedRecord.gpa !== null && (mappedRecord.gpa < 0 || mappedRecord.gpa > 4.0)) {
-        errors.push({
-          row: index + 2,
-          field: 'gpa',
-          value: mappedRecord.gpa,
-          message: 'GPA must be between 0.0 and 4.0'
-        });
-      }
-      
-      // Validate LinkedIn URL format (allow placeholder values)
-      if (mappedRecord.linkedinUrl && 
-          !['n/a', 'not provided', 'none', ''].includes(mappedRecord.linkedinUrl.toLowerCase()) &&
-          !mappedRecord.linkedinUrl.includes('linkedin.com')) {
-        errors.push({
-          row: index + 2,
-          field: 'linkedinUrl',
-          value: mappedRecord.linkedinUrl,
-          message: 'LinkedIn URL must be a valid LinkedIn profile link or placeholder value (N/A, Not Provided, etc.)'
-        });
+        // Try to fix common email issues
+        let fixedEmail = String(mappedRecord.email).trim().toLowerCase();
+        
+        // Try basic fixes
+        if (fixedEmail && !fixedEmail.includes('@')) {
+          // No @ symbol - this is a hard error
+          errors.push({
+            row: index + 2,
+            field: 'email',
+            value: mappedRecord.email,
+            message: 'Invalid email format - missing @ symbol',
+            severity: 'error'
+          });
+        } else if (fixedEmail && !fixedEmail.includes('.')) {
+          // No domain extension - warning but keep
+          warnings.push({
+            row: index + 2,
+            field: 'email',
+            value: mappedRecord.email,
+            message: `Email "${mappedRecord.email}" may be missing domain extension but kept as-is`,
+            severity: 'warning'
+          });
+        } else if (fixedEmail !== mappedRecord.email) {
+          // Applied basic fixes
+          mappedRecord.email = fixedEmail;
+          corrections.push({
+            row: index + 2,
+            field: 'email',
+            originalValue: mappedRecord.email,
+            correctedValue: fixedEmail,
+            reason: 'Email normalized (trimmed and lowercased)'
+          });
+        } else {
+          // Keep invalid email but flag for review
+          warnings.push({
+            row: index + 2,
+            field: 'email',
+            value: mappedRecord.email,
+            message: `Email format "${mappedRecord.email}" appears invalid but stored for review`,
+            severity: 'warning'
+          });
+        }
       }
 
-      // If no errors for this record, add to valid records
-      const recordErrors = errors.filter(e => e.row === index + 2);
+      // Only exclude records with hard errors (missing email or severely malformed email)
+      const recordErrors = errors.filter(e => e.row === index + 2 && e.severity === 'error');
       if (recordErrors.length === 0) {
-        validRecords.push(mappedRecord);
+        processedRecords.push(mappedRecord);
       }
     });
 
-    return { validRecords, errors };
+    return { processedRecords, errors, warnings, corrections };
   }, []);
 
   const checkForDuplicates = useCallback(async (records: StudentRecord[]): Promise<{
@@ -453,35 +573,59 @@ export const useBulkUpload = () => {
         const firstName = nameParts[0] || '';
         const lastName = nameParts.slice(1).join(' ') || '';
         
-        // Normalize student type to common values
-        let studentType = record.classStanding || 'Other';
-        if (typeof studentType === 'string') {
-          const normalized = studentType.toLowerCase().trim();
+        // Normalize student type to common values - ALWAYS default to 'Other' for any unrecognized value
+        let studentType = 'Other'; // Default to 'Other'
+        const originalStudentType = record.classStanding;
+        
+        if (originalStudentType && typeof originalStudentType === 'string') {
+          const normalized = String(originalStudentType).toLowerCase().trim();
           const typeMap: { [key: string]: string } = {
             'freshman': 'Freshman',
-            'freshmen': 'Freshman', 
+            'freshmen': 'Freshman',
+            'first year': 'Freshman',
+            'first-year': 'Freshman', 
+            '1st year': 'Freshman',
+            '1': 'Freshman',
             'sophomore': 'Sophomore',
+            'second year': 'Sophomore',
+            'second-year': 'Sophomore',
+            '2nd year': 'Sophomore',
+            '2': 'Sophomore',
             'junior': 'Junior',
+            'third year': 'Junior',
+            'third-year': 'Junior',
+            '3rd year': 'Junior',
+            '3': 'Junior',
             'senior': 'Senior',
+            'fourth year': 'Senior',
+            'fourth-year': 'Senior',
+            '4th year': 'Senior',
+            '5th year': 'Senior',
+            '4': 'Senior',
+            '5': 'Senior',
             'graduate': 'Graduate',
             'grad': 'Graduate',
+            'graduate student': 'Graduate',
             'masters': 'Graduate',
+            'master\'s': 'Graduate',
             'phd': 'Graduate',
             'doctoral': 'Graduate',
+            'doctorate': 'Graduate',
             'undergrad': 'Undergraduate',
             'undergraduate': 'Undergraduate',
+            'undergrad student': 'Undergraduate',
             'transfer': 'Transfer',
+            'transfer student': 'Transfer',
             'continuing': 'Continuing',
-            '1st year': 'Freshman',
-            '2nd year': 'Sophomore', 
-            '3rd year': 'Junior',
-            '4th year': 'Senior',
-            '5th year': 'Senior'
+            'continuing student': 'Continuing',
+            'post-grad': 'Graduate',
+            'postgrad': 'Graduate'
           };
           
           if (typeMap[normalized]) {
             studentType = typeMap[normalized];
-          } else if (normalized && normalized !== '') {
+          } else {
+            // Any unrecognized value goes to 'Other' - never fail
             studentType = 'Other';
           }
         }
@@ -540,7 +684,8 @@ export const useBulkUpload = () => {
           row: i + 1,
           field: 'general',
           value: record.email,
-          message: `Failed to create application: ${error.message}`
+          message: `Failed to create application: ${error.message}`,
+          severity: 'error'
         });
       }
     }
@@ -567,12 +712,14 @@ export const useBulkUpload = () => {
           total_records: result.totalRecords,
           successful_records: result.successfulRecords,
           failed_records: result.failedRecords,
-          errors: result.errors as any, // Convert to Json type
-          upload_status: result.success ? 'completed' : 'failed',
+          errors: result.errors.concat(result.warnings) as any, // Include both errors and warnings
+          upload_status: result.success ? 'completed' : 'completed_with_warnings',
           summary_report: {
             duplicates: result.duplicates.length,
+            corrections: result.corrections.length,
+            warnings: result.warnings.length,
             processing_time: Date.now()
-          } as any, // Convert to Json type
+          } as any,
           created_by: adminUser.full_name || adminUser.username
         })
         .select('id')
@@ -609,14 +756,14 @@ export const useBulkUpload = () => {
       setCurrentStep('Validating records...');
       setProgress(25);
       
-      // Validate records
-      const { validRecords, errors } = validateRecords(rawRecords, columnMapping);
+      // Process and validate records (now with soft validation)
+      const { processedRecords, errors, warnings, corrections } = validateRecords(rawRecords, columnMapping);
       
       setCurrentStep('Checking for duplicates...');
       setProgress(50);
       
       // Check for duplicates
-      const { uniqueRecords, duplicates } = await checkForDuplicates(validRecords);
+      const { uniqueRecords, duplicates } = await checkForDuplicates(processedRecords);
       
       setCurrentStep('Creating applications...');
       setProgress(75);
@@ -626,11 +773,13 @@ export const useBulkUpload = () => {
       
       const allErrors = [...errors, ...creationErrors];
       const result: UploadResult = {
-        success: successful > 0 && failed === 0 && errors.length === 0,
+        success: successful > 0, // Success if ANY records were created
         totalRecords: rawRecords.length,
         successfulRecords: successful,
         failedRecords: failed + errors.length,
-        errors: allErrors,
+        errors: allErrors.filter(e => e.severity === 'error'),
+        warnings: [...warnings, ...allErrors.filter(e => e.severity === 'warning')],
+        corrections,
         duplicates
       };
 
@@ -652,8 +801,11 @@ export const useBulkUpload = () => {
           row: 0,
           field: 'general',
           value: '',
-          message: error.message || 'Upload failed'
+          message: error.message || 'Upload failed',
+          severity: 'error'
         }],
+        warnings: [],
+        corrections: [],
         duplicates: []
       };
       
