@@ -20,47 +20,24 @@ const LOCKOUT_DURATION = 15 * 60 * 1000; // 15 minutes
 const MAX_INPUT_LENGTH = 128;
 const BCRYPT_ROUNDS = parseInt(Deno.env.get('BCRYPT_ROUNDS') ?? '12');
 
-// Dummy hash for timing attack protection
-const DUMMY_HASH = '$2b$12$dummyhashfortimingatttackprotection123456789';
+// Dummy hash for timing attack protection (valid bcrypt format)
+const DUMMY_HASH = '$2a$12$dummyhashfortimingatttackprotection123456789abcdef';
 
-// Secure password hashing using Web Crypto API
+// Secure password hashing using bcrypt
 async function hashPassword(password: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const salt = crypto.getRandomValues(new Uint8Array(16));
-  const keyMaterial = await crypto.subtle.importKey(
-    'raw',
-    encoder.encode(password),
-    { name: 'PBKDF2' },
-    false,
-    ['deriveBits']
-  );
-  
-  const hashBuffer = await crypto.subtle.deriveBits(
-    {
-      name: 'PBKDF2',
-      salt: salt,
-      iterations: 100000,
-      hash: 'SHA-256'
-    },
-    keyMaterial,
-    256
-  );
-  
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const saltArray = Array.from(salt);
-  const combined = saltArray.concat(hashArray);
-  return btoa(String.fromCharCode.apply(null, combined));
+  const bcrypt = await import("https://deno.land/x/bcrypt@v0.4.1/mod.ts");
+  return await bcrypt.hash(password, BCRYPT_ROUNDS);
 }
 
-// Secure password verification
+// Secure password verification using bcrypt
 async function verifyPassword(password: string, hash: string): Promise<boolean> {
   try {
-    if (hash.startsWith('$2')) {
-      // Legacy bcrypt hash - use scrypt for Deno compatibility
-      const scrypt = await import("https://deno.land/x/scrypt@v4.4.4/mod.ts");
-      return await scrypt.verify(password, hash);
+    // Check if it's a bcrypt hash (PostgreSQL format)
+    if (hash.startsWith('$2a$') || hash.startsWith('$2b$') || hash.startsWith('$2y$')) {
+      const bcrypt = await import("https://deno.land/x/bcrypt@v0.4.1/mod.ts");
+      return await bcrypt.compare(password, hash);
     } else if (hash.length > 20) {
-      // Web Crypto hash
+      // Web Crypto hash (legacy)
       const encoder = new TextEncoder();
       const combined = Uint8Array.from(atob(hash), c => c.charCodeAt(0));
       const salt = combined.slice(0, 16);
