@@ -29,6 +29,10 @@ interface EventFormData {
   speakers: string
   event_type: string
   status: string
+  rsvp_enabled: boolean
+  event_capacity: string
+  rsvp_deadline: string
+  allow_waitlist: boolean
 }
 
 const AdminCalendarEvents = () => {
@@ -45,7 +49,11 @@ const AdminCalendarEvents = () => {
     signup_url: '',
     speakers: '',
     event_type: 'general',
-    status: 'upcoming'
+    status: 'upcoming',
+    rsvp_enabled: false,
+    event_capacity: '',
+    rsvp_deadline: '',
+    allow_waitlist: true
   })
 
   const resetForm = () => {
@@ -58,7 +66,11 @@ const AdminCalendarEvents = () => {
       signup_url: '',
       speakers: '',
       event_type: 'general',
-      status: 'upcoming'
+      status: 'upcoming',
+      rsvp_enabled: false,
+      event_capacity: '',
+      rsvp_deadline: '',
+      allow_waitlist: true
     })
     setEditingEvent(null)
   }
@@ -68,6 +80,8 @@ const AdminCalendarEvents = () => {
     try {
       const eventData = {
         ...formData,
+        event_capacity: formData.event_capacity ? parseInt(formData.event_capacity) : null,
+        rsvp_deadline: formData.rsvp_deadline || null,
         speakers: formData.speakers ? formData.speakers.split(',').map(s => s.trim()) : null
       }
 
@@ -107,7 +121,11 @@ const AdminCalendarEvents = () => {
       signup_url: event.signup_url || '',
       speakers: event.speakers ? event.speakers.join(', ') : '',
       event_type: event.event_type,
-      status: event.status
+      status: event.status,
+      rsvp_enabled: event.rsvp_enabled || false,
+      event_capacity: event.event_capacity ? event.event_capacity.toString() : '',
+      rsvp_deadline: event.rsvp_deadline || '',
+      allow_waitlist: event.allow_waitlist !== false
     })
     setIsDialogOpen(true)
   }

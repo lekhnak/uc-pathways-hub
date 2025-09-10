@@ -1,12 +1,22 @@
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Calendar as CalendarIcon, Clock, MapPin, Users, Video, Bell } from "lucide-react"
+import { Calendar as CalendarIcon, Clock, MapPin, Users, Video, Bell, Download } from "lucide-react"
 import { useCalendarEvents } from "@/hooks/useCalendarEvents"
+import { useEventRsvps } from "@/hooks/useEventRsvps"
+import { useToast } from "@/components/ui/use-toast"
+import { supabase } from "@/integrations/supabase/client"
+import RSVPModal from "@/components/RSVPModal"
 import { format } from 'date-fns'
 
 const Calendar = () => {
   const { events, loading } = useCalendarEvents()
+  const { getRsvpStats } = useEventRsvps()
+  const { toast } = useToast()
+  const [selectedEvent, setSelectedEvent] = useState<any>(null)
+  const [rsvpModalOpen, setRsvpModalOpen] = useState(false)
+  const [eventRsvpStats, setEventRsvpStats] = useState<{[key: string]: any}>({})
   
   const upcomingEvents = events.filter(event => new Date(event.event_date) >= new Date())
 
@@ -53,6 +63,97 @@ const Calendar = () => {
       case 'cancelled': return 'Cancelled'
       default: return status
     }
+  }
+
+  // Load RSVP stats for events
+  useEffect(() => {
+    const loadRsvpStats = async () => {
+      const stats: {[key: string]: any} = {}
+      for (const event of upcomingEvents) {
+        if (event.rsvp_enabled) {
+          try {
+            const eventStats = await getRsvpStats(event.id)
+            stats[event.id] = eventStats
+          } catch (err) {
+            console.error(`Failed to load RSVP stats for event ${event.id}:`, err)
+          }
+        }
+      }
+      setEventRsvpStats(stats)
+    }
+
+    if (upcomingEvents.length > 0) {
+      loadRsvpStats()
+    }
+  }, [upcomingEvents, getRsvpStats])
+
+  const handleRsvpClick = (event: any) => {
+    setSelectedEvent(event)
+    setRsvpModalOpen(true)
+  }
+
+  const downloadCalendarFile = async (event: any) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-ics-file', {
+        body: { event_id: event.id }
+      })
+
+      if (error) throw error
+
+      // Create and download the file
+      const blob = new Blob([data], { type: 'text/calendar' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `${event.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.ics`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+
+      toast({
+        title: "Calendar File Downloaded",
+        description: "The event has been saved to your downloads folder.",
+      })
+    } catch (error: any) {
+      toast({
+        title: "Download Failed",
+        description: error.message,
+        variant: "destructive",
+      })
+    }
+  }
+
+  const getRsvpButtonText = (event: any) => {
+    if (!event.rsvp_enabled) {
+      return event.signup_url ? 'Register Now' : 'Info Only'
+    }
+
+    const stats = eventRsvpStats[event.id]
+    if (!stats) return 'RSVP'
+
+    const isAtCapacity = event.event_capacity && stats.confirmed >= event.event_capacity
+    
+    if (isAtCapacity && !event.allow_waitlist) {
+      return 'Event Full'
+    } else if (isAtCapacity && event.allow_waitlist) {
+      return 'Join Waitlist'
+    } else {
+      return 'RSVP'
+    }
+  }
+
+  const isEventDisabled = (event: any) => {
+    if (event.status === 'cancelled') return true
+    if (!event.rsvp_enabled && !event.signup_url) return true
+    
+    if (event.rsvp_enabled) {
+      const stats = eventRsvpStats[event.id]
+      const isAtCapacity = event.event_capacity && stats && stats.confirmed >= event.event_capacity
+      return isAtCapacity && !event.allow_waitlist
+    }
+    
+    return false
   }
 
   return (

@@ -12,6 +12,10 @@ interface CalendarEvent {
   speakers: string[] | null
   event_type: string
   status: string
+  rsvp_enabled: boolean
+  event_capacity: number | null
+  rsvp_deadline: string | null
+  allow_waitlist: boolean
   created_at: string
   updated_at: string
 }

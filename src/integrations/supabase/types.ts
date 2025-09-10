@@ -217,14 +217,18 @@ export type Database = {
       }
       calendar_events: {
         Row: {
+          allow_waitlist: boolean | null
           created_at: string
           created_by: string | null
           description: string | null
+          event_capacity: number | null
           event_date: string
           event_time: string | null
           event_type: string | null
           id: string
           location: string | null
+          rsvp_deadline: string | null
+          rsvp_enabled: boolean | null
           signup_url: string | null
           speakers: string[] | null
           status: string | null
@@ -232,14 +236,18 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          allow_waitlist?: boolean | null
           created_at?: string
           created_by?: string | null
           description?: string | null
+          event_capacity?: number | null
           event_date: string
           event_time?: string | null
           event_type?: string | null
           id?: string
           location?: string | null
+          rsvp_deadline?: string | null
+          rsvp_enabled?: boolean | null
           signup_url?: string | null
           speakers?: string[] | null
           status?: string | null
@@ -247,14 +255,18 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          allow_waitlist?: boolean | null
           created_at?: string
           created_by?: string | null
           description?: string | null
+          event_capacity?: number | null
           event_date?: string
           event_time?: string | null
           event_type?: string | null
           id?: string
           location?: string | null
+          rsvp_deadline?: string | null
+          rsvp_enabled?: boolean | null
           signup_url?: string | null
           speakers?: string[] | null
           status?: string | null
@@ -295,6 +307,107 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      email_notifications: {
+        Row: {
+          created_at: string
+          delivery_status: string | null
+          email_type: string
+          error_message: string | null
+          event_id: string | null
+          id: string
+          recipient_email: string
+          rsvp_id: string | null
+          sent_at: string
+          subject: string
+        }
+        Insert: {
+          created_at?: string
+          delivery_status?: string | null
+          email_type: string
+          error_message?: string | null
+          event_id?: string | null
+          id?: string
+          recipient_email: string
+          rsvp_id?: string | null
+          sent_at?: string
+          subject: string
+        }
+        Update: {
+          created_at?: string
+          delivery_status?: string | null
+          email_type?: string
+          error_message?: string | null
+          event_id?: string | null
+          id?: string
+          recipient_email?: string
+          rsvp_id?: string | null
+          sent_at?: string
+          subject?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_notifications_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "calendar_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_notifications_rsvp_id_fkey"
+            columns: ["rsvp_id"]
+            isOneToOne: false
+            referencedRelation: "event_rsvps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_rsvps: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          notes: string | null
+          rsvp_date: string
+          status: string
+          updated_at: string
+          user_email: string
+          user_name: string
+          user_phone: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          notes?: string | null
+          rsvp_date?: string
+          status?: string
+          updated_at?: string
+          user_email: string
+          user_name: string
+          user_phone: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          notes?: string | null
+          rsvp_date?: string
+          status?: string
+          updated_at?: string
+          user_email?: string
+          user_name?: string
+          user_phone?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_rsvps_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "calendar_events"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       password_reset_tokens: {
         Row: {
