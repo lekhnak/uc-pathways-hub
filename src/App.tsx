@@ -31,7 +31,6 @@ import AdminCalendarEvents from "./pages/AdminCalendarEvents";
 import AdminProfile from "./pages/AdminProfile";
 import AdminUserManagement from "./pages/AdminUserManagement";
 import AdminInternships from "./pages/AdminInternships";
-
 import CreateLearnerProfile from "./pages/CreateLearnerProfile";
 import SetPassword from "./pages/SetPassword";
 import ChangePassword from "./pages/ChangePassword";
@@ -58,19 +57,18 @@ const App = () => (
               <Route path="/set-password" element={<SetPassword />} />
               <Route path="/change-password" element={<ChangePassword />} />
               <Route path="/admin/auth" element={<AdminAuth />} />
-          <Route path="/admin/*" element={<AdminLayout />}>
-            <Route path="" element={<AdminDashboard />} />
-            <Route path="applications" element={<AdminApplications />} />
-            <Route path="user-management" element={<AdminUserManagement />} />
-            
-            <Route path="create-learner" element={<CreateLearnerProfile />} />
-            <Route path="pathways" element={<div>Admin Pathways - Coming Soon</div>} />
-            <Route path="certifications" element={<AdminCertifications />} />
-            <Route path="internships" element={<AdminInternships />} />
-            <Route path="calendar" element={<AdminCalendarEvents />} />
-            <Route path="edit-website" element={<AdminEditWebsite />} />
-            <Route path="profile" element={<AdminProfile />} />
-          </Route>
+              <Route path="/admin/*" element={<AdminLayout />}>
+                <Route path="" element={<AdminDashboard />} />
+                <Route path="applications" element={<AdminApplications />} />
+                <Route path="user-management" element={<AdminUserManagement />} />
+                <Route path="create-learner" element={<CreateLearnerProfile />} />
+                <Route path="pathways" element={<div>Admin Pathways - Coming Soon</div>} />
+                <Route path="certifications" element={<AdminCertifications />} />
+                <Route path="internships" element={<AdminInternships />} />
+                <Route path="calendar" element={<AdminCalendarEvents />} />
+                <Route path="edit-website" element={<AdminEditWebsite />} />
+                <Route path="profile" element={<AdminProfile />} />
+              </Route>
               <Route path="/dashboard/*" element={<Layout />}>
                 <Route path="" element={<Index />} />
                 <Route path="modules" element={<Modules />} />
@@ -85,7 +83,6 @@ const App = () => (
                 <Route path="mentorship" element={<Mentorship />} />
                 <Route path="chat" element={<Chat />} />
                 <Route path="profile" element={<Profile />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Route>
             </Routes>
