@@ -87,38 +87,93 @@ const AdminInternships = () => {
   };
 
   const handleCreateOrUpdate = async (data: InternshipFormData) => {
+    console.log('=== INTERNSHIP CREATION DEBUG ===');
+    console.log('Admin user:', adminUser);
+    console.log('Form data:', data);
+    console.log('Requirements input:', requirementsInput);
+    
     try {
       if (!adminUser?.id) {
+        console.error('No admin user ID found');
         toast({
-          title: "Error",
+          title: "Authentication Error",
           description: "You must be logged in as an admin to create internships",
           variant: "destructive",
         });
         return;
       }
 
+      // Validate required fields
+      if (!data.title || !data.company || !data.location) {
+        console.error('Missing required fields:', { title: data.title, company: data.company, location: data.location });
+        toast({
+          title: "Validation Error",
+          description: "Please fill in all required fields (title, company, location)",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const internshipData: InternshipInsert = {
-        ...data,
-        requirements: requirementsInput.split(',').map(req => req.trim()).filter(req => req.length > 0),
+        title: data.title,
+        company: data.company,
+        location: data.location,
+        position_type: data.position_type,
+        is_uc_partner: data.is_uc_partner,
+        status: data.status,
+        compensation: data.compensation || null,
+        description: data.description || null,
+        apply_url: data.apply_url || null,
+        contact_email: data.contact_email || null,
+        available_positions: data.available_positions || 1,
+        requirements: requirementsInput ? requirementsInput.split(',').map(req => req.trim()).filter(req => req.length > 0) : [],
         application_deadline: data.application_deadline || null,
         created_by: adminUser.id
       };
 
+      console.log('Processed internship data:', internshipData);
+
       if (editingInternship) {
+        console.log('Updating internship:', editingInternship.id);
         await updateInternship(editingInternship.id, internshipData);
       } else {
+        console.log('Creating new internship...');
         await createInternship(internshipData);
       }
+
+      console.log('Internship operation successful');
+      toast({
+        title: "Success",
+        description: editingInternship ? "Internship updated successfully" : "Internship created successfully",
+      });
 
       setIsFormOpen(false);
       setEditingInternship(null);
       reset();
       setRequirementsInput('');
-    } catch (error) {
-      console.error('Error saving internship:', error);
+    } catch (error: any) {
+      console.error('=== INTERNSHIP CREATION ERROR ===');
+      console.error('Error details:', error);
+      console.error('Error message:', error?.message);
+      console.error('Error code:', error?.code);
+      
+      let errorMessage = "Failed to save internship. Please try again.";
+      
+      if (error?.message) {
+        if (error.message.includes('uuid')) {
+          errorMessage = "Invalid admin ID format. Please log out and log back in.";
+        } else if (error.message.includes('not-null')) {
+          errorMessage = "Missing required information. Please check all required fields.";
+        } else if (error.message.includes('foreign key')) {
+          errorMessage = "Invalid reference data. Please contact support.";
+        } else {
+          errorMessage = `Database error: ${error.message}`;
+        }
+      }
+      
       toast({
         title: "Error",
-        description: "Failed to save internship. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     }
