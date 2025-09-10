@@ -6,6 +6,7 @@ interface AdminUser {
   username: string
   email?: string
   full_name?: string
+  temp_password?: string
 }
 
 interface AdminAuthContextType {
@@ -68,7 +69,8 @@ export const AdminAuthProvider = ({ children }: { children: React.ReactNode }) =
           id: data.adminUser.id,
           username: data.adminUser.username,
           email: data.adminUser.email,
-          full_name: data.adminUser.full_name
+          full_name: data.adminUser.full_name,
+          temp_password: data.adminUser.temp_password
         }
         
         setAdminUser(adminUserData)

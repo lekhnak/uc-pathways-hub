@@ -22,6 +22,7 @@ export type Database = {
           id: string
           password_hash: string
           password_salt: string | null
+          temp_password: string | null
           updated_at: string
           username: string
         }
@@ -32,6 +33,7 @@ export type Database = {
           id?: string
           password_hash: string
           password_salt?: string | null
+          temp_password?: string | null
           updated_at?: string
           username: string
         }
@@ -42,6 +44,7 @@ export type Database = {
           id?: string
           password_hash?: string
           password_salt?: string | null
+          temp_password?: string | null
           updated_at?: string
           username?: string
         }

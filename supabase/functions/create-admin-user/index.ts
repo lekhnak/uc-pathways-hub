@@ -163,10 +163,14 @@ const handler = async (req: Request): Promise<Response> => {
       const tempPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8).toUpperCase();
       console.log('Generated temporary password for new admin');
       
-      // Update the admin user with temporary password
+      // Update the admin user with temporary password and also set it as the main password
+      const hashedTempPassword = await hashPassword(tempPassword);
       const { error: updateError } = await supabase
         .from('admin_users')
-        .update({ temp_password: tempPassword })
+        .update({ 
+          temp_password: tempPassword,
+          password_hash: hashedTempPassword 
+        })
         .eq('id', data.id);
         
       if (updateError) {
@@ -215,7 +219,7 @@ const handler = async (req: Request): Promise<Response> => {
                 <h3>📋 Your Login Details</h3>
                 <p><strong>Username:</strong> ${username}</p>
                 <p><strong>Email:</strong> ${email}</p>
-                <p><strong>Temporary Password:</strong> ${tempPassword}</p>
+                 <p><strong>Temporary Password:</strong> ${tempPassword}</p>
               </div>
 
               <p>🔐 <strong>Important:</strong> Please change your password immediately after logging in for security purposes.</p>

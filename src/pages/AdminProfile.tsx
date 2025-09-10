@@ -26,6 +26,7 @@ const AdminProfile = () => {
     email: '',
     full_name: '',
     bio: '',
+    temp_password: '',
   })
 
   // Password change states
@@ -59,6 +60,7 @@ const AdminProfile = () => {
         email: adminUser.email || '',
         full_name: adminUser.full_name || '',
         bio: '',
+        temp_password: adminUser.temp_password || '',
       })
     }
   }, [adminUser])
@@ -324,6 +326,22 @@ const AdminProfile = () => {
                   rows={4}
                 />
               </div>
+
+              {formData.temp_password && (
+                <div className="space-y-2">
+                  <Label htmlFor="temp_password">Temporary Password</Label>
+                  <Input
+                    id="temp_password"
+                    name="temp_password"
+                    value={formData.temp_password}
+                    disabled
+                    className="bg-muted font-mono text-sm"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    This is your temporary password that was emailed to you. Please change your password for security.
+                  </p>
+                </div>
+              )}
 
               <Button type="submit" disabled={loading} className="w-full">
                 <Save className="w-4 h-4 mr-2" />
