@@ -566,6 +566,9 @@ const LandingPage = () => {
                   <NavLink to="/auth" className="block text-white/70 hover:text-white transition-colors">
                     Student Portal
                   </NavLink>
+                  <NavLink to="/admin/auth" className="block text-white/70 hover:text-white transition-colors">
+                    Admin Dashboard
+                  </NavLink>
                 </div>
               </div>
               <div>
@@ -582,19 +585,7 @@ const LandingPage = () => {
                 </div>
               </div>
             </div>
-            <div className="border-t border-white/20 mt-12 pt-8 text-center">
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-4">
-                <Button variant="outline" className="border-white/30 text-white hover:bg-white/10" asChild>
-                  <a href="/auth">
-                    Student Login
-                  </a>
-                </Button>
-                <Button variant="outline" className="border-white/30 text-white hover:bg-white/10" asChild>
-                  <a href="/admin/auth">
-                    Admin Dashboard
-                  </a>
-                </Button>
-              </div>
+            <div className="border-t border-white/20 mt-12 pt-8">
             </div>
           </div>
         </footer>
