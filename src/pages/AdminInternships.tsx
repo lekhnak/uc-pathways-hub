@@ -12,7 +12,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { useInternships } from '@/hooks/useInternships';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useForm } from 'react-hook-form';
+import { useToast } from '@/hooks/use-toast';
 import type { Database } from '@/integrations/supabase/types';
 
 type Internship = Database['public']['Tables']['uc_internships']['Row'];
@@ -37,6 +39,8 @@ interface InternshipFormData {
 
 const AdminInternships = () => {
   const { internships, loading, createInternship, updateInternship, deleteInternship } = useInternships(true);
+  const { adminUser } = useAdminAuth();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -84,11 +88,20 @@ const AdminInternships = () => {
 
   const handleCreateOrUpdate = async (data: InternshipFormData) => {
     try {
+      if (!adminUser?.id) {
+        toast({
+          title: "Error",
+          description: "You must be logged in as an admin to create internships",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const internshipData: InternshipInsert = {
         ...data,
         requirements: requirementsInput.split(',').map(req => req.trim()).filter(req => req.length > 0),
         application_deadline: data.application_deadline || null,
-        created_by: 'admin' // This would be the actual admin ID in a real app
+        created_by: adminUser.id
       };
 
       if (editingInternship) {
@@ -103,6 +116,11 @@ const AdminInternships = () => {
       setRequirementsInput('');
     } catch (error) {
       console.error('Error saving internship:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save internship. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
