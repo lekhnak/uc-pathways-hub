@@ -1,3 +1,4 @@
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.56.0";
 
@@ -18,58 +19,27 @@ const rateLimitStore = new Map<string, { attempts: number; lastAttempt: number }
 const MAX_LOGIN_ATTEMPTS = 5;
 const LOCKOUT_DURATION = 15 * 60 * 1000; // 15 minutes
 const MAX_INPUT_LENGTH = 128;
-const BCRYPT_ROUNDS = parseInt(Deno.env.get('BCRYPT_ROUNDS') ?? '12');
 
-// Dummy hash for timing attack protection (valid bcrypt format)
-const DUMMY_HASH = '$2a$12$dummyhashfortimingatttackprotection123456789abcdef';
-
-// Secure password hashing using bcrypt
-async function hashPassword(password: string): Promise<string> {
-  const bcrypt = await import("https://deno.land/x/bcrypt@v0.4.1/mod.ts");
-  return await bcrypt.hash(password, BCRYPT_ROUNDS);
-}
-
-// Secure password verification using bcrypt
+// Secure password verification using bcryptjs (more reliable for PostgreSQL hashes)
 async function verifyPassword(password: string, hash: string): Promise<boolean> {
   try {
+    console.log(`Attempting to verify password for hash starting with: ${hash.substring(0, 10)}...`);
+    
     // Check if it's a bcrypt hash (PostgreSQL format)
     if (hash.startsWith('$2a$') || hash.startsWith('$2b$') || hash.startsWith('$2y$')) {
-      const bcrypt = await import("https://deno.land/x/bcrypt@v0.4.1/mod.ts");
-      return await bcrypt.compare(password, hash);
-    } else if (hash.length > 20) {
-      // Web Crypto hash (legacy)
-      const encoder = new TextEncoder();
-      const combined = Uint8Array.from(atob(hash), c => c.charCodeAt(0));
-      const salt = combined.slice(0, 16);
-      const storedHash = combined.slice(16);
-      
-      const keyMaterial = await crypto.subtle.importKey(
-        'raw',
-        encoder.encode(password),
-        { name: 'PBKDF2' },
-        false,
-        ['deriveBits']
-      );
-      
-      const hashBuffer = await crypto.subtle.deriveBits(
-        {
-          name: 'PBKDF2',
-          salt: salt,
-          iterations: 100000,
-          hash: 'SHA-256'
-        },
-        keyMaterial,
-        256
-      );
-      
-      const hashArray = new Uint8Array(hashBuffer);
-      return hashArray.every((byte, index) => byte === storedHash[index]);
+      // Use bcryptjs which is more compatible with PostgreSQL bcrypt hashes
+      const bcrypt = await import("https://esm.sh/bcryptjs@2.4.3");
+      const result = await bcrypt.compare(password, hash);
+      console.log(`Bcrypt verification result: ${result}`);
+      return result;
     } else {
-      // Plain text - direct comparison (for migration only)
+      // Plain text comparison (should not happen in production)
+      console.log('Plain text password comparison');
       return password === hash;
     }
   } catch (error) {
     console.error('Password verification error:', error);
+    console.error('Error details:', error.message, error.stack);
     return false;
   }
 }
@@ -124,7 +94,7 @@ function checkRateLimit(identifier: string): { allowed: boolean; retryAfter?: nu
 }
 
 const handler = async (req: Request): Promise<Response> => {
-  console.log('Admin login function called - v3.0 (security hardened)');
+  console.log('Admin login function called - v4.0 (bcryptjs implementation)');
   
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -186,7 +156,6 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     console.log(`Admin login attempt for username: ${sanitizedUsername}`);
-    // SECURITY: Never log passwords or hashes
 
     // Fetch admin user from database
     const { data: adminUser, error: fetchError } = await supabaseClient
@@ -195,27 +164,24 @@ const handler = async (req: Request): Promise<Response> => {
       .eq('username', sanitizedUsername)
       .single();
 
+    if (fetchError) {
+      console.error('Database fetch error:', fetchError);
+    }
+
     let isValidPassword = false;
     let userFound = !fetchError && adminUser;
 
     if (userFound) {
+      console.log(`User found: ${sanitizedUsername}, verifying password...`);
+      console.log(`Password hash format: ${adminUser.password_hash.substring(0, 10)}...`);
+      
       // User exists - verify password
       isValidPassword = await verifyPassword(password, adminUser.password_hash);
-      
-      // If plain text password was verified, hash it for future use
-      if (isValidPassword && !adminUser.password_hash.startsWith('$') && adminUser.password_hash.length < 50) {
-        console.log('Upgrading plain text password to secure hash');
-        const hashedPassword = await hashPassword(password);
-        
-        await supabaseClient
-          .from('admin_users')
-          .update({ password_hash: hashedPassword })
-          .eq('username', sanitizedUsername);
-      }
+      console.log(`Password verification result for ${sanitizedUsername}: ${isValidPassword}`);
     } else {
-      // User doesn't exist - perform dummy verification to prevent timing attacks
-      console.log('User not found - performing dummy verification');
-      await verifyPassword(password, DUMMY_HASH);
+      console.log(`User not found: ${sanitizedUsername}`);
+      // Perform dummy verification to prevent timing attacks
+      await verifyPassword(password, '$2a$12$dummyhashfortimingatttackprotection123456789abcdef');
     }
 
     if (!isValidPassword || !userFound) {
@@ -253,6 +219,7 @@ const handler = async (req: Request): Promise<Response> => {
 
   } catch (error: any) {
     console.error('Error in admin-login function:', error.message);
+    console.error('Full error:', error);
     return new Response(
       JSON.stringify({ 
         success: false, 
