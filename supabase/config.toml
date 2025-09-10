@@ -75,8 +75,14 @@ verify_jwt = false
 [functions.update-calendar-event]
 verify_jwt = false
 
-[functions.test-password]
+[functions.delete-calendar-event]
 verify_jwt = false
 
-[functions.delete-calendar-event]
+[functions.create-internship]
+verify_jwt = false
+
+[functions.send-bulk-upload-confirmation]
+verify_jwt = false
+
+[functions.update-website-content]
 verify_jwt = false
