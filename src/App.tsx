@@ -67,8 +67,6 @@ const App = () => (
             <Route path="certifications" element={<AdminCertifications />} />
             <Route path="internships" element={<div>Admin Internships - Coming Soon</div>} />
             <Route path="calendar" element={<AdminCalendarEvents />} />
-            <Route path="resumes" element={<div>Admin Resume Review - Coming Soon</div>} />
-            <Route path="chat" element={<div>Admin Chat - Coming Soon</div>} />
             <Route path="edit-website" element={<AdminEditWebsite />} />
             <Route path="profile" element={<AdminProfile />} />
           </Route>

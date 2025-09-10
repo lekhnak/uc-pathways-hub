@@ -68,16 +68,6 @@ const navigationItems = [
     icon: Calendar,
   },
   {
-    title: 'Resume Review',
-    url: '/admin/resumes',
-    icon: FileText,
-  },
-  {
-    title: 'Student Chat',
-    url: '/admin/chat',
-    icon: MessageSquare,
-  },
-  {
     title: 'Edit Website',
     url: '/admin/edit-website',
     icon: Edit3,
