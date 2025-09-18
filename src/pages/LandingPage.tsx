@@ -2,7 +2,6 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { NavLink } from "react-router-dom"
 import { usePublicWebsiteContent } from "@/hooks/usePublicWebsiteContent"
 import { 
   Users, 
@@ -140,13 +139,10 @@ const LandingPage = () => {
                 </button>
               </div>
 
-              {/* Auth Buttons */}
+              {/* CTA Button */}
               <div className="hidden md:flex items-center gap-4">
-                <Button variant="ghost" asChild>
-                  <NavLink to="/auth">Log in</NavLink>
-                </Button>
-                <Button asChild>
-                  <NavLink to="/apply">Apply Now</NavLink>
+                <Button onClick={() => scrollToSection('contact')}>
+                  Get Started
                 </Button>
               </div>
 
@@ -181,11 +177,8 @@ const LandingPage = () => {
                     Contact
                   </button>
                   <div className="flex flex-col gap-2 pt-4 border-t border-border">
-                    <Button variant="ghost" asChild>
-                      <NavLink to="/auth">Log in</NavLink>
-                    </Button>
-                    <Button asChild>
-                      <NavLink to="/apply">Apply Now</NavLink>
+                    <Button onClick={() => scrollToSection('contact')}>
+                      Get Started
                     </Button>
                   </div>
                 </div>
@@ -219,11 +212,13 @@ const LandingPage = () => {
               }}
             />
             <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in" style={{ animationDelay: '0.4s' }}>
-              <Button size="lg" className="bg-white text-academy-blue hover:bg-gray-100" asChild>
-                <NavLink to="/auth">
-                  {getSectionMetadata('hero', 'cta_primary', 'Access Portal')}
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </NavLink>
+              <Button 
+                size="lg" 
+                className="bg-white text-academy-blue hover:bg-gray-100"
+                onClick={() => scrollToSection('contact')}
+              >
+                {getSectionMetadata('hero', 'cta_primary', 'Get Started')}
+                <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
               <Button 
                 size="lg" 
@@ -465,16 +460,21 @@ const LandingPage = () => {
               Join thousands of UC students building successful careers in finance.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-white text-academy-blue hover:bg-gray-100" asChild>
-              <NavLink to="/apply">
-                  Apply Now
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </NavLink>
+              <Button 
+                size="lg" 
+                className="bg-white text-academy-blue hover:bg-gray-100"
+                onClick={() => scrollToSection('contact')}
+              >
+                Get Started
+                <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
-              <Button size="lg" variant="outline" className="border-white text-white bg-transparent hover:bg-white hover:text-academy-blue transition-colors" asChild>
-                <NavLink to="/auth">
-                  Login to Portal
-                </NavLink>
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="border-white text-white bg-transparent hover:bg-white hover:text-academy-blue transition-colors"
+                onClick={() => scrollToSection('contact')}
+              >
+                Contact Us
               </Button>
             </div>
           </div>
@@ -519,11 +519,13 @@ const LandingPage = () => {
             <p className="text-xl mb-8 text-white/90 max-w-2xl mx-auto">
               Build financial literacy and gain real-world investment experience through comprehensive training and virtual work assignments.
             </p>
-            <Button size="lg" className="bg-white text-academy-blue hover:bg-gray-100" asChild>
-              <NavLink to="/auth">
-                Sign Up Today
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </NavLink>
+            <Button 
+              size="lg" 
+              className="bg-white text-academy-blue hover:bg-gray-100"
+              onClick={() => scrollToSection('contact')}
+            >
+              Get Started Today
+              <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </div>
         </section>
@@ -560,15 +562,18 @@ const LandingPage = () => {
               <div>
                 <h3 className="font-semibold mb-4">Get Started</h3>
                 <div className="space-y-2">
-                  <NavLink to="/apply" className="block text-white/70 hover:text-white transition-colors">
-                    Apply Now
-                  </NavLink>
-                  <NavLink to="/auth" className="block text-white/70 hover:text-white transition-colors">
-                    Student Portal
-                  </NavLink>
-                  <NavLink to="/admin/auth" className="block text-white/70 hover:text-white transition-colors">
-                    Admin Dashboard
-                  </NavLink>
+                  <button 
+                    onClick={() => scrollToSection('contact')} 
+                    className="block text-white/70 hover:text-white transition-colors"
+                  >
+                    Contact Us
+                  </button>
+                  <button 
+                    onClick={() => scrollToSection('program')} 
+                    className="block text-white/70 hover:text-white transition-colors"
+                  >
+                    Learn More
+                  </button>
                 </div>
               </div>
               <div>
