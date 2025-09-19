@@ -244,7 +244,7 @@ const LandingPage = () => {
               <Card className="text-center shadow-card animate-counter">
                 <CardContent className="pt-6">
                   <div className="text-3xl md:text-4xl font-bold text-academy-blue mb-2">
-                    <CountUpNumber end={3000} suffix="+" />
+                    <CountUpNumber end={4500} suffix="+" />
                   </div>
                   <p className="text-muted-foreground">UC students engaged</p>
                 </CardContent>
