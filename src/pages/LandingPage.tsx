@@ -218,22 +218,6 @@ const LandingPage = () => {
                 __html: getSectionContent('hero', 'Connect UC undergraduate and graduate students with opportunities in the financial industry through free training, tools, and coaching.') 
               }}
             />
-            <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in" style={{ animationDelay: '0.4s' }}>
-              <Button size="lg" className="bg-white text-academy-blue hover:bg-gray-100" asChild>
-                <NavLink to="/auth">
-                  {getSectionMetadata('hero', 'cta_primary', 'Access Portal')}
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </NavLink>
-              </Button>
-              <Button 
-                size="lg" 
-                variant="outline" 
-                className="border-white text-white bg-transparent hover:bg-white hover:text-academy-blue transition-colors"
-                onClick={() => scrollToSection('program')}
-              >
-                {getSectionMetadata('hero', 'cta_secondary', 'Explore the Program')}
-              </Button>
-            </div>
           </div>
         </section>
 
