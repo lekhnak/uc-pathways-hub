@@ -142,9 +142,6 @@ const LandingPage = () => {
 
               {/* Auth Buttons */}
               <div className="hidden md:flex items-center gap-4">
-                <Button variant="ghost" asChild>
-                  <NavLink to="/auth">Log in</NavLink>
-                </Button>
                 <Button asChild>
                   <NavLink to="/apply">Apply Now</NavLink>
                 </Button>
@@ -181,9 +178,6 @@ const LandingPage = () => {
                     Contact
                   </button>
                   <div className="flex flex-col gap-2 pt-4 border-t border-border">
-                    <Button variant="ghost" asChild>
-                      <NavLink to="/auth">Log in</NavLink>
-                    </Button>
                     <Button asChild>
                       <NavLink to="/apply">Apply Now</NavLink>
                     </Button>
