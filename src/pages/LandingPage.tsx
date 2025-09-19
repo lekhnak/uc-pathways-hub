@@ -296,6 +296,36 @@ const LandingPage = () => {
               </p>
             </div>
 
+            {/* UC Investments Academy Resources */}
+            <div className="bg-white rounded-2xl shadow-elevated p-8 mb-16">
+              <div className="text-center mb-8">
+                <h3 className="text-2xl md:text-3xl font-bold text-academy-blue mb-4">
+                  UC Investments Academy Resources
+                </h3>
+                <div className="flex justify-center mb-6">
+                  <img 
+                    src="/lovable-uploads/uc-resources-content.jpg" 
+                    alt="UC Investments Academy Resources Overview" 
+                    className="max-w-full h-auto rounded-lg shadow-card"
+                  />
+                </div>
+                <div className="grid md:grid-cols-3 gap-6 text-left">
+                  <div className="space-y-4">
+                    <h4 className="text-lg font-semibold text-academy-blue">Training Modules</h4>
+                    <p className="text-muted-foreground">Comprehensive curriculum covering investment fundamentals, financial modeling, and industry best practices.</p>
+                  </div>
+                  <div className="space-y-4">
+                    <h4 className="text-lg font-semibold text-academy-blue">Career Resources</h4>
+                    <p className="text-muted-foreground">Access to networking opportunities, mentorship programs, and exclusive recruitment events.</p>
+                  </div>
+                  <div className="space-y-4">
+                    <h4 className="text-lg font-semibold text-academy-blue">Tools & Support</h4>
+                    <p className="text-muted-foreground">Professional-grade software access, resume reviews, and ongoing career coaching support.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Process Flow - Dynamic from database */}
             <div className="grid lg:grid-cols-7 gap-4 mb-16">
               {(getContentBySection('program')?.metadata?.process_stages || []).map((stage: any, index: number) => (
