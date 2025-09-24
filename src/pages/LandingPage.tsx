@@ -279,9 +279,9 @@ const LandingPage = () => {
               </div>
               <div className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
                 <img 
-                  src="/lovable-uploads/program-overview.png" 
-                  alt="UC Investments Academy Program - Community Access to Network" 
-                  className="w-full rounded-2xl shadow-elevated"
+                  src="/lovable-uploads/program-overview-new.png" 
+                  alt="UC Investments Academy - Content, Community, Confidence" 
+                  className="w-full max-w-md mx-auto lg:max-w-full rounded-2xl shadow-elevated object-contain"
                 />
               </div>
             </div>
