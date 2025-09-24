@@ -496,17 +496,13 @@ const LandingPage = () => {
               </p>
             </div>
 
-            {/* Process Flow - Dynamic from database */}
-            <div className="grid lg:grid-cols-7 gap-4 mb-16">
-              {(getContentBySection('program')?.metadata?.process_stages || []).map((stage: any, index: number) => (
-                <ProcessStage
-                  key={stage.title}
-                  title={stage.title}
-                  items={stage.items}
-                  color={stage.color}
-                  index={index}
-                />
-              ))}
+            {/* Program Benefits Image */}
+            <div className="mb-16 flex justify-center animate-fade-in">
+              <img 
+                src="/lovable-uploads/benefits.png" 
+                alt="UC Investments Academy Program Benefits - Awareness, Access, Education, Training, Network, Mentorship, Career" 
+                className="w-full max-w-6xl rounded-2xl shadow-elevated"
+              />
             </div>
 
             {/* Program Features - Dynamic from database */}
