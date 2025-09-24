@@ -300,7 +300,7 @@ const handler = async (req: Request): Promise<Response> => {
   } catch (error) {
     console.error('Error in update-application-status function:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: (error as Error).message }),
       {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

@@ -340,13 +340,13 @@ const handler = async (req: Request): Promise<Response> => {
             recipient_email: rsvp.user_email,
             subject: subject,
             delivery_status: 'failed',
-            error_message: emailError.message
+            error_message: (emailError as Error).message
           }]);
 
         emailResults.push({ 
           email: rsvp.user_email, 
           status: 'failed', 
-          error: emailError.message 
+          error: (emailError as Error).message 
         });
       }
     }

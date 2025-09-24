@@ -42,7 +42,7 @@ async function verifyPassword(password: string, hash: string): Promise<boolean> 
     }
   } catch (error) {
     console.error('Password verification error:', error);
-    console.error('Error details:', error.message);
+    console.error('Error details:', (error as Error).message);
     
     // Fallback: try direct string comparison for emergency access
     console.log('Attempting fallback password check...');

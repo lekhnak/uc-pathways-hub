@@ -71,44 +71,21 @@ const handler = async (req: Request): Promise<Response> => {
 
     const { sectionId, updates }: UpdateContentRequest = await req.json();
 
-    // First try to update existing content
-    let { data, error } = await supabaseClient
+    // Use upsert to handle both insert and update cases
+    const { data, error } = await supabaseClient
       .from('website_content')
-      .update({
+      .upsert({
+        section_id: sectionId,
         ...updates,
         updated_at: new Date().toISOString()
+      }, {
+        onConflict: 'section_id'
       })
-      .eq('section_id', sectionId)
       .select()
       .single();
 
-    // If no rows were updated, insert a new one
-    if (error && error.code === 'PGRST116') {
-      const { data: insertData, error: insertError } = await supabaseClient
-        .from('website_content')
-        .insert({
-          section_id: sectionId,
-          ...updates,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .select()
-        .single();
-
-      if (insertError) {
-        console.error('Database insert error:', insertError);
-        return new Response(
-          JSON.stringify({ error: 'Failed to create content' }),
-          { 
-            status: 500, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-          }
-        );
-      }
-
-      data = insertData;
-    } else if (error) {
-      console.error('Database update error:', error);
+    if (error) {
+      console.error('Database upsert error:', error);
       return new Response(
         JSON.stringify({ error: 'Failed to update content' }),
         { 

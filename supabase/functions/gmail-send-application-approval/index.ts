@@ -42,7 +42,7 @@ const getGmailAccessToken = async () => {
     return data.access_token;
   } catch (error) {
     clearTimeout(timeoutId);
-    throw new Error(`Failed to get Gmail access token: ${error.message}`);
+    throw new Error(`Failed to get Gmail access token: ${(error as Error).message}`);
   }
 };
 
@@ -88,7 +88,7 @@ const sendGmailEmail = async (accessToken: string, to: string, subject: string, 
     return response.json();
   } catch (error) {
     clearTimeout(timeoutId);
-    throw new Error(`Failed to send email via Gmail: ${error.message}`);
+    throw new Error(`Failed to send email via Gmail: ${(error as Error).message}`);
   }
 };
 

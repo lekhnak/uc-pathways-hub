@@ -261,7 +261,7 @@ const handler = async (req: Request): Promise<Response> => {
       
     } catch (emailError) {
       console.error('Detailed error sending admin invitation email:', emailError);
-      console.error('Email error stack:', emailError.stack);
+      console.error('Email error stack:', (emailError as Error).stack);
       // Don't fail the entire request if email fails, but log extensively
     }
 
