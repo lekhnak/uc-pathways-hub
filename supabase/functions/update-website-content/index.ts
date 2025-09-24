@@ -71,8 +71,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     const { sectionId, updates }: UpdateContentRequest = await req.json();
 
-    // Update the website content using service role (bypasses RLS)
-    const { data, error } = await supabaseClient
+    // First try to update existing content
+    let { data, error } = await supabaseClient
       .from('website_content')
       .update({
         ...updates,
@@ -82,7 +82,32 @@ const handler = async (req: Request): Promise<Response> => {
       .select()
       .single();
 
-    if (error) {
+    // If no rows were updated, insert a new one
+    if (error && error.code === 'PGRST116') {
+      const { data: insertData, error: insertError } = await supabaseClient
+        .from('website_content')
+        .insert({
+          section_id: sectionId,
+          ...updates,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (insertError) {
+        console.error('Database insert error:', insertError);
+        return new Response(
+          JSON.stringify({ error: 'Failed to create content' }),
+          { 
+            status: 500, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
+      }
+
+      data = insertData;
+    } else if (error) {
       console.error('Database update error:', error);
       return new Response(
         JSON.stringify({ error: 'Failed to update content' }),

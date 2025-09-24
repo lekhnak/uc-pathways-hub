@@ -64,10 +64,19 @@ export const useWebsiteContent = () => {
         throw new Error(data.error || 'Failed to update content');
       }
 
-      // Update local state
-      setContent(prev => prev.map(item => 
-        item.section_id === sectionId ? { ...item, ...data.data } : item
-      ));
+      // Update local state - handle both update and insert cases
+      setContent(prev => {
+        const existingIndex = prev.findIndex(item => item.section_id === sectionId);
+        if (existingIndex >= 0) {
+          // Update existing item
+          const newContent = [...prev];
+          newContent[existingIndex] = { ...newContent[existingIndex], ...data.data };
+          return newContent;
+        } else {
+          // Add new item
+          return [...prev, data.data];
+        }
+      });
 
       toast({
         title: "Success",
