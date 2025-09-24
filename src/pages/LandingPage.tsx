@@ -216,7 +216,7 @@ const LandingPage = () => {
         </section>
 
         {/* Social Proof Stats */}
-        <section className="py-16 bg-academy-grey-light">
+        <section className="py-16 bg-white">
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               <Card className="text-center shadow-card animate-counter">
@@ -256,7 +256,7 @@ const LandingPage = () => {
         </section>
 
         {/* Program Overview Section */}
-        <section id="about" className="py-20">
+        <section id="about" className="py-20 bg-academy-grey-light">
           <div className="container mx-auto px-4">
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-4xl font-bold mb-6 text-academy-blue">
@@ -485,7 +485,7 @@ const LandingPage = () => {
         </section>
 
         {/* Program Overview - Process Flow */}
-        <section id="program" className="py-20 bg-academy-grey-light">
+        <section id="program" className="py-20 bg-white">
           <div className="container mx-auto px-4">
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-4xl font-bold mb-6 text-academy-blue">
@@ -614,7 +614,7 @@ const LandingPage = () => {
 
 
         {/* FAQ Section */}
-        <section id="faq" className="py-20 bg-academy-grey-light">
+        <section id="faq" className="py-20 bg-white">
           <div className="container mx-auto px-4">
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-4xl font-bold mb-6 text-academy-blue">
