@@ -238,17 +238,17 @@ const LandingPage = () => {
               <Card className="text-center shadow-card animate-counter" style={{ animationDelay: '0.2s' }}>
                 <CardContent className="pt-6">
                   <div className="text-3xl md:text-4xl font-bold text-academy-blue mb-2">
-                    FREE
+                    <CountUpNumber end={200} suffix="+" />
                   </div>
-                  <p className="text-muted-foreground">Training, tools & coaching</p>
+                  <p className="text-muted-foreground">Career opportunities</p>
                 </CardContent>
               </Card>
               <Card className="text-center shadow-card animate-counter" style={{ animationDelay: '0.3s' }}>
                 <CardContent className="pt-6">
                   <div className="text-3xl md:text-4xl font-bold text-academy-blue mb-2">
-                    REAL
+                    100%
                   </div>
-                  <p className="text-muted-foreground">Investing experience</p>
+                  <p className="text-muted-foreground">Free program</p>
                 </CardContent>
               </Card>
             </div>
@@ -279,8 +279,8 @@ const LandingPage = () => {
               </div>
               <div className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
                 <img 
-                  src={getSectionImage('about', '/lovable-uploads/afe88b15-8d39-4a7f-a2a8-0c78244c5ba0.png')} 
-                  alt="UC Investments Academy Program Flow" 
+                  src="/lovable-uploads/program-overview.png" 
+                  alt="UC Investments Academy Program - Community Access to Network" 
                   className="w-full rounded-2xl shadow-elevated"
                 />
               </div>
