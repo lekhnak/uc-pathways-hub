@@ -642,23 +642,6 @@ const LandingPage = () => {
           </div>
         </section>
 
-        {/* Final CTA */}
-        <section className="py-16 bg-gradient-primary text-white">
-          <div className="container mx-auto px-4 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">
-              Join 3000+ UC students building careers in finance
-            </h2>
-            <p className="text-xl mb-8 text-white/90 max-w-2xl mx-auto">
-              Build financial literacy and gain real-world investment experience through comprehensive training and virtual work assignments.
-            </p>
-            <Button size="lg" className="bg-white text-academy-blue hover:bg-gray-100" asChild>
-              <NavLink to="/auth">
-                Sign Up Today
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </NavLink>
-            </Button>
-          </div>
-        </section>
 
         {/* Footer */}
         <footer id="contact" className="bg-foreground text-white py-16">
