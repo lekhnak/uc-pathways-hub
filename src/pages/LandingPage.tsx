@@ -255,23 +255,27 @@ const LandingPage = () => {
           </div>
         </section>
 
-        {/* About Section */}
+        {/* Program Overview Section */}
         <section id="about" className="py-20">
           <div className="container mx-auto px-4">
-            <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold mb-6 text-academy-blue">
+                Program Overview
+              </h2>
+            </div>
+            
+            <div className="grid lg:grid-cols-2 gap-12 items-center mb-20">
               <div className="animate-fade-in">
-                <h2 className="text-3xl md:text-4xl font-bold mb-6 text-academy-blue">
-                  {getSectionTitle('about', 'What is the UC Investments Academy?')}
-                </h2>
-                <div 
-                  className="space-y-4 text-lg text-muted-foreground"
-                  dangerouslySetInnerHTML={{ 
-                    __html: getSectionContent('about', `
-                      <p>Launched by UC Investments and UC Office of the President in 2022, this program prepares UC students for careers in finance and asset management. Initially starting with just 100 students at UC Merced, the program has expanded to multiple UC campuses and provides the one-stop UC destination for preparing for careers in finance.</p>
-                      <p>The UC Investments Academy, which we created to connect UC undergrads with opportunities in the financial industry, has engaged 3000+ students across 9 UC campuses. The Academy provides free training, tools and coaching to all interested UC students.</p>
-                    `) 
-                  }}
-                />
+                <div className="space-y-6 text-lg text-muted-foreground">
+                  <p>
+                    The team that invests the University of California's endowment and retirement savings, UC 
+                    Investments is hosting a program with your campus to help students explore a possible 
+                    career in the asset management industry. This program is free to students and hopes to 
+                    open doors to students who may not have known about, felt welcome in or considered such 
+                    careers before. Everyone is welcome and encouraged to apply. We invite you to come see 
+                    for yourselves and take advantage of this unique opportunity for you.
+                  </p>
+                </div>
               </div>
               <div className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
                 <img 
@@ -279,6 +283,202 @@ const LandingPage = () => {
                   alt="UC Investments Academy Program Flow" 
                   className="w-full rounded-2xl shadow-elevated"
                 />
+              </div>
+            </div>
+
+            {/* What is a Career in Investing Section */}
+            <div className="mb-20">
+              <h3 className="text-2xl md:text-3xl font-bold mb-8 text-academy-blue">
+                What is a Career in Investing/Asset Management?
+              </h3>
+              <div className="space-y-6 text-lg text-muted-foreground">
+                <p>Here are some things you may not know about careers in investing:</p>
+                <ul className="space-y-4 pl-6">
+                  <li className="flex items-start gap-3">
+                    <CheckCircle className="h-5 w-5 text-academy-blue mt-0.5 flex-shrink-0" />
+                    Your clients tend to be institutions that invest the savings for teachers, firefighters, and 
+                    healthcare unions and companies, that are responsible for ensuring that their 
+                    employees' retirement savings grow enough to enable them a secure retirement.
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle className="h-5 w-5 text-academy-blue mt-0.5 flex-shrink-0" />
+                    Or your clients may be universities and charitable foundations that are responsible for 
+                    investing their endowments (gifts from generous donors) so that they can fund 
+                    scholarships and grants to support charities.
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle className="h-5 w-5 text-academy-blue mt-0.5 flex-shrink-0" />
+                    Investors provide capital to entrepreneurs in sectors ranging from clean energy to bio-
+                    technology to software and in countries around the world.
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Is This Program For You Section */}
+            <div className="mb-20">
+              <h3 className="text-2xl md:text-3xl font-bold mb-8 text-academy-blue">
+                Is This Program For You?
+              </h3>
+              <div className="space-y-8">
+                <p className="text-lg text-muted-foreground">
+                  We have two customized UC Investments Academy "tracks" you can choose from for the Fall 2025. Please see outlines below:
+                </p>
+                
+                <div className="grid md:grid-cols-2 gap-8">
+                  <Card className="shadow-card">
+                    <CardHeader>
+                      <CardTitle className="text-academy-blue">1) Career Track</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-muted-foreground mb-4">
+                        Geared towards technical training and education in addition to progressing through the entire program. 
+                        If you are interested in a career in finance and investing this program is for you.
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        <strong>Time Commitment:</strong> Approx. 5-10 hrs/week for 1-2 months in Fall and Spring
+                      </p>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="shadow-card">
+                    <CardHeader>
+                      <CardTitle className="text-academy-blue">2) Personal Finance Track</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-muted-foreground mb-4">
+                        Geared more towards personal finance, awareness, access, networking and general career strategy. 
+                        If you are interested in learning about investing and the industry, but are not committed to a career in finance this is for you.
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        <strong>Time Commitment:</strong> 1 hr/week on average in Fall and Spring
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="bg-academy-grey-light p-6 rounded-2xl">
+                  <h4 className="text-xl font-semibold mb-4 text-academy-blue">The program is for all UC students that are:</h4>
+                  <ul className="space-y-3">
+                    <li className="flex items-start gap-3">
+                      <CheckCircle className="h-5 w-5 text-academy-blue mt-0.5 flex-shrink-0" />
+                      <span>Interested in learning about investing and developing their careers</span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <CheckCircle className="h-5 w-5 text-academy-blue mt-0.5 flex-shrink-0" />
+                      <span>Can commit to actively participating in the program with flexibility to work at your own pace for certain parts of the program</span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <CheckCircle className="h-5 w-5 text-academy-blue mt-0.5 flex-shrink-0" />
+                      <span>Have demonstrated academic achievement</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Program Details Fall 2025 */}
+            <div>
+              <h3 className="text-2xl md:text-3xl font-bold mb-8 text-academy-blue">
+                Program Details – Fall 2025
+              </h3>
+              <div className="space-y-8">
+                <p className="text-lg text-muted-foreground">
+                  UC Investments is providing investment training, exposure, and experience that will be free 
+                  for UC students. The program will consist of online classes and a series of guest speakers 
+                  from diverse backgrounds currently working in the field. Included will be many insider views 
+                  into the dynamic and lucrative investment arena.
+                </p>
+
+                <div className="grid md:grid-cols-2 gap-8">
+                  <Card className="shadow-card">
+                    <CardHeader>
+                      <CardTitle className="text-academy-blue flex items-center gap-2">
+                        <BookOpen className="h-5 w-5" />
+                        Investment Analysis Curriculum
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="space-y-2 text-sm">
+                        <li>• Online self-study materials throughout the quarter (20 – 30 hours)</li>
+                        <li>• Instructor-led Zoom training sessions on October 18th and November 1st from 9 am – 12 pm (6 hours)</li>
+                      </ul>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="shadow-card">
+                    <CardHeader>
+                      <CardTitle className="text-academy-blue flex items-center gap-2">
+                        <Users className="h-5 w-5" />
+                        Live Guest Speaker Sessions
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="space-y-2 text-sm">
+                        <li>• 2 – 3+ typically weekday evening Zoom sessions per semester (+3 hours)</li>
+                        <li>• Optional access to ~20 previously recorded Zoom session library (+20 hours)</li>
+                      </ul>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="shadow-card">
+                    <CardHeader>
+                      <CardTitle className="text-academy-blue flex items-center gap-2">
+                        <Building className="h-5 w-5" />
+                        Virtual Work Experiences
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="space-y-2 text-sm">
+                        <li>• 2+ virtual work assignments with investment firms per semester (10 – 25 hours)</li>
+                      </ul>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="shadow-card">
+                    <CardHeader>
+                      <CardTitle className="text-academy-blue flex items-center gap-2">
+                        <Network className="h-5 w-5" />
+                        Investment Community Access
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="space-y-2 text-sm">
+                        <li>• Interact with investors and other like-minded students within the UC system</li>
+                        <li>• Connect with firms interested in recruiting Academy students for career opportunities</li>
+                      </ul>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="shadow-card">
+                    <CardHeader>
+                      <CardTitle className="text-academy-blue flex items-center gap-2">
+                        <TrendingUp className="h-5 w-5" />
+                        Financial Literacy Programming
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="space-y-2 text-sm">
+                        <li>• Learn how to create wealth for your future with financial literacy programming (1 – 10 hours)</li>
+                      </ul>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="shadow-card">
+                    <CardHeader>
+                      <CardTitle className="text-academy-blue flex items-center gap-2">
+                        <Target className="h-5 w-5" />
+                        Career Strategy Sessions
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="space-y-2 text-sm">
+                        <li>• Gain access to UC investments team members and network of professionals</li>
+                        <li>• Receive advice on investment strategy to help you achieve your goals</li>
+                      </ul>
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
             </div>
           </div>
