@@ -547,55 +547,13 @@ const LandingPage = () => {
           </div>
         </section>
 
-        {/* Benefits Grid */}
-        <section id="benefits" className="py-20">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold mb-6 text-academy-blue">
-                {getSectionTitle('benefits', 'Why Choose UC Investments Academy?')}
-              </h2>
-              <p className="text-xl text-muted-foreground">
-                {getSectionSubtitle('benefits', 'Everything you need to launch your finance career.')}
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {(getContentBySection('benefits')?.metadata?.benefits || []).map((benefit: any, index: number) => {
-                const IconComponent = {
-                  Target,
-                  Users,
-                  Award,
-                  Building,
-                  GraduationCap,
-                  Network,
-                  TrendingUp,
-                  BookOpen
-                }[benefit.icon] || Target;
-
-                return (
-                  <Card key={benefit.title} className="shadow-card hover:shadow-elevated transition-shadow animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
-                    <CardHeader>
-                      <IconComponent className="h-10 w-10 text-academy-blue mb-2" />
-                      <CardTitle>{benefit.title}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-muted-foreground">
-                        {benefit.description}
-                      </p>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          </div>
-        </section>
 
         {/* How It Works */}
         <section className="py-20 bg-academy-grey-light">
           <div className="container mx-auto px-4">
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-4xl font-bold mb-6 text-academy-blue">
-                {getSectionTitle('how-it-works', 'How the Program Works')}
+                {getSectionTitle('how-it-works', 'Why Choose UC Investments Academy')}
               </h2>
               <p className="text-xl text-muted-foreground">
                 {getSectionSubtitle('how-it-works', 'The program consists of online classes and guest speakers from diverse backgrounds in the investment field.')}
