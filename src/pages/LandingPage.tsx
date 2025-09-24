@@ -118,7 +118,7 @@ const LandingPage = () => {
             <nav className="flex items-center justify-between">
               {/* Logo */}
               <div className="flex items-center gap-3">
-                <img src="/lovable-uploads/d65dcac9-d2c0-458f-ac7b-ec24f7e5d7b5.png" alt="UC Investments Academy" className="h-10" />
+                <img src="/lovable-uploads/uc-investments-logo.png" alt="UC Investments" className="h-10" />
               </div>
 
               {/* Desktop Navigation */}
@@ -649,7 +649,7 @@ const LandingPage = () => {
             <div className="grid md:grid-cols-4 gap-8">
               <div>
                 <div className="flex items-center gap-3 mb-4">
-                  <img src="/lovable-uploads/d65dcac9-d2c0-458f-ac7b-ec24f7e5d7b5.png" alt="UC Investments Academy" className="h-8" />
+                  <img src="/lovable-uploads/uc-investments-logo.png" alt="UC Investments" className="h-8" />
                 </div>
                 <p className="text-white/70 mb-4">
                   Building the next generation of finance leaders through free, comprehensive training and real-world experience.
