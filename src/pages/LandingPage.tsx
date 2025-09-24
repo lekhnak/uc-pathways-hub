@@ -691,11 +691,11 @@ const LandingPage = () => {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-white/70">
                     <Mail className="h-4 w-4" />
-                    <span>ucinvestments@ucop.edu</span>
+                    <span>ucinvestmentsacademy@ucop.edu</span>
                   </div>
                   <div className="flex items-center gap-2 text-white/70">
-                    <MapPin className="h-4 w-4" />
-                    <span>University of California</span>
+                    <Mail className="h-4 w-4" />
+                    <span>craig.huie@ucop.edu</span>
                   </div>
                 </div>
               </div>
