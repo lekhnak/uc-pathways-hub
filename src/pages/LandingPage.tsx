@@ -202,7 +202,7 @@ const LandingPage = () => {
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 animate-fade-in text-white">
               {getSectionTitle('hero', 'UC Investments Academy')}
             </h1>
-            <p className="text-2xl md:text-3xl lg:text-4xl font-semibold mb-4 text-academy-accent animate-fade-in" style={{ animationDelay: '0.1s' }}>
+            <p className="text-2xl md:text-3xl lg:text-4xl font-semibold mb-4 text-white animate-fade-in" style={{ animationDelay: '0.1s' }}>
               {getSectionSubtitle('hero', 'Building the next generation of finance leaders')}
             </p>
             <div 
